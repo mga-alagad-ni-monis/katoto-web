@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --light-green: #a9e6c2;
+  --dark-green: #2d757c;
+  --light-brown: #f5f3eb;
+  --light-gray: #00000033;
+}
+
+* {
+  font-family: inter;
+}
