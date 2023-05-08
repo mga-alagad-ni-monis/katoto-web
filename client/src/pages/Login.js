@@ -1,10 +1,16 @@
 import axios from "axios";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 
+import useAuth from "../hooks/useAuth";
 import plvImage from "../assets/plv.png";
 
 function Login() {
+  const { setAuth } = useAuth();
+
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -17,9 +23,13 @@ function Login() {
           password,
         })
         .then((res) => {
-          toast.success(res?.data);
+          toast.success(res?.data?.message);
+          const roles = [res?.data?.role];
+          const user = email;
+          setAuth({ user, roles });
           setEmail("");
           setPassword("");
+          navigate("/");
         })
         .catch((err) => {
           toast.error(err?.response?.data);

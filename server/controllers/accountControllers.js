@@ -1,9 +1,7 @@
 const bcrypt = require("bcrypt");
 
 const db = require("../utils/firebase");
-
-const { QuerySnapshot } = require("firebase-admin/firestore");
-
+  
 const login = async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -20,7 +18,7 @@ const login = async (req, res) => {
     }
 
     db.collection("accounts")
-      .where("email", "==", email)
+      .where("credentials.email", "==", email)
       .get()
       .then((querySnapshot) => {
         if (querySnapshot.empty) {
@@ -32,18 +30,21 @@ const login = async (req, res) => {
         }
 
         querySnapshot.forEach((doc) => {
-          bcrypt.compare(password, doc.data().password, (error, result) => {
-            if (error) {
-              console.log(error);
+          bcrypt.compare(
+            password,
+            doc.data().credentials.password,
+            (error, result) => {
+              if (error) {
+                console.log(error);
+              }
+              if (result) {
+                const role = doc.data().credentials.privilegeType;
+                res.status(200).json({ message: "Login successful!", role });
+              } else {
+                res.status(404).send("Incorrect email and password!");
+              }
             }
-            if (result) {
-              // const token = generateToken(id);
-              // res.status(200).json({ email, token, id });
-              res.status(200).send("Login successful!");
-            } else {
-              res.status(404).send("Incorrect email and password!");
-            }
-          });
+          );
         });
       })
       .catch((err) => {
