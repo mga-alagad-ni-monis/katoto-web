@@ -4,6 +4,6 @@ const { login } = require("../controllers/accountControllers");
 
 const router = express.Router();
 
-router.post("/login/send-credentials", login);
+router.post("/login", login);
 
 module.exports = router;

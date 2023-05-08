@@ -10,4 +10,4 @@ initializeApp({
 
 const db = getFirestore();
 
-module.exports = { db };
+module.exports = db;
