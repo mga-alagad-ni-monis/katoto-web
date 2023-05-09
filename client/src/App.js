@@ -8,20 +8,23 @@ import Login from "./pages/Login";
 import NavBar from "./components/NavBar";
 import Home from "./pages/Home";
 import Reports from "./pages/Reports";
+import UserAccounts from "./pages/UserAccounts";
 
 function App() {
   return (
     <BrowserRouter>
       <NavBar />
       <Routes>
-        {/* login */}
+        {/* login module*/}
         <Route path="/login" element={<Login toast={toast} />}></Route>
-        {/* home/chatbot */}
+
+        {/* home/chatbot module*/}
         <Route element={<RequiredAuth allowedRoles={["student"]} />}>
           <Route path="/" element={<Home />}></Route>
         </Route>
+
         <Route element={<PersistLogin />}>
-          {/* reports */}
+          {/* reports module*/}
           <Route
             element={
               <RequiredAuth
@@ -30,6 +33,15 @@ function App() {
             }
           >
             <Route path="/reports" element={<Reports toast={toast} />}></Route>
+          </Route>
+          {/* user-accounts module */}
+          <Route
+            element={<RequiredAuth allowedRoles={["systemAdministrator"]} />}
+          >
+            <Route
+              path="/accounts"
+              element={<UserAccounts toast={toast} />}
+            ></Route>
           </Route>
         </Route>
       </Routes>

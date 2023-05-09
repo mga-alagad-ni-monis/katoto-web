@@ -12,3 +12,23 @@
 * {
   font-family: inter;
 }
+
+.word-in {
+  animation-name: word-anim-in;
+  animation-duration: 0.5s;
+}
+
+@keyframes word-anim-in {
+  0% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 50%;
+  }
+  100% {
+    opacity: 100%;
+  }
+}

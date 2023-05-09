@@ -21,10 +21,10 @@ function Reports({ toast }) {
   };
 
   return (
-    <div>
-      <div>
-        <button onClick={logout}>Logout</button>
-      </div>
+    <div className="flex justify-center">
+      <button onClick={logout} className="text-center">
+        Logout
+      </button>
     </div>
   );
 }
