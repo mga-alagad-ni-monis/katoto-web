@@ -1,12 +1,11 @@
-import axios from "axios";
+import axios from "../api/axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast";
 
 import useAuth from "../hooks/useAuth";
 import plvImage from "../assets/plv.png";
 
-function Login() {
+function Login({ toast }) {
   const { setAuth } = useAuth();
 
   const navigate = useNavigate();
@@ -18,18 +17,32 @@ function Login() {
     e.preventDefault();
     try {
       await axios
-        .post(`${process.env.REACT_APP_API_URI}/api/login`, {
-          email,
-          password,
-        })
+        .post(
+          `/api/login`,
+          {
+            email,
+            password,
+          },
+          {
+            headers: { "Content-Type": "application/json" },
+            withCredentials: true,
+          }
+        )
         .then((res) => {
           toast.success(res?.data?.message);
           const roles = [res?.data?.role];
           const user = email;
-          setAuth({ user, roles });
+          setAuth({ user, roles, accessToken: res?.data?.accessToken });
           setEmail("");
           setPassword("");
-          navigate("/");
+          if (roles[0] === "student") {
+            return navigate("/");
+          } else if (
+            roles[0] === "guidanceCounselor" ||
+            "systemAdministrator"
+          ) {
+            return navigate("/reports");
+          }
         })
         .catch((err) => {
           toast.error(err?.response?.data);
@@ -44,7 +57,7 @@ function Login() {
   };
 
   return (
-    <div className="flex bg-[--light-green] h-screen items-center">
+    <div className="flex bg-[--light-green] h-screen items-center -mt-[7.5rem]">
       <div className="w-1/2 flex justify-end">
         <img src={plvImage} alt="" className="w-max h-max" />
       </div>
@@ -99,18 +112,6 @@ function Login() {
           </form>
         </div>
       </div>
-      <Toaster
-        position="bottom-right"
-        reverseOrder={false}
-        toastOptions={{
-          style: {
-            fontWeight: "600",
-            textAlign: "center",
-            border: "1px solid #000",
-            backgroundColor: "#f5f3eb",
-          },
-        }}
-      />
     </div>
   );
 }

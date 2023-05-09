@@ -1,9 +1,9 @@
 function NavBar() {
   return (
-    <div className="absolute w-full">
+    <div className="bg-transparent">
       <nav className="flex justify-between py-10 items-center container mx-auto bg-transparent">
         <p className="text-4xl font-extrabold w-1/2">Katoto</p>
-        <div className="flex pl-28 justify-between w-1/2 items-center">
+        <div className="flex pl-28 justify-between w-1/2 items-center z-50">
           <li className="flex gap-10 font-bold">
             <ul>Announcements</ul>
             <ul>Chatbot</ul>
