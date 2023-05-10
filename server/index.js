@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const { db } = require("./utils/firebase");
 
 const accountRoutes = require("./routes/accountRoutes");
+const userAccountRoutes = require("./routes/userAccountRoutes");
 
 const app = express();
 
@@ -28,3 +29,4 @@ app.use((req, res, next) => {
 
 //routes
 app.use("/api", accountRoutes);
+app.use("/api/accounts", userAccountRoutes);
