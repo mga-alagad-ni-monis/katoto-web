@@ -19,6 +19,7 @@ app.listen(process.env.PORT, () => {
 app.use(cors({ origin: process.env.CLIENT_URI, credentials: true }));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(cookieParser());
 
@@ -28,5 +29,6 @@ app.use((req, res, next) => {
 });
 
 //routes
+
 app.use("/api", accountRoutes);
 app.use("/api/accounts", userAccountRoutes);

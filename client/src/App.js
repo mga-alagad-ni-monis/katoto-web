@@ -46,7 +46,7 @@ function App() {
         </Route>
       </Routes>
       <Toaster
-        position="bottom-right"
+        position="bottom-center"
         reverseOrder={false}
         toastOptions={{
           style: {

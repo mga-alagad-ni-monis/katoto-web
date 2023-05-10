@@ -1,7 +1,12 @@
 import axios from "../api/axios";
 
-import { useState, useEffect } from "react";
-import { BsUpload } from "react-icons/bs";
+import { useState, useEffect, useRef } from "react";
+import {
+  BsUpload,
+  BsCloudUploadFill,
+  BsFiletypeCsv,
+  BsFillTrash3Fill,
+} from "react-icons/bs";
 import { HiPlus } from "react-icons/hi";
 import { FaTimes } from "react-icons/fa";
 
@@ -20,9 +25,14 @@ function UserAccounts({ toast }) {
   const [birthday, setBirthday] = useState("");
   const [department, setDepartment] = useState("");
   const [userType, setUserType] = useState("");
+  const [file, setFile] = useState("");
 
   const [isAllChecked, setIsAllChecked] = useState(false);
   const [isOpenAddModal, setIsOpenAddModal] = useState(false);
+  const [isOpenImportModal, setIsOpenImportModal] = useState(false);
+  const [reload, setReload] = useState(false);
+
+  const inputRef = useRef(null);
 
   const courses = [
     "Bachelor of Early Childhood Education (BECED)",
@@ -46,7 +56,7 @@ function UserAccounts({ toast }) {
 
   useEffect(() => {
     handleGetUsers();
-  }, []);
+  }, [reload]);
 
   const handleChecked = (param) => {
     setUsers(
@@ -112,12 +122,42 @@ function UserAccounts({ toast }) {
           setDepartment("");
           setUserType("");
           setIsOpenAddModal(false);
+          setReload(!reload);
         })
         .catch((err) => {
           toast.error(err?.response?.data);
         });
     } catch (err) {
       toast.error("Error");
+    }
+  };
+
+  const handleImport = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      await axios
+        .post("/api/accounts/import", formData)
+        .then((res) => {
+          toast.success(res?.data?.message);
+          setFile(null);
+          setIsOpenImportModal(false);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data);
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const fileObj = e.target.files && e.target.files[0];
+    setFile(fileObj);
+    if (!fileObj) {
+      setFile(null);
+      return;
     }
   };
 
@@ -268,9 +308,9 @@ function UserAccounts({ toast }) {
                       defaultValue
                       className="text-black/30"
                     ></option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
               </div>
@@ -328,8 +368,12 @@ function UserAccounts({ toast }) {
                       value=""
                       className="text-black/30"
                     ></option>
-                    {courses?.map((i) => {
-                      return <option value={i}>{i}</option>;
+                    {courses?.map((i, k) => {
+                      return (
+                        <option value={i} key={k}>
+                          {i}
+                        </option>
+                      );
                     })}
                   </select>
                 </div>
@@ -345,6 +389,86 @@ function UserAccounts({ toast }) {
           </Modal>
         </form>
       ) : null}
+      {isOpenImportModal ? (
+        <form className="w-full justify-between flex" onSubmit={handleImport}>
+          <Modal>
+            <div className="w-full justify-between flex">
+              <p className="text-2xl font-extrabold">Import CSV</p>
+              <button
+                onClick={() => {
+                  setIsOpenImportModal(false);
+                }}
+                type="button"
+              >
+                <FaTimes size={20} />
+              </button>
+            </div>
+            {file ? (
+              <div className="mt-5 p-5 border border-2 border-[--light-gray] w-full rounded-xl h-max flex justify-between">
+                <div className="flex gap-5">
+                  <div className="border border-1 border-[--light-gray] w-max p-3 rounded-xl">
+                    <BsFiletypeCsv size={24} />
+                  </div>
+                  <div>
+                    <p className="font-semibold">{file.name}</p>
+                  </div>
+                </div>
+                <div>
+                  <button
+                    onClick={() => {
+                      setFile(null);
+                    }}
+                    type="button"
+                  >
+                    <BsFillTrash3Fill size={20} className="text-red-500" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-5 border border-4 border-[--dark-green] rounded-xl border-dashed w-full h-max p-8">
+                <div className="flex flex-col gap-1 items-center font-semibold">
+                  <BsCloudUploadFill
+                    size={32}
+                    className="text-[--dark-green]"
+                  />
+                  <p> Drag and Drop CSV File</p>
+                  <p className="text-[--dark-green]">― OR ―</p>
+                  <p>1. Click the "Attach File" button.</p>
+                  <p>2. Locate the CSV file in your computer.</p>
+                  <p>3. Click the "Import" button.</p>
+                  <p>4. Wait for the successful/error confirmation.</p>
+                </div>
+              </div>
+            )}
+            <div className="w-full flex gap-3 mt-10">
+              <input
+                style={{ display: "none" }}
+                ref={inputRef}
+                type="file"
+                onChange={handleFileChange}
+              />
+              <button
+                className="w-1/2 bg-black w-full p-3 text-[--light-brown] text-sm rounded-lg border border-2 border-black
+            hover:bg-transparent hover:text-black transition-all duration-300 font-semibold"
+                onClick={() => {
+                  inputRef.current.click();
+                }}
+                type="button"
+              >
+                Attach File
+              </button>
+              <button
+                className="w-1/2 bg-[--dark-green] w-full p-3 text-[--light-brown] text-sm rounded-lg border border-2 border-[--dark-green] 
+            hover:bg-transparent hover:text-[--dark-green] transition-all duration-300 font-semibold"
+                type="submit"
+              >
+                Import
+              </button>
+            </div>
+          </Modal>
+        </form>
+      ) : null}
+
       <SideBar />
       <div className="flex flex-col px-80">
         <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">
@@ -365,6 +489,9 @@ function UserAccounts({ toast }) {
             <button
               className="bg-black rounded-full text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
             border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
+              onClick={() => {
+                setIsOpenImportModal(true);
+              }}
             >
               <BsUpload size={16} />
               Import
@@ -380,7 +507,7 @@ function UserAccounts({ toast }) {
               <div className="flex gap-5 items-center">
                 <input
                   id="checkbox-1"
-                  class="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
+                  className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
      checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
      float-left cursor-pointer appearance-none border border-solid border-2  border-[--light-gray] bg-[--light-gray] 
      bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
@@ -392,11 +519,10 @@ function UserAccounts({ toast }) {
                   }}
                   onChange={handleAllChecked}
                 />
-                <div>Student ID</div>
+                <div>ID Number</div>
               </div>
               <div>Name</div>
               <div>Email</div>
-              <div>Password</div>
               <div>Gender</div>
               <div>Department/Course</div>
               <div>Contact Number</div>
@@ -426,7 +552,7 @@ function UserAccounts({ toast }) {
                   <div className="flex gap-5 items-center">
                     <input
                       id="checkbox-1"
-                      class="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
+                      className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
      checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
      float-left cursor-pointer appearance-none border border-solid border-2  border-[--dark-green] bg-[--light-green] 
      bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
@@ -441,15 +567,18 @@ function UserAccounts({ toast }) {
                       }}
                       checked={i.isChecked ? true : false}
                     />
-                    <p>{i?.id}</p>
+                    <p>{i?.idNo}</p>
                   </div>
                   <p>{i?.name}</p>
-                  <p>{i?.email}</p>
-                  <p>{i?.password}</p>
+                  <p>{i?.credentials?.email}</p>
                   <p>{i?.gender}</p>
                   <div>{i?.department}</div>
-                  <div>{i?.contactNumber}</div>
-                  <div>{i?.userType}</div>
+                  <div>{i?.birthday}</div>
+                  <div>{i?.contactNo}</div>
+                  <div>
+                    {i?.credentials?.privilegeType.charAt(0).toUpperCase() +
+                      i?.credentials?.privilegeType.slice(1)}
+                  </div>
                 </button>
               );
             })}
