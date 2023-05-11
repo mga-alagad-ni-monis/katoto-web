@@ -9,6 +9,7 @@ import {
 } from "react-icons/bs";
 import { HiPlus } from "react-icons/hi";
 import { FaTimes } from "react-icons/fa";
+import { FiChevronDown } from "react-icons/fi";
 
 import SideBar from "../components/SideBar";
 import Modal from "../components/Modal";
@@ -26,11 +27,14 @@ function UserAccounts({ toast }) {
   const [department, setDepartment] = useState("");
   const [userType, setUserType] = useState("");
   const [file, setFile] = useState("");
+  const [filterCategory, setFilterCategory] = useState("Category");
+  const [search, setSearch] = useState("");
 
   const [isAllChecked, setIsAllChecked] = useState(false);
   const [isOpenAddModal, setIsOpenAddModal] = useState(false);
   const [isOpenImportModal, setIsOpenImportModal] = useState(false);
   const [reload, setReload] = useState(false);
+  const [isOpenSearchButton, setIsOpenSearchButton] = useState(false);
 
   const inputRef = useRef(null);
 
@@ -52,6 +56,17 @@ function UserAccounts({ toast }) {
     "Bachelor of Science in Business Administration Major in Human Resource Development Management (BSBA HRDM)",
     "Bachelor of Science in Business Administration Major in Marketing Management (BSBA MM)",
     "Bachelor of Science in Public Administration (BSPA)",
+  ];
+
+  const categories = [
+    "ID Number",
+    "Name",
+    "Email",
+    "Gender",
+    "Department/Course",
+    "Contact Number",
+    "Birthday",
+    "User Type",
   ];
 
   useEffect(() => {
@@ -143,6 +158,7 @@ function UserAccounts({ toast }) {
           toast.success(res?.data?.message);
           setFile(null);
           setIsOpenImportModal(false);
+          setReload(!reload);
         })
         .catch((err) => {
           toast.error(err?.response?.data);
@@ -474,26 +490,72 @@ function UserAccounts({ toast }) {
         <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">
           User Accounts
         </p>
-        <div className="flex justify-end w-full items-center mb-5">
+        <div className="flex justify-between w-full items-center mb-5">
+          <div className="flex gap-5">
+            <input
+              type="text"
+              placeholder="Search..."
+              className="py-2 px-5 bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+              onChange={(e) => {
+                setSearch(e.target.value);
+              }}
+            />
+            <div class="hs-dropdown relative inline-flex">
+              <button
+                type="button"
+                class="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+                border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                onClick={() => {
+                  setIsOpenSearchButton(!isOpenSearchButton);
+                }}
+              >
+                {filterCategory}
+                <FiChevronDown size={16} />
+              </button>
+
+              <div
+                class={`${
+                  isOpenSearchButton ? "visible" : "hidden"
+                } absolute top-9 transition-all duration-100 w-72
+                z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+              >
+                {categories.map((i, k) => {
+                  return (
+                    <button
+                      key={k}
+                      class="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                      onClick={() => {
+                        setFilterCategory(i);
+                        setIsOpenSearchButton(false);
+                        console.log(filterCategory);
+                      }}
+                    >
+                      {i}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
           <div className="flex gap-5">
             <button
-              className="bg-black rounded-full text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+              className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
             border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
               onClick={() => {
                 setIsOpenAddModal(true);
               }}
             >
-              <HiPlus size={18} />
+              <HiPlus size={16} />
               Add
             </button>
             <button
-              className="bg-black rounded-full text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+              className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-4 flex gap-2 items-center justify-center 
             border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
               onClick={() => {
                 setIsOpenImportModal(true);
               }}
             >
-              <BsUpload size={16} />
+              <BsUpload size={14} />
               Import
             </button>
           </div>
@@ -531,57 +593,84 @@ function UserAccounts({ toast }) {
             </div>
           </thead>
           <tbody className="flex flex-col">
-            {users?.map((i, k) => {
-              return (
-                <button
-                  className={`flex justify-between font-medium mx-1 px-5 mb-1 py-3 text-sm ${
-                    k % 2 ? "bg-[--light-green] rounded-lg" : null
-                  } ${
-                    i.isChecked
-                      ? "relative bg-[--light-green] rounded-lg"
-                      : null
-                  }`}
-                  key={k}
-                  onClick={() => {
-                    handleChecked(k);
-                  }}
-                >
-                  {i.isChecked ? (
-                    <div className="absolute w-[8px] h-full bg-[--dark-green] left-0 top-0 rounded-tl-lg rounded-bl-lg"></div>
-                  ) : null}
-                  <div className="flex gap-5 items-center">
-                    <input
-                      id="checkbox-1"
-                      className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
+            {users
+              ?.filter((i) => {
+                if (search?.toLowerCase().trim()) {
+                  let filter =
+                    filterCategory.charAt(0).toLowerCase() +
+                    filterCategory.slice(1).replace(/\s/g, "");
+                  if (filterCategory === "Category") {
+                    return i;
+                  } else if (filterCategory === "ID Number") {
+                    return i?.idNo?.includes(search);
+                  } else if (
+                    filterCategory === "Name" ||
+                    "Gender" ||
+                    "Birthday"
+                  ) {
+                    return i[filter]?.toLowerCase()?.includes(search);
+                  } else if (filterCategory === "Email") {
+                    return i?.credentials?.email
+                      ?.toLowerCase()
+                      ?.includes(search)
+                      ? i
+                      : null;
+                  }
+                } else {
+                  return i;
+                }
+              })
+              ?.map((i, k) => {
+                return (
+                  <button
+                    className={`flex justify-between font-medium mx-1 px-5 mb-1 py-3 text-sm ${
+                      k % 2 ? "bg-[--light-green] rounded-lg" : null
+                    } ${
+                      i.isChecked
+                        ? "relative bg-[--light-green] rounded-lg"
+                        : null
+                    }`}
+                    key={k}
+                    onClick={() => {
+                      handleChecked(k);
+                    }}
+                  >
+                    {i.isChecked ? (
+                      <div className="absolute w-[8px] h-full bg-[--dark-green] left-0 top-0 rounded-tl-lg rounded-bl-lg"></div>
+                    ) : null}
+                    <div className="flex gap-5 items-center">
+                      <input
+                        id="checkbox-1"
+                        className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
      checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
      float-left cursor-pointer appearance-none border border-solid border-2  border-[--dark-green] bg-[--light-green] 
      bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
      after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-[''] 
      checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100"
-                      type="checkbox"
-                      style={{
-                        fontFamily: "FontAwesome",
-                      }}
-                      onChange={() => {
-                        handleChecked(k);
-                      }}
-                      checked={i.isChecked ? true : false}
-                    />
-                    <p>{i?.idNo}</p>
-                  </div>
-                  <p>{i?.name}</p>
-                  <p>{i?.credentials?.email}</p>
-                  <p>{i?.gender}</p>
-                  <div>{i?.department}</div>
-                  <div>{i?.birthday}</div>
-                  <div>{i?.contactNo}</div>
-                  <div>
-                    {i?.credentials?.privilegeType.charAt(0).toUpperCase() +
-                      i?.credentials?.privilegeType.slice(1)}
-                  </div>
-                </button>
-              );
-            })}
+                        type="checkbox"
+                        style={{
+                          fontFamily: "FontAwesome",
+                        }}
+                        onChange={() => {
+                          handleChecked(k);
+                        }}
+                        checked={i.isChecked ? true : false}
+                      />
+                      <p>{i?.idNo}</p>
+                    </div>
+                    <p>{i?.name}</p>
+                    <p>{i?.credentials?.email}</p>
+                    <p>{i?.gender}</p>
+                    <div>{i?.department}</div>
+                    <div>{i?.birthday}</div>
+                    <div>{i?.contactNo}</div>
+                    <div>
+                      {i?.credentials?.privilegeType.charAt(0).toUpperCase() +
+                        i?.credentials?.privilegeType.slice(1)}
+                    </div>
+                  </button>
+                );
+              })}
 
             {/* <div className="flex justify-between font-medium px-5 py-2 m-1 text-sm">
               <div className="flex gap-5 items-center">

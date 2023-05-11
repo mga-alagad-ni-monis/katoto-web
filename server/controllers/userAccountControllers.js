@@ -4,6 +4,7 @@ const fs = require("fs");
 const csv = require("csv-parser");
 
 const db = require("../utils/firebase");
+const { type } = require("os");
 
 const addUser = async (req, res) => {
   const {
@@ -98,13 +99,46 @@ let upload = multer({ storage });
 const handleImport = async (req, res) => {
   const { path } = req.file;
   try {
-    const results = [];
+    const users = [];
     fs.createReadStream(path)
       .pipe(csv())
-      .on("data", (data) => results.push(data))
-      .on("end", () => {
-        console.log(results);
-        res.status(200).json({ message: "CSV import successful!" });
+      .on("data", (data) => users.push(data))
+      .on("end", async () => {
+        let documents = users
+          .map((user, k) => {
+            if (user["Email"]) {
+              return {
+                name: user[Object.keys(users[k])[1]],
+                credentials: {
+                  privilegeType:
+                    user[Object.keys(users[k])[0]].charAt(0).toLowerCase() +
+                    user[Object.keys(users[k])[0]].slice(1).replace(/\s/g, ""),
+                  email: user[Object.keys(users[k])[2]],
+                  password: user[Object.keys(users[k])[3]],
+                },
+                idNo: user[Object.keys(users[k])[4]],
+                gender: user[Object.keys(users[k])[5]],
+                contactNo: user[Object.keys(users[k])[6]],
+                birthday: user[Object.keys(users[k])[7]],
+                department: user[Object.keys(users[k])[8]],
+              };
+            }
+          })
+          .filter((item) => item !== undefined);
+
+        const batch = db.batch();
+
+        documents.forEach((i) => {
+          const docId = db.collection("accounts").doc();
+          batch.set(docId, i);
+        });
+
+        await batch.commit().then((querySnapshot) => {
+          if (querySnapshot.empty) {
+            return res.status(404).send("Error");
+          }
+        });
+        res.status(200).json({ message: "CSV imported successfully!" });
       })
       .on("error", (err) => {
         res.status(404).send("An error encountered in CSV!");
