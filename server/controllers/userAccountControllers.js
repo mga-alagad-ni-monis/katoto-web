@@ -104,9 +104,15 @@ const handleImport = async (req, res) => {
       .pipe(csv())
       .on("data", (data) => users.push(data))
       .on("end", async () => {
-        let documents = users
-          .map((user, k) => {
+        let documents = await Promise.all(
+          users.map(async (user, k) => {
             if (user["Email"]) {
+              const salt = await bcrypt.genSalt(10);
+              const hashedPassword = await bcrypt.hash(
+                user[Object.keys(users[k])[3]],
+                salt
+              );
+
               return {
                 name: user[Object.keys(users[k])[1]],
                 credentials: {
@@ -114,7 +120,7 @@ const handleImport = async (req, res) => {
                     user[Object.keys(users[k])[0]].charAt(0).toLowerCase() +
                     user[Object.keys(users[k])[0]].slice(1).replace(/\s/g, ""),
                   email: user[Object.keys(users[k])[2]],
-                  password: user[Object.keys(users[k])[3]],
+                  password: hashedPassword,
                 },
                 idNo: user[Object.keys(users[k])[4]],
                 gender: user[Object.keys(users[k])[5]],
@@ -124,14 +130,16 @@ const handleImport = async (req, res) => {
               };
             }
           })
-          .filter((item) => item !== undefined);
+        );
 
         const batch = db.batch();
 
-        documents.forEach((i) => {
-          const docId = db.collection("accounts").doc();
-          batch.set(docId, i);
-        });
+        documents
+          .filter((item) => item !== undefined)
+          .forEach((i) => {
+            const docId = db.collection("accounts").doc();
+            batch.set(docId, i);
+          });
 
         await batch.commit().then((querySnapshot) => {
           if (querySnapshot.empty) {
