@@ -41,10 +41,8 @@ const handleLogin = async (req, res) => {
               if (result) {
                 const accessToken = jwt.sign(
                   {
-                    id: doc.data().id,
                     email: doc.data().credentials.email,
-                    privilegeType: doc.data().credentials.privilegeType,
-                    name: doc.data().name,
+                    role: doc.data().credentials.privilegeType,
                   },
                   process.env.ACCESS_TOKEN,
                   {
@@ -53,7 +51,10 @@ const handleLogin = async (req, res) => {
                 );
 
                 const refreshToken = jwt.sign(
-                  { email: doc.data().credentials.email },
+                  {
+                    email: doc.data().credentials.email,
+                    role: doc.data().credentials.privilegeType,
+                  },
                   process.env.REFRESH_TOKEN,
                   { expiresIn: "1d" }
                 );

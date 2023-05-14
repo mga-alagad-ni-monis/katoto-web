@@ -1,30 +1,13 @@
 import axios from "../api/axios";
-import useAuth from "../hooks/useAuth";
 
-function Reports({ toast }) {
-  const { setAuth } = useAuth();
-
-  const logout = async () => {
-    setAuth({});
-    try {
-      await axios
-        .get("/api/logout", { withCredentials: true })
-        .then((res) => {
-          toast.success(res?.data?.message);
-        })
-        .catch((err) => {
-          toast.error(err?.response?.data);
-        });
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
+function Reports() {
   return (
-    <div className="flex justify-center">
-      <button onClick={logout} className="text-center">
-        Logout
-      </button>
+    <div className="bg-[--light-brown] h-screen">
+      <div className="flex flex-col px-80">
+        <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">
+          Reports
+        </p>
+      </div>
     </div>
   );
 }

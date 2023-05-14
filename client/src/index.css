@@ -7,6 +7,7 @@
   --dark-green: #2d757c;
   --light-brown: #f5f3eb;
   --light-gray: #00000033;
+  --red: #ff6961;
 }
 
 * {
@@ -31,4 +32,34 @@
   100% {
     opacity: 100%;
   }
+}
+
+.logo-breath {
+  animation-name: logo-breath-anim;
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
+}
+
+@keyframes logo-breath-anim {
+  0% {
+    scale: 1;
+    rotate: 0deg;
+  }
+  50% {
+    scale: 1.5;
+  }
+  100% {
+    scale: 1;
+    rotate: 360deg;
+  }
+}
+
+.logo-div {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transform: -webkit-translate(-50%, -50%);
+  transform: -moz-translate(-50%, -50%);
+  transform: -ms-translate(-50%, -50%);
 }

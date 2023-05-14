@@ -15,7 +15,7 @@ router.get("/get", verifyRoles(["systemAdministrator"]), getUsers);
 router.post("/add", verifyRoles(["systemAdministrator"]), addUser);
 router.post(
   "/import",
-  verifyRoles(["systemAdministartor"]),
+  verifyRoles(["systemAdministrator"]),
   upload.single("file"),
   handleImport
 );

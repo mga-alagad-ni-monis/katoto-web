@@ -3,9 +3,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import useAuth from "../hooks/useAuth";
+
 import plvImage from "../assets/plv.png";
 
-function Login({ toast }) {
+function Login({ toast, loading, setLoading }) {
   const { setAuth } = useAuth();
 
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ function Login({ toast }) {
   const login = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
       await axios
         .post(
           `/api/login`,
@@ -36,11 +38,13 @@ function Login({ toast }) {
           setEmail("");
           setPassword("");
           if (roles[0] === "student") {
+            setLoading(false);
             return navigate("/");
           } else if (
             roles[0] === "guidanceCounselor" ||
             "systemAdministrator"
           ) {
+            setLoading(false);
             return navigate("/reports");
           }
         })
@@ -48,11 +52,13 @@ function Login({ toast }) {
           toast.error(err?.response?.data);
           setEmail("");
           setPassword("");
+          setLoading(false);
         });
     } catch (err) {
       toast.error(err?.response?.data);
       setEmail("");
       setPassword("");
+      setLoading(false);
     }
   };
 

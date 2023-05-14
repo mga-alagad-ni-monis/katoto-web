@@ -11,8 +11,8 @@ import { HiPlus } from "react-icons/hi";
 import { FaTimes } from "react-icons/fa";
 import { FiChevronDown } from "react-icons/fi";
 
-import SideBar from "../components/SideBar";
 import Modal from "../components/Modal";
+import Loading from "../components/Loading";
 
 function UserAccounts({ toast, auth }) {
   const [users, setUsers] = useState([]);
@@ -58,19 +58,12 @@ function UserAccounts({ toast, auth }) {
     "Bachelor of Science in Public Administration (BSPA)",
   ];
 
-  const categories = [
-    "ID Number",
-    "Name",
-    "Email",
-    "Gender",
-    "Department/Course",
-    "Contact Number",
-    "Birthday",
-    "User Type",
-  ];
+  const categories = ["Email", "Department/Course", "User Type"];
 
   useEffect(() => {
-    handleGetUsers();
+    setTimeout(() => {
+      handleGetUsers();
+    }, 500);
   }, [reload]);
 
   const handleChecked = (param) => {
@@ -119,17 +112,26 @@ function UserAccounts({ toast, auth }) {
     e.preventDefault();
     try {
       await axios
-        .post("/api/accounts/add", {
-          name,
-          email,
-          password,
-          idNo,
-          gender,
-          contactNo,
-          birthday,
-          department,
-          userType,
-        })
+        .post(
+          "/api/accounts/add",
+          {
+            name,
+            email,
+            password,
+            idNo,
+            gender,
+            contactNo,
+            birthday,
+            department,
+            userType,
+          },
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${auth?.accessToken}`,
+            },
+          }
+        )
         .then((res) => {
           toast.success(res?.data?.message);
           setName("");
@@ -158,7 +160,12 @@ function UserAccounts({ toast, auth }) {
       const formData = new FormData();
       formData.append("file", file);
       await axios
-        .post("/api/accounts/import", formData)
+        .post("/api/accounts/import", formData, {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${auth?.accessToken}`,
+          },
+        })
         .then((res) => {
           toast.success(res?.data?.message);
           setFile(null);
@@ -401,7 +408,7 @@ function UserAccounts({ toast, auth }) {
               </div>
               <button
                 className="bg-[--dark-green] w-full p-3 text-[--light-brown] text-sm rounded-lg border border-2 border-[--dark-green] 
-            hover:bg-transparent hover:text-[--dark-green] transition-all duration-300 font-semibold"
+          hover:bg-transparent hover:text-[--dark-green] transition-all duration-300 font-semibold"
                 type="submit"
               >
                 Submit
@@ -470,7 +477,7 @@ function UserAccounts({ toast, auth }) {
               />
               <button
                 className="w-1/2 bg-black w-full p-3 text-[--light-brown] text-sm rounded-lg border border-2 border-black
-            hover:bg-transparent hover:text-black transition-all duration-300 font-semibold"
+          hover:bg-transparent hover:text-black transition-all duration-300 font-semibold"
                 onClick={() => {
                   inputRef.current.click();
                 }}
@@ -480,7 +487,7 @@ function UserAccounts({ toast, auth }) {
               </button>
               <button
                 className="w-1/2 bg-[--dark-green] w-full p-3 text-[--light-brown] text-sm rounded-lg border border-2 border-[--dark-green] 
-            hover:bg-transparent hover:text-[--dark-green] transition-all duration-300 font-semibold"
+          hover:bg-transparent hover:text-[--dark-green] transition-all duration-300 font-semibold"
                 type="submit"
               >
                 Import
@@ -489,8 +496,6 @@ function UserAccounts({ toast, auth }) {
           </Modal>
         </form>
       ) : null}
-
-      <SideBar />
       <div className="flex flex-col px-80">
         <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">
           User Accounts
@@ -501,15 +506,16 @@ function UserAccounts({ toast, auth }) {
               type="text"
               placeholder="Search..."
               className="py-2 px-5 bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+              value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
               }}
             />
-            <div class="hs-dropdown relative inline-flex">
+            <div className="hs-dropdown relative inline-flex">
               <button
                 type="button"
-                class="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
-                border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+              border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                 onClick={() => {
                   setIsOpenSearchButton(!isOpenSearchButton);
                 }}
@@ -519,20 +525,20 @@ function UserAccounts({ toast, auth }) {
               </button>
 
               <div
-                class={`${
+                className={`${
                   isOpenSearchButton ? "visible" : "hidden"
                 } absolute top-9 transition-all duration-100 w-72
-                z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
               >
                 {categories.map((i, k) => {
                   return (
                     <button
                       key={k}
-                      class="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                      className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
                       onClick={() => {
                         setFilterCategory(i);
                         setIsOpenSearchButton(false);
-                        console.log(filterCategory);
+                        setSearch("");
                       }}
                     >
                       {i}
@@ -545,7 +551,7 @@ function UserAccounts({ toast, auth }) {
           <div className="flex gap-5">
             <button
               className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
-            border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
+          border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
               onClick={() => {
                 setIsOpenAddModal(true);
               }}
@@ -555,7 +561,7 @@ function UserAccounts({ toast, auth }) {
             </button>
             <button
               className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-4 flex gap-2 items-center justify-center 
-            border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
+          border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
               onClick={() => {
                 setIsOpenImportModal(true);
               }}
@@ -569,17 +575,17 @@ function UserAccounts({ toast, auth }) {
           className="w-full h-full rounded-lg shadow-lg bg-[--light-green]"
           style={{ backgroundColor: "rgba(169, 230, 194, 0.2)" }}
         >
-          <thead>
-            <div className="flex justify-between px-5 py-3 text-sm text-[--light-brown] font-bold bg-[--dark-green] rounded-lg m-1">
-              <div className="flex gap-5 items-center">
+          <thead className="flex justify-between px-5 py-3 text-sm text-[--light-brown] font-bold bg-[--dark-green] rounded-lg m-1">
+            <tr>
+              <td className="flex gap-5 items-center">
                 <input
                   id="checkbox-1"
                   className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
-     checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
-     float-left cursor-pointer appearance-none border border-solid border-2  border-[--light-gray] bg-[--light-gray] 
-     bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
-     after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-[''] 
-     checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100"
+   checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
+   float-left cursor-pointer appearance-none border border-solid border-2  border-[--light-gray] bg-[--light-gray] 
+   bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
+   after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-[''] 
+   checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100"
                   type="checkbox"
                   style={{
                     fontFamily: "FontAwesome",
@@ -587,127 +593,118 @@ function UserAccounts({ toast, auth }) {
                   onChange={handleAllChecked}
                 />
                 <div>ID Number</div>
-              </div>
-              <div>Name</div>
-              <div>Email</div>
-              <div>Gender</div>
-              <div>Department/Course</div>
-              <div>Contact Number</div>
-              <div>Birthday</div>
-              <div>User Type</div>
-            </div>
+              </td>
+            </tr>
+            <tr>
+              <td>Name</td>
+            </tr>
+            <tr>
+              <td>Email</td>
+            </tr>
+            <tr>
+              <td>Gender</td>
+            </tr>
+            <tr>
+              <td>Department/Course</td>
+            </tr>
+            <tr>
+              <td>Contact Number</td>
+            </tr>
+            <tr>
+              <td>Birthday</td>
+            </tr>
+            <tr>
+              <td>User Type</td>
+            </tr>
           </thead>
           <tbody className="flex flex-col">
-            {users
-              ?.filter((i) => {
-                if (search?.toLowerCase().trim()) {
-                  let filter =
-                    filterCategory.charAt(0).toLowerCase() +
-                    filterCategory.slice(1).replace(/\s/g, "");
-                  if (filterCategory === "Category") {
+            {users.length ? (
+              users
+                ?.filter((i) => {
+                  if (search?.toLowerCase().trim()) {
+                    if (filterCategory === "Email") {
+                      return i?.credentials?.email
+                        .toLowerCase()
+                        .includes(search.toLowerCase());
+                    } else if (filterCategory === "Department/Course") {
+                      return i?.department
+                        .toLowerCase()
+                        .includes(search.toLowerCase());
+                    } else if (filterCategory === "User Type") {
+                      return i?.credentials?.privilegeType === "student"
+                        ? "Student".toLowerCase().includes(search.toLowerCase())
+                        : i?.credentials?.privilegeType ===
+                          "systemAdministrator"
+                        ? "System Administrator"
+                            .toLowerCase()
+                            .includes(search.toLowerCase())
+                        : "Guidance Counselor"
+                            .toLowerCase()
+                            .includes(search.toLowerCase());
+                    }
+                  } else {
                     return i;
-                  } else if (filterCategory === "ID Number") {
-                    return i?.idNo?.includes(search);
-                  } else if (
-                    filterCategory === "Name" ||
-                    "Gender" ||
-                    "Birthday"
-                  ) {
-                    return i[filter]?.toLowerCase()?.includes(search);
-                  } else if (filterCategory === "Email") {
-                    return i?.credentials?.email
-                      ?.toLowerCase()
-                      ?.includes(search)
-                      ? i
-                      : null;
                   }
-                } else {
-                  return i;
-                }
-              })
-              ?.map((i, k) => {
-                return (
-                  <button
-                    className={`flex justify-between font-medium mx-1 px-5 mb-1 py-3 text-sm ${
-                      k % 2 ? "bg-[--light-green] rounded-lg" : null
-                    } ${
-                      i.isChecked
-                        ? "relative bg-[--light-green] rounded-lg"
-                        : null
-                    }`}
-                    key={k}
-                    onClick={() => {
-                      handleChecked(k);
-                    }}
-                  >
-                    {i.isChecked ? (
-                      <div className="absolute w-[8px] h-full bg-[--dark-green] left-0 top-0 rounded-tl-lg rounded-bl-lg"></div>
-                    ) : null}
-                    <div className="flex gap-5 items-center">
-                      <input
-                        id="checkbox-1"
-                        className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
-     checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
-     float-left cursor-pointer appearance-none border border-solid border-2  border-[--dark-green] bg-[--light-green] 
-     bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
-     after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-[''] 
-     checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100"
-                        type="checkbox"
-                        style={{
-                          fontFamily: "FontAwesome",
-                        }}
-                        onChange={() => {
+                })
+                ?.map((i, k) => {
+                  return (
+                    <tr key={k}>
+                      <td
+                        className={`flex justify-between font-medium mx-1 px-5 mb-1 py-3 text-sm ${
+                          k % 2 ? "bg-[--light-green] rounded-lg" : null
+                        } ${
+                          i.isChecked
+                            ? "relative bg-[--light-green] rounded-lg"
+                            : null
+                        }`}
+                        onClick={() => {
                           handleChecked(k);
                         }}
-                        checked={i.isChecked ? true : false}
-                      />
-                      <p>{i?.idNo}</p>
-                    </div>
-                    <p>{i?.name}</p>
-                    <p>{i?.credentials?.email}</p>
-                    <p>{i?.gender}</p>
-                    <div>{i?.department}</div>
-                    <div>{i?.birthday}</div>
-                    <div>{i?.contactNo}</div>
-                    <div>
-                      {i?.credentials?.privilegeType.charAt(0).toUpperCase() +
-                        i?.credentials?.privilegeType.slice(1)}
-                    </div>
-                  </button>
-                );
-              })}
-
-            {/* <div className="flex justify-between font-medium px-5 py-2 m-1 text-sm">
-              <div className="flex gap-5 items-center">
-                <input
-                  id="checkbox-1"
-                  class="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
-                  checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
-                  float-left cursor-pointer appearance-none border border-solid border-2  border-[--dark-green] bg-[--light-green] 
-                  bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
-                  after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-[''] 
-                  checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100"
-                  type="checkbox"
-                  style={{
-                    fontFamily: "FontAwesome",
-                  }}
-                />
-                <p>20-1127</p>
-              </div>
-              <p>Alvin Panerio</p>
-              <p>panerio.alvin18@gmail.com</p>
-              <p>alvin123</p>
-              <p>Male</p>
-              <div>BSIT</div>
-            </div> */}
-            {/* <div className="flex justify-between font-medium px-5 py-3 bg-[--light-green] text-sm m-1 rounded-lg">
-              <p>20-1127</p>
-              <p>Alvin Panerio</p>
-              <p>panerio.alvin18@gmail.com</p>
-              <p>alvin123</p>
-              <p>Male</p>
-              <div>BSIT</div>
-            </div> */}
+                      >
+                        {i.isChecked ? (
+                          <div className="absolute w-[8px] h-full bg-[--dark-green] left-0 top-0 rounded-tl-lg rounded-bl-lg"></div>
+                        ) : null}
+                        <div className="flex gap-5 items-center">
+                          <input
+                            id="checkbox-1"
+                            className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
+   checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
+   float-left cursor-pointer appearance-none border border-solid border-2  border-[--dark-green] bg-[--light-green] 
+   bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
+   after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-[''] 
+   checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100"
+                            type="checkbox"
+                            style={{
+                              fontFamily: "FontAwesome",
+                            }}
+                            onChange={() => {
+                              handleChecked(k);
+                            }}
+                            checked={i.isChecked ? true : false}
+                          />
+                          <p>{i?.idNo}</p>
+                        </div>
+                        <p>{i?.name}</p>
+                        <p>{i?.credentials?.email}</p>
+                        <p>{i?.gender}</p>
+                        <div>{i?.department}</div>
+                        <div>{i?.birthday}</div>
+                        <div>{i?.contactNo}</div>
+                        <div>
+                          {i?.credentials?.privilegeType === "student"
+                            ? "Student"
+                            : i?.credentials?.privilegeType ===
+                              "systemAdministrator"
+                            ? "System Administrator"
+                            : "Guidance Counselor"}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+            ) : (
+              <Loading />
+            )}
           </tbody>
         </table>
       </div>
