@@ -496,7 +496,7 @@ function UserAccounts({ toast, auth }) {
           </Modal>
         </form>
       ) : null}
-      <div className="flex flex-col px-80">
+      <div className="flex flex-col px-52">
         <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">
           User Accounts
         </p>
@@ -572,10 +572,10 @@ function UserAccounts({ toast, auth }) {
           </div>
         </div>
         <table
-          className="w-full h-full rounded-lg shadow-lg bg-[--light-green]"
+          className="w-full rounded-lg shadow-lg bg-[--light-green]"
           style={{ backgroundColor: "rgba(169, 230, 194, 0.2)" }}
         >
-          <thead className="flex justify-between px-5 py-3 text-sm text-[--light-brown] font-bold bg-[--dark-green] rounded-lg m-1">
+          <thead className="flex px-5 py-3 text-sm text-[--light-brown] font-bold bg-[--dark-green] rounded-lg m-1">
             <tr>
               <td className="flex gap-5 items-center">
                 <input
@@ -592,32 +592,53 @@ function UserAccounts({ toast, auth }) {
                   }}
                   onChange={handleAllChecked}
                 />
-                <div>ID Number</div>
+                <p className="w-[80px] mr-5 flex justify-start truncate text-ellipsis">
+                  ID No
+                </p>
               </td>
             </tr>
             <tr>
-              <td>Name</td>
+              <td className="w-[180px] mr-5 flex justify-start truncate text-ellipsis">
+                Name
+              </td>
             </tr>
             <tr>
-              <td>Email</td>
+              <td className="w-[230px] mr-5 flex justify-start truncate text-ellipsis">
+                Email
+              </td>
             </tr>
             <tr>
-              <td>Gender</td>
+              <td className="w-[70px] mr-5 flex justify-start truncate text-ellipsis">
+                Gender
+              </td>
             </tr>
             <tr>
-              <td>Department/Course</td>
+              <td className="w-[295px] mr-5 flex justify-start truncate text-ellipsis">
+                Department/Course
+              </td>
             </tr>
             <tr>
-              <td>Contact Number</td>
+              <td className="w-[80px] ml-3 flex justify-start truncate text-ellipsis">
+                Yr/Sec
+              </td>
             </tr>
             <tr>
-              <td>Birthday</td>
+              <td className="w-[110px] mr-5 flex justify-start truncate text-ellipsis">
+                Contact No
+              </td>
             </tr>
             <tr>
-              <td>User Type</td>
+              <td className="w-[85px] mr-5 flex justify-start truncate text-ellipsis">
+                Birthday
+              </td>
+            </tr>
+            <tr>
+              <td className="w-[100px] mr-5 flex justify-start truncate text-ellipsis">
+                User Type
+              </td>
             </tr>
           </thead>
-          <tbody className="flex flex-col">
+          <tbody className="flex flex-col max-h-[624px] overflow-y-auto">
             {users.length ? (
               users
                 ?.filter((i) => {
@@ -648,9 +669,9 @@ function UserAccounts({ toast, auth }) {
                 })
                 ?.map((i, k) => {
                   return (
-                    <tr key={k}>
+                    <tr key={k} className="">
                       <td
-                        className={`flex justify-between font-medium mx-1 px-5 mb-1 py-3 text-sm ${
+                        className={`flex font-medium mx-1 px-5 mb-1 py-3 text-sm ${
                           k % 2 ? "bg-[--light-green] rounded-lg" : null
                         } ${
                           i.isChecked
@@ -672,7 +693,7 @@ function UserAccounts({ toast, auth }) {
    float-left cursor-pointer appearance-none border border-solid border-2  border-[--dark-green] bg-[--light-green] 
    bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
    after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-[''] 
-   checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100"
+   checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100 mr-1"
                             type="checkbox"
                             style={{
                               fontFamily: "FontAwesome",
@@ -682,22 +703,39 @@ function UserAccounts({ toast, auth }) {
                             }}
                             checked={i.isChecked ? true : false}
                           />
-                          <p>{i?.idNo}</p>
+                          <p className="w-[80px] mr-5 flex justify-start truncate text-ellipsis">
+                            {i?.idNo}
+                          </p>
                         </div>
-                        <p>{i?.name}</p>
-                        <p>{i?.credentials?.email}</p>
-                        <p>{i?.gender}</p>
-                        <div>{i?.department}</div>
-                        <div>{i?.birthday}</div>
-                        <div>{i?.contactNo}</div>
-                        <div>
+                        <p className="w-[180px] mr-5 flex justify-start truncate text-ellipsis">
+                          {i?.name}
+                        </p>
+                        <p className="w-[230px] mr-5 flex justify-start truncate text-ellipsis">
+                          {i?.credentials?.email}
+                        </p>
+                        <p className="w-[70px] mr-5 flex justify-start truncate text-ellipsis">
+                          {i?.gender}
+                        </p>
+                        <p className="w-[295px] mr-5 flex justify-start truncate text-ellipsis">
+                          {i?.department}
+                        </p>
+                        <p className="w-[80px] ml-3 flex justify-start truncate text-ellipsis">
+                          {i?.yearSection}
+                        </p>
+                        <p className="w-[110px] mr-5 flex justify-start truncate text-ellipsis">
+                          {i?.contactNo}
+                        </p>
+                        <p className="w-[85px] mr-5 flex justify-start truncate text-ellipsis">
+                          {i?.birthday}
+                        </p>
+                        <p className="w-[100px] mr-5 flex justify-start truncate text-ellipsis">
                           {i?.credentials?.privilegeType === "student"
                             ? "Student"
                             : i?.credentials?.privilegeType ===
                               "systemAdministrator"
                             ? "System Administrator"
                             : "Guidance Counselor"}
-                        </div>
+                        </p>
                       </td>
                     </tr>
                   );

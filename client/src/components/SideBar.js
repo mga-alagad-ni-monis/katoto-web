@@ -32,7 +32,7 @@ function SideBar({ toast }) {
   return (
     <>
       <div
-        className="fixed left-0 top-0 w-[5%] hover:w-[15%] transtion-all duration-500 h-full bg-[--light-brown] shadow-lg"
+        className="fixed left-0 top-0 w-[5%] hover:w-[15%] transtion-all duration-500 h-full bg-[--light-brown] shadow-lg z-40"
         onMouseOver={() => {
           setIsHovered(true);
         }}

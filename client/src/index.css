@@ -10,6 +10,18 @@
   --red: #ff6961;
 }
 
+*::-webkit-scrollbar,
+*::-webkit-scrollbar-thumb {
+  width: 10px;
+  border-radius: 20px;
+  background-clip: padding-box;
+  background-color: var(--light-brown);
+}
+
+*::-webkit-scrollbar-thumb {
+  box-shadow: inset 0 0 0 10px var(--light-gray);
+}
+
 * {
   font-family: inter;
 }
@@ -52,14 +64,4 @@
     scale: 1;
     rotate: 360deg;
   }
-}
-
-.logo-div {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  transform: -webkit-translate(-50%, -50%);
-  transform: -moz-translate(-50%, -50%);
-  transform: -ms-translate(-50%, -50%);
 }
