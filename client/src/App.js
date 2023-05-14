@@ -3,6 +3,7 @@ import toast, { Toaster } from "react-hot-toast";
 
 import RequiredAuth from "./components/RequiredAuth";
 import PersistLogin from "./components/PersistLogin";
+import useAuth from "./hooks/useAuth";
 
 import Login from "./pages/Login";
 import NavBar from "./components/NavBar";
@@ -11,6 +12,8 @@ import Reports from "./pages/Reports";
 import UserAccounts from "./pages/UserAccounts";
 
 function App() {
+  const { auth } = useAuth();
+
   return (
     <BrowserRouter>
       <NavBar />
@@ -18,12 +21,11 @@ function App() {
         {/* login module*/}
         <Route path="/login" element={<Login toast={toast} />}></Route>
 
-        {/* home/chatbot module*/}
-        <Route element={<RequiredAuth allowedRoles={["student"]} />}>
-          <Route path="/" element={<Home />}></Route>
-        </Route>
-
         <Route element={<PersistLogin />}>
+          {/* home/chatbot module*/}
+          <Route element={<RequiredAuth allowedRoles={["student"]} />}>
+            <Route path="/" element={<Home />}></Route>
+          </Route>
           {/* reports module*/}
           <Route
             element={
@@ -40,7 +42,7 @@ function App() {
           >
             <Route
               path="/accounts"
-              element={<UserAccounts toast={toast} />}
+              element={<UserAccounts toast={toast} auth={auth} />}
             ></Route>
           </Route>
         </Route>

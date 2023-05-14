@@ -112,6 +112,7 @@ const handleRefreshToken = async (req, res) => {
               const accessToken = jwt.sign(
                 {
                   email: decoded.email,
+                  role,
                 },
                 process.env.ACCESS_TOKEN,
                 { expiresIn: "1d" }
@@ -158,7 +159,7 @@ const handleLogout = async (req, res) => {
           res.status(200).json({ message: "Logout successful!" });
         });
       });
-  } catch (err) { 
+  } catch (err) {
     res.status(404).send("Error");
   }
 };

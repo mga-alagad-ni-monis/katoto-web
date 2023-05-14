@@ -14,7 +14,7 @@ import { FiChevronDown } from "react-icons/fi";
 import SideBar from "../components/SideBar";
 import Modal from "../components/Modal";
 
-function UserAccounts({ toast }) {
+function UserAccounts({ toast, auth }) {
   const [users, setUsers] = useState([]);
 
   const [name, setName] = useState("");
@@ -98,7 +98,12 @@ function UserAccounts({ toast }) {
   const handleGetUsers = async () => {
     try {
       await axios
-        .get("/api/accounts/get")
+        .get("/api/accounts/get", {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${auth?.accessToken}`,
+          },
+        })
         .then((res) => {
           setUsers(res?.data?.users);
         })

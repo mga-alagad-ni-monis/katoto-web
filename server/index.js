@@ -5,6 +5,8 @@ const cookieParser = require("cookie-parser");
 
 const { db } = require("./utils/firebase");
 
+const { verifyJwt } = require("./middleware/verifyJwt");
+
 const accountRoutes = require("./routes/accountRoutes");
 const userAccountRoutes = require("./routes/userAccountRoutes");
 
@@ -31,4 +33,6 @@ app.use((req, res, next) => {
 //routes
 
 app.use("/api", accountRoutes);
+
+app.use(verifyJwt);
 app.use("/api/accounts", userAccountRoutes);

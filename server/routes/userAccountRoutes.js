@@ -1,5 +1,7 @@
 const express = require("express");
 
+const verifyRoles = require("../middleware/verifyRoles");
+
 const {
   getUsers,
   addUser,
@@ -9,8 +11,13 @@ const {
 
 const router = express.Router();
 
-router.get("/get", getUsers);
-router.post("/add", addUser);
-router.post("/import", upload.single("file"), handleImport);
+router.get("/get", verifyRoles(["systemAdministrator"]), getUsers);
+router.post("/add", verifyRoles(["systemAdministrator"]), addUser);
+router.post(
+  "/import",
+  verifyRoles(["systemAdministartor"]),
+  upload.single("file"),
+  handleImport
+);
 
 module.exports = router;
