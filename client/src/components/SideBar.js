@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, Outlet } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
-import logo from "../assets/katoto-logo.png";
+import logo from "../assets/logo/katoto-logo.png";
 
 import { BsCardList, BsChatDots, BsMegaphone, BsPeople } from "react-icons/bs";
 import { AiOutlineLogout } from "react-icons/ai";

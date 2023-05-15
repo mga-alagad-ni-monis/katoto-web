@@ -39,7 +39,7 @@ function Login({ toast, loading, setLoading }) {
           setPassword("");
           if (roles[0] === "student") {
             setLoading(false);
-            return navigate("/");
+            return navigate("/chat");
           } else if (
             roles[0] === "guidanceCounselor" ||
             "systemAdministrator"
@@ -63,7 +63,7 @@ function Login({ toast, loading, setLoading }) {
   };
 
   return (
-    <div className="flex bg-[--light-green] h-screen items-center -mt-[7.5rem]">
+    <div className="flex bg-[--light-green] h-screen items-center">
       <div className="w-1/2 flex justify-end">
         <img src={plvImage} alt="" className="w-max h-max" />
       </div>

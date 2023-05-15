@@ -14,6 +14,7 @@ import Reports from "./pages/Reports";
 import UserAccounts from "./pages/UserAccounts";
 import SideBar from "./components/SideBar";
 import Loading from "./components/Loading";
+import Chatbot from "./pages/Chatbot";
 
 function App() {
   const { auth } = useAuth();
@@ -36,9 +37,20 @@ function App() {
 
         <Route element={<PersistLogin />}>
           {/* home/chatbot module*/}
-          <Route element={<RequiredAuth allowedRoles={["student"]} />}>
-            <Route path="/" element={<Home />}></Route>
+          <Route
+            element={
+              <RequiredAuth
+                allowedRoles={[
+                  "student",
+                  "guidanceCounselor",
+                  "systemAdministrator",
+                ]}
+              />
+            }
+          >
+            <Route path="/chat" element={<Chatbot />}></Route>
           </Route>
+
           {/* sidebar component */}
           <Route element={<SideBar toast={toast} auth={auth} />}>
             {/* reports module*/}

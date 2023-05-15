@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-import logo from "../assets/katoto-logo.png";
+import logo from "../assets/logo/katoto-logo.png";
 
 function Loading() {
   return (

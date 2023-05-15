@@ -5,9 +5,9 @@ function NavBar() {
 
   return (
     <>
-      {location.pathname === "/login" ? (
+      {location.pathname === "/login" || "/chat" ? (
         <div
-          className={`flex ${
+          className={`fixed w-full ${
             location.pathname === "/login"
               ? "bg-transparent"
               : "bg-[--light-brown]"
@@ -20,13 +20,11 @@ function NavBar() {
                 : "justify-end bg-[--light-brown]"
             } py-10 items-center container mx-auto 2xl:px-[2rem]`}
           >
-            {location.pathname === "/login" ? (
-              <p className="text-4xl font-extrabold w-1/2 z-50">Katoto</p>
-            ) : null}
+            <p className="text-4xl font-extrabold w-1/2 z-50">Katoto</p>
             <div className="flex pl-28 justify-between w-1/2 items-center z-50">
               <li className="flex gap-10 font-bold">
-                <ul>Announcements</ul>
                 <ul>Chatbot</ul>
+                <ul>Announcements</ul>
               </li>
               <button className="bg-black rounded-full font-semibold text-[--light-brown] text-sm py-2 px-8">
                 Login
