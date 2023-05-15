@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "../api/axios";
 import axiosDef from "axios";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,6 +15,9 @@ function Chatbot() {
   const [isInitial, setIsInitial] = useState(true);
   const [isGuided, setIsGuided] = useState(false);
   const [isFriendly, setIsFriendly] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+
+  const [inputFriendly, setInputFriendly] = useState("");
 
   const [guidedButtons, setGuidedButtons] = useState([
     "Hello",
@@ -24,22 +27,31 @@ function Chatbot() {
 
   const [messages, setMessages] = useState([]);
 
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    bottomRef?.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   const handleSubmitMessage = async (sender, inputMessage) => {
     try {
+      setInputFriendly("");
+      setIsTyping(true);
       setMessages([...messages, { sender, message: inputMessage }]);
       await axiosDef
-        .post(
-          "https://rasa-server-alvinpanerio.cloud.okteto.net/webhooks/rest/webhook",
-          {
-            sender,
-            message: inputMessage,
-          }
-        )
+        .post(process.env.REACT_APP_KATOTO_API_URI, {
+          sender,
+          message: inputMessage,
+        })
         .then((res) => {
-          setMessages([
-            ...messages,
-            { sender: "Katoto", message: res.data[0].text },
-          ]);
+          setTimeout(() => {
+            setMessages([
+              ...messages,
+              { sender, message: inputMessage },
+              { sender: "Katoto", message: res.data[0].text },
+            ]);
+            setIsTyping(false);
+          }, 500);
         });
     } catch (err) {}
   };
@@ -55,7 +67,7 @@ function Chatbot() {
           />
           <div className="h-[270px] w-[350px] bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg"></div>
         </div>
-        <div className="h-[510px] w-[570px] bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg">
+        <div className="h-[510px] w-[600px] bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg">
           <div className="relative h-max">
             <div className="h-20 rounded-t-xl flex bg-[--light-green] items-center justify-between px-8">
               <div className="flex gap-5 py-3 items-center">
@@ -70,6 +82,8 @@ function Chatbot() {
               <button
                 className="z-20"
                 onClick={() => {
+                  setMessages([]);
+                  setIsTyping(false);
                   setIsGuided(false);
                   setIsFriendly(false);
                   setIsInitial(true);
@@ -78,12 +92,170 @@ function Chatbot() {
                 <IoIosSettings size={26} />
               </button>
             </div>
-            <img src={wave} className="w-[570px] absolute top-12" alt="" />
+            <img src={wave} className="w-full absolute top-12" alt="" />
           </div>
           <div className="flex flex-col justify-between h-[430px]">
-            <div className="px-5 pt-10 pb-5 h-full flex items-end justify-center relative">
-              {isInitial ? (
-                <div className="flex flex-col gap-3 items-center">
+            {isInitial ? (
+              <div className="px-5 pt-10 pb-5 h-full flex items-end justify-center relative">
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 1, scale: 0 },
+                    visible: {
+                      opacity: 1,
+                      scale: 1,
+                      transition: {
+                        delayChildren: 0.8,
+                        staggerChildren: 0.2,
+                      },
+                    },
+                  }}
+                  initial="hidden"
+                  animate="visible"
+                  className="flex flex-col gap-3 items-center list-none mb-5"
+                >
+                  <motion.li
+                    variants={{
+                      hidden: { y: 20, opacity: 0 },
+                      visible: {
+                        y: 0,
+                        opacity: 1,
+                      },
+                    }}
+                  >
+                    <p className="text-xs">Click to choose</p>
+                  </motion.li>
+                  <motion.li
+                    variants={{
+                      hidden: { y: 20, opacity: 0 },
+                      visible: {
+                        y: 0,
+                        opacity: 1,
+                      },
+                    }}
+                  >
+                    <button
+                      className="text-sm px-5 py-2 rounded-full w-max font-medium cursor-pointer bg-[--dark-green] border-2 border-[--dark-green] 
+                      text-[--light-brown] hover:bg-white hover:text-[--dark-green] transition-all duration-300"
+                      onClick={() => {
+                        setIsGuided(true);
+                        setIsFriendly(false);
+                        setIsInitial(false);
+                      }}
+                    >
+                      Counselor-Guided Mode
+                    </button>
+                  </motion.li>
+                  <motion.li
+                    variants={{
+                      hidden: { y: 20, opacity: 0 },
+                      visible: {
+                        y: 0,
+                        opacity: 1,
+                      },
+                    }}
+                  >
+                    <button
+                      className="text-sm px-5 py-2 rounded-full w-max font-medium cursor-pointer bg-[--dark-green] border-2 border-[--dark-green] 
+                      text-[--light-brown] hover:bg-white hover:text-[--dark-green] transition-all duration-300"
+                      onClick={() => {
+                        setIsGuided(false);
+                        setIsFriendly(true);
+                        setIsInitial(false);
+                      }}
+                    >
+                      Friendly Conversation Mode
+                    </button>
+                  </motion.li>
+                  <motion.li
+                    variants={{
+                      hidden: { y: 20, opacity: 0 },
+                      visible: {
+                        y: 0,
+                        opacity: 1,
+                      },
+                    }}
+                  >
+                    <p className="text-xs">
+                      {"Learn more about our "}
+                      <span className="font-bold text-[--dark-green] hover:underline transition-all cursor-pointer">
+                        Privacy Policy
+                      </span>
+                      .
+                    </p>
+                  </motion.li>
+                </motion.div>
+              </div>
+            ) : (
+              <div className="px-5 mt-8 mb-1 flex flex-col overflow-y-auto gap-3">
+                {messages.map((i, k) => {
+                  return i.sender === "Katoto" ? (
+                    <motion.div
+                      key={k}
+                      variants={{
+                        hidden: { opacity: 1, scale: 0 },
+                        visible: {
+                          opacity: 1,
+                          scale: 1,
+                          transition: {
+                            delayChildren: 0.2,
+                            staggerChildren: 0.2,
+                          },
+                        },
+                      }}
+                      initial="hidden"
+                      animate="visible"
+                      className="flex w-full justify-start gap-3"
+                    >
+                      <motion.li
+                        variants={{
+                          hidden: { y: 20, opacity: 0 },
+                          visible: {
+                            y: 0,
+                            opacity: 1,
+                          },
+                        }}
+                        className="flex w-full justify-start gap-3 list-none"
+                      >
+                        <img src={logo} alt="logo" className="h-[30px]" />
+                        <div className="bg-black/10 max-w-[50%] py-3 px-4 rounded-b-3xl rounded-tr-3xl text-sm flex items-center text-left mt-5">
+                          {i.message}
+                        </div>
+                      </motion.li>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key={k}
+                      variants={{
+                        hidden: { opacity: 1, scale: 0 },
+                        visible: {
+                          opacity: 1,
+                          scale: 1,
+                          transition: {
+                            delayChildren: 0.2,
+                            staggerChildren: 0.2,
+                          },
+                        },
+                      }}
+                      initial="hidden"
+                      animate="visible"
+                      className="flex w-full justify-end"
+                    >
+                      <motion.li
+                        variants={{
+                          hidden: { y: 20, opacity: 0 },
+                          visible: {
+                            y: 0,
+                            opacity: 1,
+                          },
+                        }}
+                        className="bg-[--light-green] max-w-[50%] py-3 px-4 rounded-t-3xl rounded-bl-3xl text-sm flex items-center text-left"
+                      >
+                        {i.message}
+                      </motion.li>
+                    </motion.div>
+                  );
+                })}
+                {isTyping ? (
                   <motion.div
                     variants={{
                       hidden: { opacity: 1, scale: 0 },
@@ -91,14 +263,14 @@ function Chatbot() {
                         opacity: 1,
                         scale: 1,
                         transition: {
-                          delayChildren: 0.8,
+                          delayChildren: 0.2,
                           staggerChildren: 0.2,
                         },
                       },
                     }}
                     initial="hidden"
                     animate="visible"
-                    className="flex flex-col gap-3 items-center list-none mb-5"
+                    className="flex w-full justify-start gap-3"
                   >
                     <motion.li
                       variants={{
@@ -108,78 +280,19 @@ function Chatbot() {
                           opacity: 1,
                         },
                       }}
+                      className="flex w-full justify-start gap-3 list-none"
                     >
-                      <p className="text-xs">Click to choose</p>
-                    </motion.li>
-                    <motion.li
-                      variants={{
-                        hidden: { y: 20, opacity: 0 },
-                        visible: {
-                          y: 0,
-                          opacity: 1,
-                        },
-                      }}
-                    >
-                      <button
-                        className="text-sm px-5 py-2 rounded-full w-max font-medium cursor-pointer bg-[--dark-green] border-2 border-[--dark-green] 
-                      text-[--light-brown] hover:bg-white hover:text-[--dark-green] transition-all duration-300"
-                        onClick={() => {
-                          setIsGuided(true);
-                          setIsFriendly(false);
-                          setIsInitial(false);
-                        }}
-                      >
-                        Counselor-Guided Mode
-                      </button>
-                    </motion.li>
-                    <motion.li
-                      variants={{
-                        hidden: { y: 20, opacity: 0 },
-                        visible: {
-                          y: 0,
-                          opacity: 1,
-                        },
-                      }}
-                    >
-                      <button
-                        className="text-sm px-5 py-2 rounded-full w-max font-medium cursor-pointer bg-[--dark-green] border-2 border-[--dark-green] 
-                      text-[--light-brown] hover:bg-white hover:text-[--dark-green] transition-all duration-300"
-                        onClick={() => {
-                          setIsGuided(false);
-                          setIsFriendly(true);
-                          setIsInitial(false);
-                        }}
-                      >
-                        Friendly Conversation Mode
-                      </button>
-                    </motion.li>
-                    <motion.li
-                      variants={{
-                        hidden: { y: 20, opacity: 0 },
-                        visible: {
-                          y: 0,
-                          opacity: 1,
-                        },
-                      }}
-                    >
-                      <p className="text-xs">
-                        {"Learn more about our "}
-                        <span className="font-bold text-[--dark-green] hover:underline transition-all cursor-pointer">
-                          Privacy Policy
-                        </span>
-                        .
-                      </p>
+                      <img src={logo} alt="logo" className="h-[30px]" />
+                      <div className="bg-black/10 max-w-[50%] py-3 px-4 rounded-b-3xl rounded-tr-3xl text-sm flex items-center text-left mt-5">
+                        <p className="dot-typing my-1 mx-3"></p>
+                      </div>
                     </motion.li>
                   </motion.div>
-                </div>
-              ) : (
-                <div>
-                  {messages.map((i, k) => {
-                    return <div key={k}>{i.message}</div>;
-                  })}
-                </div>
-              )}
-            </div>
+                ) : null}
+                <div ref={bottomRef} />
+              </div>
+            )}
+
             <div className="w-full">
               {isGuided ? (
                 <motion.div
@@ -201,6 +314,7 @@ function Chatbot() {
                   {guidedButtons.map((i, k) => {
                     return (
                       <motion.li
+                        key={k}
                         variants={{
                           hidden: { y: 20, opacity: 0 },
                           visible: {
@@ -212,7 +326,6 @@ function Chatbot() {
                         <button
                           className="text-sm px-5 py-2 rounded-full w-max font-medium cursor-pointer bg-[--dark-green] border-2 border-[--dark-green] 
               text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green] transition-all duration-300"
-                          key={k}
                           onClick={() => {
                             handleSubmitMessage("Alvin", i);
                           }}
@@ -225,60 +338,72 @@ function Chatbot() {
                 </motion.div>
               ) : null}
               {isFriendly ? (
-                <motion.div
-                  variants={{
-                    hidden: { opacity: 1, scale: 0 },
-                    visible: {
-                      opacity: 1,
-                      scale: 1,
-                      transition: {
-                        delayChildren: 0.3,
-                        staggerChildren: 0.2,
-                      },
-                    },
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSubmitMessage("Alvin", inputFriendly);
                   }}
-                  initial="hidden"
-                  animate="visible"
-                  className="px-3 py-3 list-none flex gap-5 w-full"
                 >
-                  <motion.li
+                  <motion.div
                     variants={{
-                      hidden: { y: 20, opacity: 0 },
+                      hidden: { opacity: 1, scale: 0 },
                       visible: {
-                        y: 0,
                         opacity: 1,
+                        scale: 1,
+                        transition: {
+                          delayChildren: 0.3,
+                          staggerChildren: 0.2,
+                        },
                       },
                     }}
-                    className="w-full"
+                    initial="hidden"
+                    animate="visible"
+                    className="px-3 py-3 list-none flex gap-5 w-full"
                   >
-                    <input
-                      id="message"
-                      className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-none placeholder-black/30 font-semibold w-full"
-                      type="text"
-                      placeholder="Aa..."
-                      required
-                    />
-                  </motion.li>
-                  <div className="w-[50px] h-[50px]">
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ rotate: 360, scale: 1 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 260,
-                        damping: 20,
-                        delay: 0.8,
+                    <motion.li
+                      variants={{
+                        hidden: { y: 20, opacity: 0 },
+                        visible: {
+                          y: 0,
+                          opacity: 1,
+                        },
                       }}
+                      className="w-full"
                     >
-                      <div
-                        className="w-[46px] h-[46px] rounded-full bg-[--dark-green] flex justify-center items-center text-[--light-brown] cursor-pointer border-2 
-                      border-[--dark-green] hover:text-[--dark-green] hover:bg-[--light-brown] transition-all duration-300"
+                      <input
+                        id="message"
+                        className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-none placeholder-black/30 font-semibold w-full"
+                        type="text"
+                        placeholder="Aa..."
+                        value={inputFriendly}
+                        onChange={(e) => {
+                          setInputFriendly(e.target.value);
+                        }}
+                        required
+                      />
+                    </motion.li>
+                    <div className="w-[50px] h-[50px]">
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ rotate: 360, scale: 1 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 260,
+                          damping: 20,
+                          delay: 0.8,
+                        }}
                       >
-                        <IoSend />
-                      </div>
-                    </motion.div>
-                  </div>
-                </motion.div>
+                        <button
+                          className="w-[46px] h-[46px] rounded-full bg-[--dark-green] flex justify-center items-center text-[--light-brown] cursor-pointer border-2 
+                      border-[--dark-green] hover:text-[--dark-green] hover:bg-[--light-brown] transition-all duration-300"
+                          type="submit"
+                        >
+                          <IoSend />
+                        </button>
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                </form>
               ) : null}
             </div>
           </div>
