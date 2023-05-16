@@ -19,22 +19,25 @@ function Chatbot() {
 
   const [inputFriendly, setInputFriendly] = useState("");
 
-  const [guidedButtons, setGuidedButtons] = useState([
-    "Hello",
-    "May problema ako",
-    "Kailangan ko ng kausap",
-  ]);
+  const [guidedButtons, setGuidedButtons] = useState([]);
 
   const [messages, setMessages] = useState([]);
 
   const bottomRef = useRef(null);
 
   useEffect(() => {
+    if (!isInitial) {
+      handleSubmitMessage("Alvin", "hi");
+    }
+  }, [isInitial]);
+
+  useEffect(() => {
     bottomRef?.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, guidedButtons]);
 
   const handleSubmitMessage = async (sender, inputMessage) => {
     try {
+      setGuidedButtons([]);
       setInputFriendly("");
       setIsTyping(true);
       setMessages([...messages, { sender, message: inputMessage }]);
@@ -44,6 +47,9 @@ function Chatbot() {
           message: inputMessage,
         })
         .then((res) => {
+          const buttons = res.data[0].buttons.map((i) => {
+            return i.title;
+          });
           setTimeout(() => {
             setMessages([
               ...messages,
@@ -51,7 +57,10 @@ function Chatbot() {
               { sender: "Katoto", message: res.data[0].text },
             ]);
             setIsTyping(false);
-          }, 500);
+            setTimeout(() => {
+              setGuidedButtons(buttons);
+            }, 1000);
+          }, 900);
         });
     } catch (err) {}
   };
@@ -135,7 +144,7 @@ function Chatbot() {
                   >
                     <button
                       className="text-sm px-5 py-2 rounded-full w-max font-medium cursor-pointer bg-[--dark-green] border-2 border-[--dark-green] 
-                      text-[--light-brown] hover:bg-white hover:text-[--dark-green] transition-all duration-300"
+                      text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green] transition-all duration-300"
                       onClick={() => {
                         setIsGuided(true);
                         setIsFriendly(false);
@@ -156,7 +165,7 @@ function Chatbot() {
                   >
                     <button
                       className="text-sm px-5 py-2 rounded-full w-max font-medium cursor-pointer bg-[--dark-green] border-2 border-[--dark-green] 
-                      text-[--light-brown] hover:bg-white hover:text-[--dark-green] transition-all duration-300"
+                      text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green] transition-all duration-300"
                       onClick={() => {
                         setIsGuided(false);
                         setIsFriendly(true);
@@ -186,7 +195,7 @@ function Chatbot() {
                 </motion.div>
               </div>
             ) : (
-              <div className="px-5 mt-8 mb-1 flex flex-col overflow-y-auto gap-3">
+              <div className="px-5 mb-1 flex flex-col overflow-y-auto gap-3">
                 {messages.map((i, k) => {
                   return i.sender === "Katoto" ? (
                     <motion.div
@@ -293,7 +302,7 @@ function Chatbot() {
               </div>
             )}
 
-            <div className="w-full">
+            <div className="w-full 2xl:w-[64px]">
               {isGuided ? (
                 <motion.div
                   variants={{
