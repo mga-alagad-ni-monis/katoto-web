@@ -82,11 +82,11 @@ function SideBar({ toast }) {
                   </Link>
                 </li>
                 <li>
-                  <Link to={"/announcements"}>
+                  <Link to={"/campaigns"}>
                     {isHovered ? (
                       <div className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200">
                         <BsMegaphone size={20} />
-                        <span className=" word-in">Announcements</span>
+                        <span className=" word-in">Campaigns</span>
                       </div>
                     ) : (
                       <BsMegaphone size={24} />

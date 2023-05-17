@@ -669,7 +669,7 @@ function UserAccounts({ toast, auth }) {
                 })
                 ?.map((i, k) => {
                   return (
-                    <tr key={k} className="">
+                    <tr key={k}>
                       <td
                         className={`flex font-medium mx-1 px-5 mb-1 py-3 text-sm ${
                           k % 2 ? "bg-[--light-green] rounded-lg" : null

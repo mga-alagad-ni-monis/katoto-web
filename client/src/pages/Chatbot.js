@@ -195,7 +195,7 @@ function Chatbot() {
                 </motion.div>
               </div>
             ) : (
-              <div className="px-5 mb-1 flex flex-col overflow-y-auto gap-3">
+              <div className="px-5 mb-1 flex flex-col overflow-y-auto gap-3 pt-10">
                 {messages.map((i, k) => {
                   return i.sender === "Katoto" ? (
                     <motion.div

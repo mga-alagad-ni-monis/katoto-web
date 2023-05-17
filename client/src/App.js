@@ -15,6 +15,7 @@ import UserAccounts from "./pages/UserAccounts";
 import SideBar from "./components/SideBar";
 import Loading from "./components/Loading";
 import Chatbot from "./pages/Chatbot";
+import Campaigns from "./pages/Campaigns";
 
 function App() {
   const { auth } = useAuth();
@@ -24,31 +25,36 @@ function App() {
   return (
     <BrowserRouter>
       {loading ? <Loading /> : null}
-      <NavBar />
+
       <Routes>
         {/* login module*/}
+        {/* <Route element={<NavBar />}> */}
         <Route
           path="/login"
           element={
             <Login toast={toast} loading={loading} setLoading={setLoading} />
           }
         ></Route>
+        {/* </Route> */}
         {/* <Route path="/loading" element={<Loading />}></Route> */}
 
         <Route element={<PersistLogin />}>
-          {/* home/chatbot module*/}
-          <Route
-            element={
-              <RequiredAuth
-                allowedRoles={[
-                  "student",
-                  "guidanceCounselor",
-                  "systemAdministrator",
-                ]}
-              />
-            }
-          >
-            <Route path="/chat" element={<Chatbot />}></Route>
+          {/* navbar component */}
+          <Route element={<NavBar />}>
+            {/* home/chatbot module*/}
+            <Route
+              element={
+                <RequiredAuth
+                  allowedRoles={[
+                    "student",
+                    "guidanceCounselor",
+                    "systemAdministrator",
+                  ]}
+                />
+              }
+            >
+              <Route path="/chat" element={<Chatbot />}></Route>
+            </Route>
           </Route>
 
           {/* sidebar component */}
@@ -73,6 +79,19 @@ function App() {
               <Route
                 path="/accounts"
                 element={<UserAccounts toast={toast} auth={auth} />}
+              ></Route>
+            </Route>
+            {/* campaigns module */}
+            <Route
+              element={
+                <RequiredAuth
+                  allowedRoles={["guidanceCounselor", "systemAdministrator"]}
+                />
+              }
+            >
+              <Route
+                path="/campaigns"
+                element={<Campaigns toast={toast} />}
               ></Route>
             </Route>
           </Route>
