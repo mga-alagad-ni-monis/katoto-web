@@ -1,20 +1,30 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Editor } from "@tinymce/tinymce-react";
 
-function TextEditor() {
+import axios from "../api/axios";
+
+function TextEditor({
+  addCampaignInfo,
+  setAddCampaignInfo,
+  auth,
+  setImageHeader,
+}) {
+  const [isImageHeader, setIsImageHeader] = useState(true);
+
   const editorRef = useRef(null);
 
   const log = () => {
     if (editorRef.current) {
-      console.log(editorRef.current.getContent());
+      setAddCampaignInfo(editorRef.current.getContent());
     }
   };
+
   return (
     <>
       <Editor
-        apiKey="your-api-key"
+        apiKey="ec7qzzhyp0gfclvuigpeqjtcawy6en8qzqaf6iwkypbsnxd5"
         onInit={(evt, editor) => (editorRef.current = editor)}
-        initialValue="<p> This is the initial content of the editor.</p>"
+        value={addCampaignInfo}
         init={{
           height: 500,
           menubar: false,
@@ -36,18 +46,58 @@ function TextEditor() {
             "table",
             "code",
             "help",
-            "wordcount",
+            "autoresize",
           ],
           toolbar:
             "undo redo | blocks | " +
             "bold italic forecolor | alignleft aligncenter " +
             "alignright alignjustify | bullist numlist outdent indent | " +
-            "removeformat | help",
+            "removeformat | help | autoresize",
+          file_picker_types: "file image media",
+          convert_urls: false,
+          images_upload_handler: async function (blobInfo, success, failure) {
+            let imageFile = new FormData();
+            imageFile.append("files[]", blobInfo.blob());
+            console.log(imageFile);
+            try {
+              const { data } = await axios.post(
+                "/api/campaigns/upload",
+                imageFile,
+                {
+                  withCredentials: true,
+                  headers: {
+                    Authorization: `Bearer ${auth?.accessToken}`,
+                  },
+                }
+              );
+              console.log(data);
+              editorRef.current.execCommand(
+                "mceInsertContent",
+                false,
+                `<img src='${data}' />`
+              );
+              if (isImageHeader) {
+                setImageHeader(data);
+                setIsImageHeader(false);
+              }
+              success(data);
+            } catch (err) {
+              console.log(err);
+              return;
+            }
+          },
+
           content_style:
-            "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+            "body { font-family:inter; font-size:16px; min-height:500px; }",
+          branding: false,
+          statusbar: false,
+          setup: function (editor) {
+            editor.on("Paste Change input Undo Redo", function () {
+              log();
+            });
+          },
         }}
       />
-      <button onClick={log}>Log editor content</button>
     </>
   );
 }

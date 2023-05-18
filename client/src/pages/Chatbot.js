@@ -67,7 +67,7 @@ function Chatbot() {
 
   return (
     <div className="flex items-center bg-[--light-brown] justify-center h-screen">
-      <div className="flex items-center gap-32 ">
+      <div className="flex items-center gap-32">
         <div className="relative">
           <img
             src={katotoWatch}

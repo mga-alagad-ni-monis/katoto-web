@@ -16,6 +16,7 @@ import SideBar from "./components/SideBar";
 import Loading from "./components/Loading";
 import Chatbot from "./pages/Chatbot";
 import Campaigns from "./pages/Campaigns";
+import CampaignView from "./pages/CampaignView";
 
 function App() {
   const { auth } = useAuth();
@@ -25,10 +26,11 @@ function App() {
   return (
     <BrowserRouter>
       {loading ? <Loading /> : null}
-
+      <NavBar />
       <Routes>
         {/* login module*/}
         {/* <Route element={<NavBar />}> */}
+
         <Route
           path="/login"
           element={
@@ -54,6 +56,7 @@ function App() {
               }
             >
               <Route path="/chat" element={<Chatbot />}></Route>
+              <Route path="/view-campaigns" element={<CampaignView />}></Route>
             </Route>
           </Route>
 
@@ -91,7 +94,7 @@ function App() {
             >
               <Route
                 path="/campaigns"
-                element={<Campaigns toast={toast} />}
+                element={<Campaigns toast={toast} auth={auth} />}
               ></Route>
             </Route>
           </Route>

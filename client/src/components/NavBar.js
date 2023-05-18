@@ -1,4 +1,5 @@
 import { useLocation } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 
 function NavBar() {
   const location = useLocation();
@@ -23,8 +24,12 @@ function NavBar() {
             <p className="text-4xl font-extrabold w-1/2 z-50">Katoto</p>
             <div className="flex pl-28 justify-between w-1/2 items-center z-50">
               <li className="flex gap-10 font-bold">
-                <ul>Chatbot</ul>
-                <ul>Announcements</ul>
+                <ul>
+                  <Link to={"/chat"}>Chatbot</Link>
+                </ul>
+                <ul>
+                  <Link to={"/view-campaigns"}>Campaigns</Link>
+                </ul>
               </li>
               <button className="bg-black rounded-full font-semibold text-[--light-brown] text-sm py-2 px-8">
                 Login
@@ -33,6 +38,7 @@ function NavBar() {
           </nav>
         </div>
       ) : null}
+      <Outlet />
     </>
   );
 }

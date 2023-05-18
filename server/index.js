@@ -9,6 +9,7 @@ const { verifyJwt } = require("./middleware/verifyJwt");
 
 const accountRoutes = require("./routes/accountRoutes");
 const userAccountRoutes = require("./routes/userAccountRoutes");
+const campaignRoutes = require("./routes/campaignRoutes");
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.listen(process.env.PORT, () => {
 });
 
 //middlewares
+app.use("/public", express.static("public"));
 
 app.use(cors({ origin: process.env.CLIENT_URI, credentials: true }));
 
@@ -35,4 +37,6 @@ app.use((req, res, next) => {
 app.use("/api", accountRoutes);
 
 app.use(verifyJwt);
+
 app.use("/api/accounts", userAccountRoutes);
+app.use("/api/campaigns", campaignRoutes);
