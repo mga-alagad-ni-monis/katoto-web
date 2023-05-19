@@ -12,6 +12,7 @@ function Campaigns({ toast, auth }) {
   const [title, setTitle] = useState("");
   const [campaignType, setCampaignType] = useState("");
   const [imageHeader, setImageHeader] = useState("");
+  const [search, setSearch] = useState("");
 
   const [isAdd, setIsAdd] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
@@ -129,6 +130,7 @@ function Campaigns({ toast, auth }) {
                   className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
   border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                   onClick={() => {
+                    setIsPublished(false);
                     handleAddCampaign();
                   }}
                 >
@@ -139,6 +141,7 @@ function Campaigns({ toast, auth }) {
                   className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
   border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                   onClick={() => {
+                    setIsPublished(true);
                     handleAddCampaign();
                   }}
                 >
@@ -197,6 +200,7 @@ function Campaigns({ toast, auth }) {
                   className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
   border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                   onClick={() => {
+                    setIsPublished(false);
                     handleAddCampaign();
                   }}
                 >
@@ -207,6 +211,7 @@ function Campaigns({ toast, auth }) {
                   className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
   border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                   onClick={() => {
+                    setIsPublished(true);
                     handleAddCampaign();
                   }}
                 >
@@ -283,17 +288,20 @@ function Campaigns({ toast, auth }) {
                   type="text"
                   placeholder="Search..."
                   className="py-2 px-5 bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                  onChange={(e) => {}}
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                  }}
                 />
                 <div className="hs-dropdown relative inline-flex">
-                  <button
+                  {/* <button
                     type="button"
                     className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                     onClick={() => {}}
                   >
                     Category
-                  </button>
+                  </button> */}
                 </div>
               </div>
               <div className="flex gap-5">
@@ -342,76 +350,87 @@ checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:af
               </thead>
               <tbody className="flex flex-col max-h-[624px] overflow-y-auto">
                 <tr>
-                  {campaigns.map((i, k) => {
-                    return (
-                      <td
-                        key={k}
-                        className={`flex font-medium mx-1 px-5 mb-1 py-3 text-sm ${
-                          k % 2 ? "bg-[--light-green] rounded-lg" : null
-                        }`}
-                      >
-                        <div className="flex gap-5 items-center w-1/2">
-                          <div className="w-5 h-5">
-                            <input
-                              id="checkbox-1"
-                              className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
+                  {campaigns
+                    ?.filter((i) => {
+                      if (search?.toLowerCase().trim()) {
+                        return i?.title
+                          .toLowerCase()
+                          .includes(search.toLowerCase());
+                      } else {
+                        return i;
+                      }
+                    })
+                    ?.map((i, k) => {
+                      return (
+                        <td
+                          key={k}
+                          className={`flex font-medium mx-1 px-5 mb-1 py-3 text-sm ${
+                            k % 2 ? "bg-[--light-green] rounded-lg" : null
+                          }`}
+                        >
+                          <div className="flex gap-5 items-center w-1/2">
+                            <div className="w-5 h-5">
+                              <input
+                                id="checkbox-1"
+                                className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
 checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
 float-left cursor-pointer appearance-none border border-solid border-2  border-[--dark-green] bg-[--light-green] 
 bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
 after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-[''] 
 checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100 mr-1"
-                              type="checkbox"
-                            />
-                          </div>
-                          <img
-                            src={i?.imageHeader}
-                            alt=""
-                            className="w-[60px] h-[60px] rounded-lg"
-                          />
-                          <div className="flex flex-col justify-between h-full py-1">
-                            <p className="font-bold">{i?.title}</p>
-                            <p className="w-[608px] text-ellipsis truncate text-sm">
-                              {i?.campaignInfo}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="pl-12 flex gap-5 w-1/2 items-center">
-                          <div className="w-2/5 text-sm flex flex-col justify-between h-full py-2">
-                            <p className=" text-sm">
-                              Created:
-                              {/* {new Date(i?.createDate?._seconds * 1000)} */}
-                            </p>
-                            <p className="font-bold text-sm">
-                              Until: {i?.effectivityDate}
-                            </p>
-                          </div>
-                          <div className="w-2/5 flex flex-col justify-center gap-2">
-                            <div className="flex justify-between w-full text-sm">
-                              <p>Remaining</p>
-                              <p>2d</p>
+                                type="checkbox"
+                              />
                             </div>
-                            <div className="w-full">
-                              <div className="rounded-lg h-2 bg-[#00d2ff]/20">
-                                <div
-                                  className="rounded-lg h-2"
-                                  style={{
-                                    backgroundImage:
-                                      "linear-gradient(to left top, #3a7bd5, #00d2ff)",
-                                    width: "100%",
-                                  }}
-                                ></div>
+                            <img
+                              src={i?.imageHeader}
+                              alt=""
+                              className="w-[60px] h-[60px] rounded-lg"
+                            />
+                            <div className="flex flex-col justify-between h-full py-1">
+                              <p className="font-bold">{i?.title}</p>
+                              <p className="w-[608px] text-ellipsis truncate text-sm">
+                                {i?.campaignInfo}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="pl-12 flex gap-5 w-1/2 items-center">
+                            <div className="w-2/5 text-sm flex flex-col justify-between h-full py-2">
+                              <p className=" text-sm">
+                                Created:
+                                {/* {new Date(i?.createDate?._seconds * 1000)} */}
+                              </p>
+                              <p className="font-bold text-sm">
+                                Until: {i?.effectivityDate}
+                              </p>
+                            </div>
+                            <div className="w-2/5 flex flex-col justify-center gap-2">
+                              <div className="flex justify-between w-full text-sm">
+                                <p>Remaining</p>
+                                <p>2d</p>
+                              </div>
+                              <div className="w-full">
+                                <div className="rounded-lg h-2 bg-[#00d2ff]/20">
+                                  <div
+                                    className="rounded-lg h-2"
+                                    style={{
+                                      background: "rgb(45,117,124)",
+                                      background:
+                                        "linear-gradient(90deg, rgba(45,117,124,1) 0%, rgba(0,0,0,1) 100%)",
+                                      width: "100%",
+                                    }}
+                                  ></div>
+                                </div>
                               </div>
                             </div>
+                            <div className="w-1/5 flex justify-end">
+                              <button className="pointer">
+                                <GoKebabVertical size={24} />
+                              </button>
+                            </div>
                           </div>
-                          <div className="w-1/5 flex justify-end">
-                            <button className="pointer">
-                              <GoKebabVertical size={24} />
-                            </button>
-                          </div>
-                        </div>
-                      </td>
-                    );
-                  })}
+                        </td>
+                      );
+                    })}
                 </tr>
               </tbody>
             </table>

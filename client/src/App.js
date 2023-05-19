@@ -26,7 +26,6 @@ function App() {
   return (
     <BrowserRouter>
       {loading ? <Loading /> : null}
-      <NavBar />
       <Routes>
         {/* login module*/}
         {/* <Route element={<NavBar />}> */}
@@ -56,7 +55,10 @@ function App() {
               }
             >
               <Route path="/chat" element={<Chatbot />}></Route>
-              <Route path="/view-campaigns" element={<CampaignView />}></Route>
+              <Route
+                path="/view-campaigns"
+                element={<CampaignView toast={toast} auth={auth} />}
+              ></Route>
             </Route>
           </Route>
 

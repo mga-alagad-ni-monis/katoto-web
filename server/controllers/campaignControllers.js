@@ -19,7 +19,7 @@ const uploadPictures = (req, res) => {
     if (req.files) {
       res
         .status(200)
-        .send(
+        .send(  
           `${process.env.SERVER_URI}/${process.env.PUBLIC_FILE_STORAGE_PATH}${req.files[0].filename}`
         );
     }
@@ -48,7 +48,7 @@ const addCampaign = (req, res) => {
           effectivityDate,
           campaignInfo,
           imageHeader,
-          createDate: new Date()
+          createDate: new Date(),
         })
         .then((querySnapshot) => {
           if (querySnapshot.empty) {
@@ -82,4 +82,33 @@ const getCampaigns = (req, res) => {
   }
 };
 
-module.exports = { addCampaign, uploadPictures, upload, getCampaigns };
+const getPublishedCampaigns = (req, res) => {
+  try {
+    db.collection("campaigns")
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          return res.status(404).send("Error");
+        }
+        let campaigns = [];
+        querySnapshot.forEach((i) => {
+          const campaign = i.data();
+          console.log(campaign.isPublished);
+          if (campaign.isPublished) {
+            campaigns.push(campaign);
+          }
+        });
+        res.status(200).json({ campaigns });
+      });
+  } catch (err) {
+    res.status(404).send("Error");
+  }
+};
+
+module.exports = {
+  addCampaign,
+  uploadPictures,
+  upload,
+  getCampaigns,
+  getPublishedCampaigns,
+};

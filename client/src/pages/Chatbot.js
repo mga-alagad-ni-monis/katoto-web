@@ -74,7 +74,14 @@ function Chatbot() {
             alt="katoto"
             className="h-[270px] absolute -top-[250px] right-1/2 translate-x-1/2"
           />
-          <div className="h-[270px] w-[350px] bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg"></div>
+          <div className="h-max w-[350px] bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg pt-10 pb-5 px-5">
+            <p className="text-2xl font-extrabold flex justify-center mb-5">
+              Quote of the Day
+            </p>
+            <div className="bg-[--light-green] px-5 py-8 rounded-lg text-center font-semibold text-lg">
+              Sometimes you just need to take a deep breath.
+            </div>
+          </div>
         </div>
         <div className="h-[510px] w-[600px] bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg">
           <div className="relative h-max">
@@ -302,7 +309,7 @@ function Chatbot() {
               </div>
             )}
 
-            <div className="w-full 2xl:w-[64px]">
+            <div className="w-full">
               {isGuided ? (
                 <motion.div
                   variants={{

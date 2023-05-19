@@ -7,6 +7,7 @@ const {
   uploadPictures,
   upload,
   getCampaigns,
+  getPublishedCampaigns,
 } = require("../controllers/campaignControllers");
 
 const router = express.Router();
@@ -28,6 +29,12 @@ router.get(
   "/get",
   verifyRoles(["systemAdministrator", "guidanceCounselor"]),
   getCampaigns
+);
+
+router.get(
+  "/get-published",
+  verifyRoles(["systemAdministrator", "guidanceCounselor", "student"]),
+  getPublishedCampaigns
 );
 
 module.exports = router;
