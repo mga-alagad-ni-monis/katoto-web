@@ -18,7 +18,7 @@ app.listen(process.env.PORT, () => {
 });
 
 //middlewares
-app.use("/public", express.static("public"));
+app.use("/tmp", express.static("tmp"));
 
 app.use(cors({ origin: process.env.CLIENT_URI, credentials: true }));
 

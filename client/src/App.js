@@ -29,13 +29,14 @@ function App() {
       <Routes>
         {/* login module*/}
         {/* <Route element={<NavBar />}> */}
-
-        <Route
-          path="/login"
-          element={
-            <Login toast={toast} loading={loading} setLoading={setLoading} />
-          }
-        ></Route>
+        <Route element={<NavBar />}>
+          <Route
+            path="/login"
+            element={
+              <Login toast={toast} loading={loading} setLoading={setLoading} />
+            }
+          ></Route>
+        </Route>
         {/* </Route> */}
         {/* <Route path="/loading" element={<Loading />}></Route> */}
 

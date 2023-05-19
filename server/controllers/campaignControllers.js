@@ -5,7 +5,7 @@ const db = require("../utils/firebase");
 //multer
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, process.env.PUBLIC_FILE_STORAGE_PATH);
+    cb(null, process.env.FILE_STORAGE_PATH);
   },
   filename: function (req, file, cb) {
     cb(null, "file-" + Date.now());
@@ -19,8 +19,8 @@ const uploadPictures = (req, res) => {
     if (req.files) {
       res
         .status(200)
-        .send(  
-          `${process.env.SERVER_URI}/${process.env.PUBLIC_FILE_STORAGE_PATH}${req.files[0].filename}`
+        .send(
+          `${process.env.SERVER_URI}/${process.env.FILE_STORAGE_PATH}${req.files[0].filename}`
         );
     }
   } catch (err) {
