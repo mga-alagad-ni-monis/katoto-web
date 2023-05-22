@@ -290,9 +290,13 @@ const handleImport = async (req, res) => {
 const deleteUsers = async (req, res) => {
   const { deleteUsers } = req.body;
   try {
-    const querySnapshot = await db.collection("accounts").get();
+    const querySnapshot = await db
+      .collection("accounts")
+      .where("credentials.privilegeType", "!=", "systemAdministrator")
+      .get();
 
     if (querySnapshot.empty) {
+      console.log(querySnapshot.empty);
       return res.status(404).send("Error");
     }
 
@@ -305,6 +309,7 @@ const deleteUsers = async (req, res) => {
     });
 
     batch.commit();
+
     if (deleteUsers.length === 1) {
       res.status(200).json({ message: "Successfully deleted a user!" });
     } else {

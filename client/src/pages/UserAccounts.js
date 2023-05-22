@@ -12,6 +12,7 @@ import { HiPlus } from "react-icons/hi";
 import { FaTimes } from "react-icons/fa";
 import { FiChevronDown } from "react-icons/fi";
 import { VscEdit } from "react-icons/vsc";
+import { RiFileExcel2Line } from "react-icons/ri";
 
 import Modal from "../components/Modal";
 import Loading from "../components/Loading";
@@ -97,6 +98,13 @@ function UserAccounts({ toast, auth }) {
         }
       })
     );
+
+    if (!isAllChecked) {
+      const emails = users.map((i) => i.credentials.email);
+      setDeleteUsers(emails);
+    } else {
+      setDeleteUsers([]);
+    }
   };
 
   const handleGetUsers = async () => {
@@ -227,6 +235,7 @@ function UserAccounts({ toast, auth }) {
         .then((res) => {
           toast.success(res?.data?.message);
           setDeleteUsers([]);
+          setIsAllChecked(false);
           setReload(!reload);
         })
         .catch((err) => {
@@ -597,7 +606,7 @@ function UserAccounts({ toast, auth }) {
                 setSearch(e.target.value);
               }}
             />
-            <div className="hs-dropdown relative inline-flex">
+            <div className="hs-dropdown relative inline-flex gap-5">
               <button
                 type="button"
                 className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
@@ -608,6 +617,14 @@ function UserAccounts({ toast, auth }) {
               >
                 {filterCategory}
                 <FiChevronDown size={16} />
+              </button>
+              <button
+                className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                // onClick={}
+              >
+                <RiFileExcel2Line size={16} />
+                Download Template
               </button>
 
               <div
@@ -673,6 +690,7 @@ function UserAccounts({ toast, auth }) {
               <HiPlus size={16} />
               Add
             </button>
+
             <button
               className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-4 flex gap-2 items-center justify-center 
           border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
@@ -704,6 +722,7 @@ function UserAccounts({ toast, auth }) {
                   style={{
                     fontFamily: "FontAwesome",
                   }}
+                  checked={isAllChecked ? true : false}
                   onChange={handleAllChecked}
                 />
                 <p className="w-[80px] mr-5 flex justify-start truncate text-ellipsis">
