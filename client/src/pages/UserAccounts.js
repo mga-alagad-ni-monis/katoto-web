@@ -16,6 +16,7 @@ import Loading from "../components/Loading";
 
 function UserAccounts({ toast, auth }) {
   const [users, setUsers] = useState([]);
+  const [errorMessages, setErrorMessages] = useState([]);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -26,6 +27,7 @@ function UserAccounts({ toast, auth }) {
   const [birthday, setBirthday] = useState("");
   const [department, setDepartment] = useState("");
   const [userType, setUserType] = useState("");
+  const [yearSection, setYearSection] = useState("");
   const [file, setFile] = useState("");
   const [filterCategory, setFilterCategory] = useState("Category");
   const [search, setSearch] = useState("");
@@ -124,6 +126,7 @@ function UserAccounts({ toast, auth }) {
             birthday,
             department,
             userType,
+            yearSection,
           },
           {
             withCredentials: true,
@@ -143,6 +146,7 @@ function UserAccounts({ toast, auth }) {
           setBirthday("");
           setDepartment("");
           setUserType("");
+          setYearSection("");
           setIsOpenAddModal(false);
           setReload(!reload);
         })
@@ -170,10 +174,15 @@ function UserAccounts({ toast, auth }) {
           toast.success(res?.data?.message);
           setFile(null);
           setIsOpenImportModal(false);
+          setErrorMessages([]);
           setReload(!reload);
         })
         .catch((err) => {
-          toast.error(err?.response?.data);
+          if (err?.response?.data?.errorMessages.length) {
+            setErrorMessages(err?.response?.data?.errorMessages);
+          } else {
+            toast.error(err?.response?.data);
+          }
         });
     } catch (err) {
       toast.error("Error");
@@ -343,7 +352,23 @@ function UserAccounts({ toast, auth }) {
                 </div>
               </div>
               <div className="flex gap-5 w-full">
-                <div className="w-1/2 flex flex-col gap-2">
+                <div className="w-1/3 flex flex-col gap-2">
+                  <label htmlFor="year-sec" className="font-semibold">
+                    Year and Section *
+                  </label>
+                  <input
+                    id="year-sec"
+                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                    type="tel"
+                    placeholder="1-4"
+                    pattern="[1-4]{1}[-]{1}[1-20]{1-2}"
+                    value={yearSection}
+                    onChange={(e) => {
+                      setYearSection(e.target.value);
+                    }}
+                  />
+                </div>
+                <div className="w-1/3 flex flex-col gap-2">
                   <label htmlFor="contact-no" className="font-semibold">
                     Contact Number *
                   </label>
@@ -360,7 +385,7 @@ function UserAccounts({ toast, auth }) {
                     required
                   />
                 </div>
-                <div className="w-1/2 flex flex-col gap-2">
+                <div className="w-1/3 flex flex-col gap-2">
                   <label htmlFor="birthday" className="font-semibold">
                     Birthday *
                   </label>
@@ -425,6 +450,8 @@ function UserAccounts({ toast, auth }) {
               <button
                 onClick={() => {
                   setIsOpenImportModal(false);
+                  setFile(null);
+                  setErrorMessages([]);
                 }}
                 type="button"
               >
@@ -434,11 +461,20 @@ function UserAccounts({ toast, auth }) {
             {file ? (
               <div className="mt-5 p-5 border border-2 border-[--light-gray] w-full rounded-xl h-max flex justify-between">
                 <div className="flex gap-5">
-                  <div className="border border-1 border-[--light-gray] w-max p-3 rounded-xl">
+                  <div className="border border-1 border-[--light-gray] w-max h-max p-3 rounded-xl">
                     <BsFiletypeCsv size={24} />
                   </div>
                   <div>
                     <p className="font-semibold">{file.name}</p>
+                    <div className="mt-5 max-h-[140px] overflow-auto">
+                      {errorMessages.map((i, k) => {
+                        return (
+                          <p className="text-sm text-[--red]" key={k}>
+                            {i}
+                          </p>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
                 <div>
