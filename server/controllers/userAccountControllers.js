@@ -43,7 +43,8 @@ const addUser = async (req, res) => {
       return res.status(404).send("Please complete the form!");
     }
 
-    db.collection("accounts")
+    await db
+      .collection("accounts")
       .where("credentials.email", "==", email)
       .get()
       .then((querySnapshot) => {
@@ -53,8 +54,9 @@ const addUser = async (req, res) => {
             .send("This email address is already registered!");
         }
         bcrypt.genSalt(10).then((salt) => {
-          bcrypt.hash(password, salt).then((hashedPassword) => {
-            db.collection("accounts")
+          bcrypt.hash(password, salt).then(async (hashedPassword) => {
+            await db
+              .collection("accounts")
               .add({
                 name,
                 idNo,
@@ -85,7 +87,8 @@ const addUser = async (req, res) => {
 
 const getUsers = async (req, res) => {
   try {
-    db.collection("accounts")
+    await db
+      .collection("accounts")
       .get()
       .then((querySnapshot) => {
         if (querySnapshot.empty) {
@@ -257,7 +260,7 @@ const handleImport = async (req, res) => {
         if (errorAccounts.length) {
           return res.status(404).send({ errorMessages: errorAccounts });
         } else {
-          const batch = db.batch();
+          const batch = await db.batch();
 
           documents
             .filter((item) => item !== undefined)
@@ -266,7 +269,7 @@ const handleImport = async (req, res) => {
               batch.set(docId, i);
             });
 
-          await batch.commit().then((querySnapshot) => {
+          batch.commit().then((querySnapshot) => {
             if (querySnapshot.empty) {
               return res.status(404).send("Error");
             }
@@ -284,9 +287,40 @@ const handleImport = async (req, res) => {
   }
 };
 
+const deleteUsers = async (req, res) => {
+  const { deleteUsers } = req.body;
+  try {
+    const querySnapshot = await db.collection("accounts").get();
+
+    if (querySnapshot.empty) {
+      return res.status(404).send("Error");
+    }
+
+    const batch = await db.batch();
+
+    querySnapshot.forEach((i) => {
+      if (deleteUsers.includes(i.data().credentials.email)) {
+        batch.delete(i.ref);
+      }
+    });
+
+    batch.commit();
+    if (deleteUsers.length === 1) {
+      res.status(200).json({ message: "Successfully deleted a user!" });
+    } else {
+      res
+        .status(200)
+        .json({ message: "Successfully deleted a bunch of users!" });
+    }
+  } catch (err) {
+    res.status(404).send("Error");
+  }
+};
+
 module.exports = {
   addUser,
   getUsers,
   handleImport,
   upload,
+  deleteUsers,
 };

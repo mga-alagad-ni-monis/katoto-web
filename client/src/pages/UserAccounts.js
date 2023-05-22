@@ -1,4 +1,5 @@
 import axios from "../api/axios";
+import { FileUploader } from "react-drag-drop-files";
 
 import { useState, useEffect, useRef } from "react";
 import {
@@ -10,6 +11,7 @@ import {
 import { HiPlus } from "react-icons/hi";
 import { FaTimes } from "react-icons/fa";
 import { FiChevronDown } from "react-icons/fi";
+import { VscEdit } from "react-icons/vsc";
 
 import Modal from "../components/Modal";
 import Loading from "../components/Loading";
@@ -17,6 +19,7 @@ import Loading from "../components/Loading";
 function UserAccounts({ toast, auth }) {
   const [users, setUsers] = useState([]);
   const [errorMessages, setErrorMessages] = useState([]);
+  const [deleteUsers, setDeleteUsers] = useState([]);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -68,12 +71,18 @@ function UserAccounts({ toast, auth }) {
     }, 500);
   }, [reload]);
 
-  const handleChecked = (param) => {
+  const handleChecked = (param, email, isCheckedParam) => {
     setUsers(
       users.map((i, k) => {
         return param === k ? { ...i, isChecked: !i.isChecked } : i;
       })
     );
+
+    if (!isCheckedParam) {
+      setDeleteUsers([...deleteUsers, email]);
+    } else {
+      setDeleteUsers(deleteUsers.filter((i) => i !== email));
+    }
   };
 
   const handleAllChecked = () => {
@@ -189,6 +198,10 @@ function UserAccounts({ toast, auth }) {
     }
   };
 
+  const handleFileChangeDragDrop = (file) => {
+    setFile(file);
+  };
+
   const handleFileChange = (e) => {
     const fileObj = e.target.files && e.target.files[0];
     setFile(fileObj);
@@ -198,8 +211,35 @@ function UserAccounts({ toast, auth }) {
     }
   };
 
+  const handleDeleteUsers = async () => {
+    try {
+      await axios
+        .post(
+          "/api/accounts/delete",
+          { deleteUsers },
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${auth?.accessToken}`,
+            },
+          }
+        )
+        .then((res) => {
+          toast.success(res?.data?.message);
+          setDeleteUsers([]);
+          setReload(!reload);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data);
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
   return (
     <div className="bg-[--light-brown] h-screen">
+      {console.log(deleteUsers)}
       {isOpenAddModal ? (
         <form
           className="w-full justify-between flex"
@@ -469,7 +509,10 @@ function UserAccounts({ toast, auth }) {
                     <div className="mt-5 max-h-[140px] overflow-auto">
                       {errorMessages.map((i, k) => {
                         return (
-                          <p className="text-sm text-[--red]" key={k}>
+                          <p
+                            className="text-sm text-[--red] font-semibold"
+                            key={k}
+                          >
                             {i}
                           </p>
                         );
@@ -481,6 +524,7 @@ function UserAccounts({ toast, auth }) {
                   <button
                     onClick={() => {
                       setFile(null);
+                      setErrorMessages([]);
                     }}
                     type="button"
                   >
@@ -489,20 +533,26 @@ function UserAccounts({ toast, auth }) {
                 </div>
               </div>
             ) : (
-              <div className="mt-5 border border-4 border-[--dark-green] rounded-xl border-dashed w-full h-max p-8">
-                <div className="flex flex-col gap-1 items-center font-semibold">
-                  <BsCloudUploadFill
-                    size={32}
-                    className="text-[--dark-green]"
-                  />
-                  <p> Drag and Drop CSV File</p>
-                  <p className="text-[--dark-green]">― OR ―</p>
-                  <p>1. Click the "Attach File" button.</p>
-                  <p>2. Locate the CSV file in your computer.</p>
-                  <p>3. Click the "Import" button.</p>
-                  <p>4. Wait for the successful/error confirmation.</p>
+              <FileUploader
+                handleChange={handleFileChangeDragDrop}
+                name="file"
+                types={["CSV"]}
+              >
+                <div className="mt-5 border border-4 border-[--dark-green] rounded-xl border-dashed w-full h-max p-8">
+                  <div className="flex flex-col gap-1 items-center font-semibold">
+                    <BsCloudUploadFill
+                      size={32}
+                      className="text-[--dark-green]"
+                    />
+                    <p> Drag and Drop CSV File</p>
+                    <p className="text-[--dark-green]">― OR ―</p>
+                    <p>1. Click the "Attach File" button.</p>
+                    <p>2. Locate the CSV file in your computer.</p>
+                    <p>3. Click the "Import" button.</p>
+                    <p>4. Wait for the successful/error confirmation.</p>
+                  </div>
                 </div>
-              </div>
+              </FileUploader>
             )}
             <div className="w-full flex gap-3 mt-10">
               <input
@@ -585,6 +635,34 @@ function UserAccounts({ toast, auth }) {
             </div>
           </div>
           <div className="flex gap-5">
+            {deleteUsers.length ? (
+              <button
+                className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
+                onClick={handleDeleteUsers}
+              >
+                <BsFillTrash3Fill size={14} />
+                Delete
+              </button>
+            ) : (
+              <button
+                className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-[--red] transition-all duration-300 opacity-50"
+                disabled
+              >
+                <BsFillTrash3Fill size={14} />
+                Delete
+              </button>
+            )}
+
+            <button
+              className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
+              onClick={() => {}}
+            >
+              <VscEdit size={14} />
+              Edit
+            </button>
             <button
               className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
@@ -618,10 +696,10 @@ function UserAccounts({ toast, auth }) {
                   id="checkbox-1"
                   className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
    checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
-   float-left cursor-pointer appearance-none border border-solid border-2  border-[--light-gray] bg-[--light-gray] 
+   float-left cursor-pointer appearance-none border border-solid border-2  border-[--light-gray] checked:border-[--light-gray] checked:border-2 bg-[--light-gray] 
    bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
    after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-[''] 
-   checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100"
+   checked:bg-[--dark-green] checked:after:opacity-100"
                   type="checkbox"
                   style={{
                     fontFamily: "FontAwesome",
@@ -715,7 +793,7 @@ function UserAccounts({ toast, auth }) {
                             : null
                         }`}
                         onClick={() => {
-                          handleChecked(k);
+                          handleChecked(k, i?.credentials?.email, i.isChecked);
                         }}
                       >
                         {i.isChecked ? (
@@ -735,7 +813,11 @@ function UserAccounts({ toast, auth }) {
                               fontFamily: "FontAwesome",
                             }}
                             onChange={() => {
-                              handleChecked(k);
+                              handleChecked(
+                                k,
+                                i?.credentials?.email,
+                                i.isChecked
+                              );
                             }}
                             checked={i.isChecked ? true : false}
                           />
