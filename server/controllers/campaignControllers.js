@@ -32,6 +32,7 @@ const addCampaign = (req, res) => {
   const {
     isPublished,
     title,
+    description,
     campaignType,
     effectivityDate,
     campaignInfo,
@@ -44,6 +45,7 @@ const addCampaign = (req, res) => {
         .add({
           isPublished,
           title,
+          description,
           campaignType,
           effectivityDate,
           campaignInfo,

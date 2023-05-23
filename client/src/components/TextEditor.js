@@ -8,6 +8,7 @@ function TextEditor({
   setAddCampaignInfo,
   auth,
   setImageHeader,
+  setDescription,
 }) {
   const [isImageHeader, setIsImageHeader] = useState(true);
 
@@ -16,13 +17,14 @@ function TextEditor({
   const log = () => {
     if (editorRef.current) {
       setAddCampaignInfo(editorRef.current.getContent());
+      setDescription(editorRef.current.getContent({ format: "text" }));
     }
   };
 
   return (
     <>
       <Editor
-        apiKey="ec7qzzhyp0gfclvuigpeqjtcawy6en8qzqaf6iwkypbsnxd5"
+        apiKey={process.env.REACT_APP_TINYMCE_API_KEY}
         onInit={(evt, editor) => (editorRef.current = editor)}
         value={addCampaignInfo}
         init={{

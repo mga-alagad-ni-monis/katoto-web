@@ -13,12 +13,14 @@ function Campaigns({ toast, auth }) {
   const [campaignType, setCampaignType] = useState("");
   const [imageHeader, setImageHeader] = useState("");
   const [search, setSearch] = useState("");
+  const [description, setDescription] = useState("");
 
   const [isAdd, setIsAdd] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
 
   const [campaigns, setCampaigns] = useState([]);
+  const [deleteCampaigns, setDeleteCampaigns] = useState([]);
 
   useEffect(() => {
     handleGetCampaigns();
@@ -34,7 +36,6 @@ function Campaigns({ toast, auth }) {
           },
         })
         .then((res) => {
-          console.log(res);
           setCampaigns(res?.data?.campaigns);
         });
     } catch (err) {}
@@ -48,6 +49,7 @@ function Campaigns({ toast, auth }) {
           {
             isPublished,
             title,
+            description,
             campaignType,
             effectivityDate,
             campaignInfo: addCampaignInfo,
@@ -75,6 +77,20 @@ function Campaigns({ toast, auth }) {
     }
   };
 
+  const handleChecked = (param, isCheckedParam) => {
+    setCampaigns(
+      campaigns.map((i, k) => {
+        return param === k ? { ...i, isChecked: !i.isChecked } : i;
+      })
+    );
+
+    if (!isCheckedParam) {
+      setDeleteCampaigns([...deleteCampaigns, param]);
+    } else {
+      setDeleteCampaigns(deleteCampaigns.filter((i) => i !== param));
+    }
+  };
+
   return (
     <div className="bg-[--light-brown] min-h-screen h-full">
       <div className="flex flex-col px-52">
@@ -87,8 +103,12 @@ function Campaigns({ toast, auth }) {
               <div className="flex gap-5">
                 <button
                   type="button"
-                  className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
-      border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
+                  className={`bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+      border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300 ${
+        isPreview
+          ? null
+          : "ring-[3px] ring-offset-2 ring-black ring-offset-[--light-brown]"
+      }`}
                   onClick={() => {
                     setIsPreview(false);
                     setIsAdd(true);
@@ -98,8 +118,13 @@ function Campaigns({ toast, auth }) {
                 </button>
                 <button
                   type="button"
-                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
-  border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                  className={`bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+  border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all 
+  duration-300 ${
+    isPreview
+      ? "ring-[3px] ring-offset-2 ring-[--dark-green] ring-offset-[--light-brown]"
+      : null
+  }`}
                   onClick={() => {
                     setIsPreview(true);
                   }}
@@ -157,8 +182,12 @@ function Campaigns({ toast, auth }) {
               <div className="flex gap-5">
                 <button
                   type="button"
-                  className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
-      border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
+                  className={`bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+      border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300 ${
+        isPreview
+          ? null
+          : "ring-[3px] ring-offset-2 ring-black ring-offset-[--light-brown]"
+      }`}
                   onClick={() => {
                     setIsPreview(false);
                     setIsAdd(true);
@@ -168,8 +197,13 @@ function Campaigns({ toast, auth }) {
                 </button>
                 <button
                   type="button"
-                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
-  border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                  className={`bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+  border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all 
+  duration-300 ${
+    isPreview
+      ? "ring-[3px] ring-offset-2 ring-[--dark-green] ring-offset-[--light-brown]"
+      : null
+  }`}
                   onClick={() => {
                     setIsPreview(true);
                   }}
@@ -249,7 +283,9 @@ function Campaigns({ toast, auth }) {
                     }}
                     required
                   >
-                    <option value="announcement">Announcement</option>
+                    <option value="announcement" defaultValue>
+                      Announcement
+                    </option>
                     <option value="event">Event</option>
                     <option value="webinar">Webinar</option>
                   </select>
@@ -277,6 +313,7 @@ function Campaigns({ toast, auth }) {
                 setAddCampaignInfo={setAddCampaignInfo}
                 auth={auth}
                 setImageHeader={setImageHeader}
+                setDescription={setDescription}
               />
             </div>
           </>
@@ -330,7 +367,7 @@ function Campaigns({ toast, auth }) {
 checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
 float-left cursor-pointer appearance-none border border-solid border-2  border-[--light-gray] bg-[--light-gray] 
 bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
-after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-[''] 
+after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-['✔'] 
 checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100"
                       type="checkbox"
                       style={{
@@ -342,9 +379,10 @@ checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:af
                     </p>
                   </td>
                 </tr>
+                {console.log(deleteCampaigns)}
                 <tr className="w-1/2 pl-12">
                   <td className="mr-5 flex justify-start truncate text-ellipsis">
-                    Start/Effectivity Date
+                    Created/Effectivity Date
                   </td>
                 </tr>
               </thead>
@@ -367,6 +405,9 @@ checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:af
                           className={`flex font-medium mx-1 px-5 mb-1 py-3 text-sm ${
                             k % 2 ? "bg-[--light-green] rounded-lg" : null
                           }`}
+                          onClick={() => {
+                            handleChecked(k, i.isChecked);
+                          }}
                         >
                           <div className="flex gap-5 items-center w-1/2">
                             <div className="w-5 h-5">
@@ -376,47 +417,125 @@ checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:af
 checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
 float-left cursor-pointer appearance-none border border-solid border-2  border-[--dark-green] bg-[--light-green] 
 bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
-after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-[''] 
+after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-['✔'] 
 checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100 mr-1"
                                 type="checkbox"
+                                onChange={() => {
+                                  handleChecked(k, i.isChecked);
+                                }}
                               />
                             </div>
-                            <img
-                              src={i?.imageHeader}
-                              alt=""
-                              className="w-[60px] h-[60px] rounded-lg"
-                            />
+                            {i?.imageHeader ? (
+                              <img
+                                src={i?.imageHeader}
+                                alt=""
+                                className="w-[60px] h-[60px] rounded-lg"
+                              />
+                            ) : (
+                              <div className="w-[60px] h-[60px] rounded-lg bg-[--dark-green] flex justify-center items-center text-3xl font-extrabold text-white">
+                                {i?.title[0].toUpperCase()}
+                              </div>
+                            )}
                             <div className="flex flex-col justify-between h-full py-1">
                               <p className="font-bold">{i?.title}</p>
                               <p className="w-[608px] text-ellipsis truncate text-sm">
-                                {i?.campaignInfo}
+                                <div>{i?.description}</div>
                               </p>
                             </div>
                           </div>
                           <div className="pl-12 flex gap-5 w-1/2 items-center">
                             <div className="w-2/5 text-sm flex flex-col justify-between h-full py-2">
                               <p className=" text-sm">
-                                Created:
-                                {/* {new Date(i?.createDate?._seconds * 1000)} */}
+                                Created:&nbsp;
+                                {new Date(
+                                  new Date(
+                                    i?.createDate?._seconds * 1000 +
+                                      i?.createDate?._nanoseconds / 1000000
+                                  )
+                                    .toLocaleDateString()
+                                    .split("/")[2],
+                                  new Date(
+                                    i?.createDate?._seconds * 1000 +
+                                      i?.createDate?._nanoseconds / 1000000
+                                  )
+                                    .toLocaleDateString()
+                                    .split("/")[0] - 1,
+                                  new Date(
+                                    i?.createDate?._seconds * 1000 +
+                                      i?.createDate?._nanoseconds / 1000000
+                                  )
+                                    .toLocaleDateString()
+                                    .split("/")[1]
+                                ).toLocaleDateString("en-US", {
+                                  month: "long",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
                               </p>
                               <p className="font-bold text-sm">
-                                Until: {i?.effectivityDate}
+                                Until:&nbsp;
+                                {new Date(
+                                  new Date(i?.effectivityDate)
+                                    .toLocaleDateString()
+                                    .split("/")[2],
+                                  new Date(i?.effectivityDate)
+                                    .toLocaleDateString()
+                                    .split("/")[0] - 1,
+                                  new Date(i?.effectivityDate)
+                                    .toLocaleDateString()
+                                    .split("/")[1]
+                                ).toLocaleDateString("en-US", {
+                                  month: "long",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
                               </p>
                             </div>
                             <div className="w-2/5 flex flex-col justify-center gap-2">
                               <div className="flex justify-between w-full text-sm">
                                 <p>Remaining</p>
-                                <p>2d</p>
+                                <p>
+                                  {Math.ceil(
+                                    (new Date(i?.effectivityDate).getTime() -
+                                      new Date().getTime()) /
+                                      (1000 * 60 * 60 * 24)
+                                  )}
+                                  d
+                                </p>
                               </div>
                               <div className="w-full">
-                                <div className="rounded-lg h-2 bg-[#00d2ff]/20">
+                                <div className="rounded-lg h-2 bg-black/20">
                                   <div
                                     className="rounded-lg h-2"
                                     style={{
-                                      background: "rgb(45,117,124)",
                                       background:
                                         "linear-gradient(90deg, rgba(45,117,124,1) 0%, rgba(0,0,0,1) 100%)",
-                                      width: "100%",
+                                      width: `${
+                                        (1 -
+                                          Math.ceil(
+                                            (new Date(
+                                              i?.effectivityDate
+                                            ).getTime() -
+                                              new Date().getTime()) /
+                                              (1000 * 60 * 60 * 24)
+                                          ) /
+                                            Math.ceil(
+                                              (new Date(
+                                                i?.effectivityDate
+                                              ).getTime() -
+                                                new Date(
+                                                  new Date(
+                                                    i?.createDate?._seconds *
+                                                      1000 +
+                                                      i?.createDate
+                                                        ?._nanoseconds /
+                                                        1000000
+                                                  ).toLocaleDateString()
+                                                ).getTime()) /
+                                                (1000 * 60 * 60 * 24)
+                                            )) *
+                                        100
+                                      }%`,
                                     }}
                                   ></div>
                                 </div>
