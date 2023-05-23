@@ -144,7 +144,7 @@ const handleImport = async (req, res) => {
               .collection("accounts")
               .where("credentials.email", "==", user["Email"])
               .get();
-            console.log(user);
+
             if (!querySnapshot.empty) {
               if (user["Email"]) {
                 isError = true;
@@ -296,8 +296,7 @@ const deleteUsers = async (req, res) => {
       .get();
 
     if (querySnapshot.empty) {
-      console.log(querySnapshot.empty);
-      return res.status(404).send("Error");
+      return res.status(404).send("Unable to delete this account!");
     }
 
     const batch = await db.batch();
@@ -322,10 +321,77 @@ const deleteUsers = async (req, res) => {
   }
 };
 
+const editUser = async (req, res) => {
+  const {
+    name,
+    email,
+    idNo,
+    gender,
+    contactNo,
+    birthday,
+    department,
+    userType,
+    yearSection,
+  } = req.body;
+  try {
+    if (userType.trim() === "student") {
+      if (!yearSection.trim()) {
+        return res.status(404).send("Please add a year and section!");
+      }
+    }
+
+    if (
+      !name.trim() ||
+      !email.trim() ||
+      !/^[^@\s]+@plv.edu.ph$/i.test(email) ||
+      !idNo.trim() ||
+      !gender.trim() ||
+      !contactNo.trim() ||
+      !birthday.trim() ||
+      !department.trim() ||
+      !userType.trim()
+    ) {
+      return res.status(404).send("Please complete the form!");
+    }
+
+    const querySnapshot = await db
+      .collection("accounts")
+      .where("credentials.email", "==", email)
+      .get();
+
+    if (querySnapshot.empty) {
+      return res.status(404).send("Error");
+    }
+
+    querySnapshot.forEach((i) => {
+      if (i.data().credentials.privilegeType === "systemAdministrator") {
+        return res.status(404).send("Unable to edit!");
+      }
+
+      i.ref.update({
+        birthday: birthday,
+        gender: gender,
+        "credentials.privilegeType": userType,
+        yearSection: yearSection,
+        name: name,
+        department: department,
+        idNo: idNo,
+        contactNo: contactNo,
+      });
+    });
+
+    res.status(200).json({ message: "Edit successfully!" });
+  } catch (err) {
+    console.log("asd");
+    res.status(404).send("Error");
+  }
+};
+
 module.exports = {
   addUser,
   getUsers,
   handleImport,
   upload,
   deleteUsers,
+  editUser,
 };

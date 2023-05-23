@@ -8,6 +8,7 @@ const {
   upload,
   handleImport,
   deleteUsers,
+  editUser,
 } = require("../controllers/userAccountControllers");
 
 const router = express.Router();
@@ -21,6 +22,7 @@ router.post(
   upload.single("file"),
   handleImport
 );
+router.post("/edit", verifyRoles(["systemAdministrator"]), editUser);
 router.post("/delete", verifyRoles(["systemAdministrator"]), deleteUsers);
 
 module.exports = router;

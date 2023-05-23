@@ -135,3 +135,11 @@ h6 {
       10014px 0 0 0 var(--dark-green);
   }
 }
+
+.tooltip-div:hover .tooltip {
+  visibility: visible;
+}
+
+.tooltip {
+  visibility: hidden;
+}

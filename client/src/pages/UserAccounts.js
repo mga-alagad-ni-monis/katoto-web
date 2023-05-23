@@ -21,6 +21,7 @@ function UserAccounts({ toast, auth }) {
   const [users, setUsers] = useState([]);
   const [errorMessages, setErrorMessages] = useState([]);
   const [deleteUsers, setDeleteUsers] = useState([]);
+  const [editUser, setEditUser] = useState([]);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -41,6 +42,7 @@ function UserAccounts({ toast, auth }) {
   const [isOpenImportModal, setIsOpenImportModal] = useState(false);
   const [reload, setReload] = useState(false);
   const [isOpenSearchButton, setIsOpenSearchButton] = useState(false);
+  const [isOpenEditModal, setIsOpenEditModal] = useState(false);
 
   const inputRef = useRef(null);
 
@@ -72,7 +74,19 @@ function UserAccounts({ toast, auth }) {
     }, 500);
   }, [reload]);
 
-  const handleChecked = (param, email, isCheckedParam) => {
+  const handleChecked = (
+    param,
+    email,
+    isCheckedParam,
+    name,
+    userType,
+    idNo,
+    gender,
+    yrSec,
+    contactNo,
+    birthday,
+    department
+  ) => {
     setUsers(
       users.map((i, k) => {
         return param === k ? { ...i, isChecked: !i.isChecked } : i;
@@ -81,8 +95,32 @@ function UserAccounts({ toast, auth }) {
 
     if (!isCheckedParam) {
       setDeleteUsers([...deleteUsers, email]);
+      setEditUser([
+        ...editUser,
+        {
+          email,
+          name,
+          userType,
+          idNo,
+          gender,
+          yrSec,
+          contactNo,
+          birthday,
+          department,
+        },
+      ]);
     } else {
       setDeleteUsers(deleteUsers.filter((i) => i !== email));
+      setEditUser(editUser.filter((i) => i.email !== email));
+      setEmail("");
+      setName("");
+      setUserType("");
+      setIdNo("");
+      setGender("");
+      setYearSection("");
+      setContactNo("");
+      setBirthday("");
+      setDepartment("");
     }
   };
 
@@ -105,6 +143,16 @@ function UserAccounts({ toast, auth }) {
     } else {
       setDeleteUsers([]);
     }
+  };
+
+  const handleAllUnchecked = () => {
+    setIsAllChecked(false);
+    setEditUser([]);
+    setUsers(
+      users.map((i) => {
+        return { ...i, isChecked: false };
+      })
+    );
   };
 
   const handleGetUsers = async () => {
@@ -219,6 +267,45 @@ function UserAccounts({ toast, auth }) {
     }
   };
 
+  const handleEditUser = async (e) => {
+    e.preventDefault();
+    try {
+      await axios
+        .post(
+          "/api/accounts/edit",
+          {
+            name,
+            email,
+            idNo,
+            gender,
+            contactNo,
+            birthday,
+            department,
+            userType,
+            yearSection,
+          },
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${auth?.accessToken}`,
+            },
+          }
+        )
+        .then((res) => {
+          toast.success(res?.data?.message);
+          setDeleteUsers([]);
+          setEditUser([]);
+          setIsOpenEditModal(false);
+          setReload(!reload);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data);
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
   const handleDeleteUsers = async () => {
     try {
       await axios
@@ -248,7 +335,7 @@ function UserAccounts({ toast, auth }) {
 
   return (
     <div className="bg-[--light-brown] h-screen">
-      {console.log(deleteUsers)}
+      {console.log("asdsad", editUser)}
       {isOpenAddModal ? (
         <form
           className="w-full justify-between flex"
@@ -491,6 +578,223 @@ function UserAccounts({ toast, auth }) {
           </Modal>
         </form>
       ) : null}
+      {isOpenEditModal ? (
+        <form className="w-full justify-between flex" onSubmit={handleEditUser}>
+          <Modal>
+            <div className="w-full justify-between flex">
+              <p className="text-2xl font-extrabold">Edit User</p>
+              <button
+                onClick={() => {
+                  setIsOpenEditModal(false);
+                }}
+                type="button"
+              >
+                <FaTimes size={20} />
+              </button>
+            </div>
+            <div className="flex flex-col gap-4 mt-5">
+              <div className="flex gap-5 w-full">
+                <div className="w-1/2 flex flex-col gap-2">
+                  <label htmlFor="name" className="font-semibold">
+                    Name *
+                  </label>
+                  <input
+                    id="name"
+                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold mr-3"
+                    type="text"
+                    placeholder="Firstname Surname"
+                    value={name}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                    }}
+                    required
+                  />
+                </div>
+                <div className="w-1/2 flex flex-col gap-2">
+                  <label htmlFor="usertype" className="font-semibold">
+                    User Type *
+                  </label>
+                  <select
+                    id="usertype"
+                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                    value={userType}
+                    onChange={(e) => {
+                      setUserType(e.target.value);
+                    }}
+                    required
+                  >
+                    <option
+                      hidden
+                      value=""
+                      defaultValue
+                      className="text-black/30"
+                    ></option>
+                    <option value="student">Student</option>
+                    <option value="guidanceCounselor">
+                      Guidance Counselor
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-5 w-full">
+                <div className="w-1/2 flex flex-col gap-2">
+                  <label htmlFor="email" className="font-semibold">
+                    Email *
+                  </label>
+                  <input
+                    id="idNo"
+                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold opacity-50 text-black/50"
+                    type="email"
+                    placeholder="namesurname@plv.edu.ph"
+                    pattern="[\w.%+-]+@plv\.edu\.ph"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                    }}
+                    onInvalid={(e) =>
+                      e.target.setCustomValidity(
+                        "Please enter required domain: namesurname@plv.edu.ph"
+                      )
+                    }
+                    onInput={(e) => e.target.setCustomValidity("")}
+                    disabled
+                  />
+                </div>
+                <div className="w-1/2 flex flex-col gap-2">
+                  <label htmlFor="contact-no" className="font-semibold">
+                    Contact Number *
+                  </label>
+                  <input
+                    id="contact-no"
+                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                    type="tel"
+                    placeholder="09xxxxxxxxx"
+                    pattern="[0]{1}[9]{1}[0-9]{9}"
+                    value={contactNo}
+                    onChange={(e) => {
+                      setContactNo(e.target.value);
+                    }}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="flex gap-5 w-full">
+                <div className="w-1/2 flex flex-col gap-2">
+                  <label htmlFor="id-no" className="font-semibold">
+                    Identification Number *
+                  </label>
+                  <input
+                    id="id-no"
+                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                    type="text"
+                    placeholder="xx-xxxx"
+                    value={idNo}
+                    onChange={(e) => {
+                      setIdNo(e.target.value);
+                    }}
+                    required
+                  />
+                </div>
+                <div className="w-1/2 flex flex-col gap-2">
+                  <label htmlFor="gender" className="font-semibold">
+                    Gender *
+                  </label>
+                  <select
+                    id="gender"
+                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                    value={gender}
+                    onChange={(e) => {
+                      setGender(e.target.value);
+                    }}
+                    required
+                  >
+                    <option
+                      hidden
+                      value=""
+                      defaultValue
+                      className="text-black/30"
+                    ></option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-5 w-full">
+                <div className="w-1/2 flex flex-col gap-2">
+                  <label htmlFor="year-sec" className="font-semibold">
+                    Year and Section *
+                  </label>
+                  <input
+                    id="year-sec"
+                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                    type="tel"
+                    placeholder="1-4"
+                    pattern="[1-4]{1}[-]{1}[1-20]{1-2}"
+                    value={yearSection}
+                    onChange={(e) => {
+                      setYearSection(e.target.value);
+                    }}
+                  />
+                </div>
+
+                <div className="w-1/2 flex flex-col gap-2">
+                  <label htmlFor="birthday" className="font-semibold">
+                    Birthday *
+                  </label>
+                  <input
+                    type="date"
+                    id="birthday"
+                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                    value={birthday}
+                    onChange={(e) => {
+                      setBirthday(e.target.value);
+                    }}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="flex gap-5 w-full">
+                <div className="w-full flex flex-col gap-2">
+                  <label htmlFor="department" className="font-semibold">
+                    Department/Courses *
+                  </label>
+                  <select
+                    id="department"
+                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                    value={department}
+                    onChange={(e) => {
+                      setDepartment(e.target.value);
+                    }}
+                    required
+                  >
+                    <option
+                      hidden
+                      defaultValue
+                      value=""
+                      className="text-black/30"
+                    ></option>
+                    {courses?.map((i, k) => {
+                      return (
+                        <option value={i} key={k}>
+                          {i}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              </div>
+              <button
+                className="bg-[--dark-green] w-full p-3 text-[--light-brown] text-sm rounded-lg border border-2 border-[--dark-green] 
+          hover:bg-transparent hover:text-[--dark-green] transition-all duration-300 font-semibold"
+                type="submit"
+              >
+                Submit
+              </button>
+            </div>
+          </Modal>
+        </form>
+      ) : null}
       {isOpenImportModal ? (
         <form className="w-full justify-between flex" onSubmit={handleImport}>
           <Modal>
@@ -671,20 +975,54 @@ function UserAccounts({ toast, auth }) {
                 Delete
               </button>
             )}
-
-            <button
-              className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+            {editUser.length === 1 ? (
+              <button
+                className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
-              onClick={() => {}}
-            >
-              <VscEdit size={14} />
-              Edit
-            </button>
+                onClick={() => {
+                  if (editUser.length === 1) {
+                    console.log(editUser[0].email);
+                    setEmail(editUser[0].email);
+                    setName(editUser[0].name);
+                    setUserType(editUser[0].userType);
+                    setIdNo(editUser[0].idNo);
+                    setGender(editUser[0].gender);
+                    setYearSection(editUser[0].yrSec);
+                    setContactNo(editUser[0].contactNo);
+                    setBirthday(editUser[0].birthday);
+                    setDepartment(editUser[0].department);
+                  }
+                  setIsOpenEditModal(true);
+                }}
+              >
+                <VscEdit size={14} />
+                Edit
+              </button>
+            ) : (
+              <button
+                className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-black transition-all duration-300 opacity-50"
+                disabled
+              >
+                <VscEdit size={14} />
+                Edit
+              </button>
+            )}
             <button
               className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
               onClick={() => {
                 setIsOpenAddModal(true);
+                handleAllUnchecked();
+                setEmail("");
+                setName("");
+                setUserType("");
+                setIdNo("");
+                setGender("");
+                setYearSection("");
+                setContactNo("");
+                setBirthday("");
+                setDepartment("");
               }}
             >
               <HiPlus size={16} />
@@ -704,7 +1042,7 @@ function UserAccounts({ toast, auth }) {
           </div>
         </div>
         <table
-          className="w-full rounded-lg shadow-lg bg-[--light-green]"
+          className="w-full rounded-lg shadow-lg bg-[--light-green] relative"
           style={{ backgroundColor: "rgba(169, 230, 194, 0.2)" }}
         >
           <thead className="flex px-5 py-3 text-sm text-[--light-brown] font-bold bg-[--dark-green] rounded-lg m-1">
@@ -812,13 +1150,25 @@ function UserAccounts({ toast, auth }) {
                             : null
                         }`}
                         onClick={() => {
-                          handleChecked(k, i?.credentials?.email, i.isChecked);
+                          handleChecked(
+                            k,
+                            i?.credentials?.email,
+                            i.isChecked,
+                            i?.name,
+                            i?.credentials?.privilegeType,
+                            i?.idNo,
+                            i?.gender,
+                            i?.yearSection,
+                            i?.contactNo,
+                            i?.birthday,
+                            i?.department
+                          );
                         }}
                       >
                         {i.isChecked ? (
                           <div className="absolute w-[8px] h-full bg-[--dark-green] left-0 top-0 rounded-tl-lg rounded-bl-lg"></div>
                         ) : null}
-                        <div className="flex gap-5 items-center">
+                        <div className="flex gap-5 items-center ">
                           <input
                             id="checkbox-1"
                             className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
@@ -835,37 +1185,79 @@ function UserAccounts({ toast, auth }) {
                               handleChecked(
                                 k,
                                 i?.credentials?.email,
-                                i.isChecked
+                                i.isChecked,
+                                i?.name,
+                                i?.credentials?.privilegeType,
+                                i?.idNo,
+                                i?.gender,
+                                i?.yearSection,
+                                i?.contactNo,
+                                i?.birthday,
+                                i?.department
                               );
                             }}
                             checked={i.isChecked ? true : false}
                           />
-                          <p className="w-[80px] mr-5 flex justify-start truncate text-ellipsis">
+                          <p className="w-[80px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
+                            <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white">
+                              {i?.idNo}
+                            </div>
                             {i?.idNo}
                           </p>
                         </div>
-                        <p className="w-[180px] mr-5 flex justify-start truncate text-ellipsis">
+                        <p className="w-[180px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
+                          <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
+                            {i?.name}
+                          </div>
                           {i?.name}
                         </p>
-                        <p className="w-[230px] mr-5 flex justify-start truncate text-ellipsis">
+                        <p className="w-[230px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
+                          <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
+                            {i?.credentials?.email}
+                          </div>
                           {i?.credentials?.email}
                         </p>
-                        <p className="w-[70px] mr-5 flex justify-start truncate text-ellipsis">
+                        <p className="w-[70px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
+                          <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
+                            {i?.gender}
+                          </div>
                           {i?.gender}
                         </p>
-                        <p className="w-[295px] mr-5 flex justify-start truncate text-ellipsis">
+                        <p className="w-[295px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
+                          <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
+                            {i?.department}
+                          </div>
                           {i?.department}
                         </p>
-                        <p className="w-[80px] ml-3 flex justify-start truncate text-ellipsis">
+                        <p className="w-[80px] ml-3 flex justify-start truncate text-ellipsis tooltip-div">
+                          {i?.yearSection ? (
+                            <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
+                              {i?.yearSection}
+                            </div>
+                          ) : null}
                           {i?.yearSection}
                         </p>
-                        <p className="w-[110px] mr-5 flex justify-start truncate text-ellipsis">
+                        <p className="w-[110px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
+                          <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
+                            {i?.contactNo}
+                          </div>
                           {i?.contactNo}
                         </p>
-                        <p className="w-[85px] mr-5 flex justify-start truncate text-ellipsis">
+                        <p className="w-[85px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
+                          <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
+                            {i?.birthday}
+                          </div>
                           {i?.birthday}
                         </p>
-                        <p className="w-[100px] mr-5 flex justify-start truncate text-ellipsis">
+                        <p className="w-[100px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
+                          <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
+                            {i?.credentials?.privilegeType === "student"
+                              ? "Student"
+                              : i?.credentials?.privilegeType ===
+                                "systemAdministrator"
+                              ? "System Administrator"
+                              : "Guidance Counselor"}
+                          </div>
                           {i?.credentials?.privilegeType === "student"
                             ? "Student"
                             : i?.credentials?.privilegeType ===
