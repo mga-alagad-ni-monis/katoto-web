@@ -8,6 +8,7 @@ const {
   upload,
   getCampaigns,
   getPublishedCampaigns,
+  deleteCampaign,
 } = require("../controllers/campaignControllers");
 
 const router = express.Router();
@@ -16,6 +17,12 @@ router.post(
   "/add",
   verifyRoles(["systemAdministrator", "guidanceCounselor"]),
   addCampaign
+);
+
+router.post(
+  "/delete",
+  verifyRoles(["systemAdministrator", "guidanceCounselor"]),
+  deleteCampaign
 );
 
 router.post(

@@ -4,6 +4,7 @@ import { Markup } from "interweave";
 
 import { GoKebabVertical } from "react-icons/go";
 import { HiPlus } from "react-icons/hi";
+import { BsFillTrash3Fill } from "react-icons/bs";
 import TextEditor from "../components/TextEditor";
 
 function Campaigns({ toast, auth }) {
@@ -18,13 +19,16 @@ function Campaigns({ toast, auth }) {
   const [isAdd, setIsAdd] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
+  const [reload, setReload] = useState(false);
 
   const [campaigns, setCampaigns] = useState([]);
   const [deleteCampaigns, setDeleteCampaigns] = useState([]);
 
   useEffect(() => {
-    handleGetCampaigns();
-  }, []);
+    setTimeout(() => {
+      handleGetCampaigns();
+    }, 500);
+  }, [reload]);
 
   const handleGetCampaigns = async () => {
     try {
@@ -70,6 +74,7 @@ function Campaigns({ toast, auth }) {
           setIsAdd(false);
           setIsPreview(false);
           setIsPublished(false);
+          setReload(!reload);
           toast.success(res?.data?.message);
         });
     } catch (err) {
@@ -77,7 +82,7 @@ function Campaigns({ toast, auth }) {
     }
   };
 
-  const handleChecked = (param, isCheckedParam) => {
+  const handleChecked = (param, isCheckedParam, id) => {
     setCampaigns(
       campaigns.map((i, k) => {
         return param === k ? { ...i, isChecked: !i.isChecked } : i;
@@ -85,9 +90,36 @@ function Campaigns({ toast, auth }) {
     );
 
     if (!isCheckedParam) {
-      setDeleteCampaigns([...deleteCampaigns, param]);
+      setDeleteCampaigns([...deleteCampaigns, id]);
     } else {
-      setDeleteCampaigns(deleteCampaigns.filter((i) => i !== param));
+      setDeleteCampaigns(deleteCampaigns.filter((i) => i !== id));
+    }
+  };
+
+  const handleDeleteCampaigns = async () => {
+    try {
+      await axios
+        .post(
+          "/api/campaigns/delete",
+          { deleteCampaigns },
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${auth?.accessToken}`,
+            },
+          }
+        )
+        .then((res) => {
+          toast.success(res?.data?.message);
+          setDeleteCampaigns([]);
+          // setIsAllChecked(false);
+          setReload(!reload);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data);
+        });
+    } catch (err) {
+      toast.error("Error");
     }
   };
 
@@ -342,6 +374,25 @@ function Campaigns({ toast, auth }) {
                 </div>
               </div>
               <div className="flex gap-5">
+                {deleteCampaigns.length ? (
+                  <button
+                    className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
+                    onClick={handleDeleteCampaigns}
+                  >
+                    <BsFillTrash3Fill size={14} />
+                    Delete
+                  </button>
+                ) : (
+                  <button
+                    className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-[--red] transition-all duration-300 opacity-50"
+                    disabled
+                  >
+                    <BsFillTrash3Fill size={14} />
+                    Delete
+                  </button>
+                )}
                 <button
                   className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
       border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
@@ -364,11 +415,11 @@ function Campaigns({ toast, auth }) {
                     <input
                       id="checkbox-1"
                       className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
-checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
-float-left cursor-pointer appearance-none border border-solid border-2  border-[--light-gray] bg-[--light-gray] 
-bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
-after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-['✔'] 
-checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100"
+   checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
+   float-left cursor-pointer appearance-none border border-solid border-2  border-[--light-gray] checked:border-[--light-gray] checked:border-2 bg-[--light-gray] 
+   bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
+   after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-['✔'] 
+   checked:bg-[--dark-green] checked:after:opacity-100"
                       type="checkbox"
                       style={{
                         fontFamily: "FontAwesome",
@@ -406,7 +457,7 @@ checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:af
                             k % 2 ? "bg-[--light-green] rounded-lg" : null
                           }`}
                           onClick={() => {
-                            handleChecked(k, i.isChecked);
+                            handleChecked(k, i.isChecked, i?.id);
                           }}
                         >
                           <div className="flex gap-5 items-center w-1/2">
@@ -421,8 +472,9 @@ after:items-center after:justify-center after:text-white after:opacity-0 after:t
 checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100 mr-1"
                                 type="checkbox"
                                 onChange={() => {
-                                  handleChecked(k, i.isChecked);
+                                  handleChecked(k, i.isChecked, i?.id);
                                 }}
+                                checked={i.isChecked ? true : false}
                               />
                             </div>
                             {i?.imageHeader ? (

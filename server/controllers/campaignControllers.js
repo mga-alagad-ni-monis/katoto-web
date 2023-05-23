@@ -1,4 +1,5 @@
 const multer = require("multer");
+const uniqid = require("uniqid");
 
 const db = require("../utils/firebase");
 
@@ -51,6 +52,7 @@ const addCampaign = (req, res) => {
           campaignInfo,
           imageHeader,
           createDate: new Date(),
+          id: uniqid.time(),
         })
         .then((querySnapshot) => {
           if (querySnapshot.empty) {
@@ -106,11 +108,41 @@ const getPublishedCampaigns = (req, res) => {
     res.status(404).send("Error");
   }
 };
+const deleteCampaign = async (req, res) => {
+  const { deleteCampaigns } = req.body;
+  try {
+    const querySnapshot = await db.collection("campaigns").get();
 
+    if (querySnapshot.empty) {
+      return res.status(404).send("Unable to delete this account!");
+    }
+
+    const batch = await db.batch();
+
+    querySnapshot.forEach((i) => {
+      if (deleteCampaigns.includes(i.data().id)) {
+        batch.delete(i.ref);
+      }
+    });
+
+    batch.commit();
+
+    if (deleteCampaigns.length === 1) {
+      res.status(200).json({ message: "Successfully deleted a campaign!" });
+    } else {
+      res
+        .status(200)
+        .json({ message: "Successfully deleted a bunch of campaigns!" });
+    }
+  } catch (err) {
+    res.status(404).send("Error");
+  }
+};
 module.exports = {
   addCampaign,
   uploadPictures,
   upload,
   getCampaigns,
   getPublishedCampaigns,
+  deleteCampaign,
 };
