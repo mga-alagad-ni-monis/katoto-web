@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const cron = require("node-cron");
 
 const { db } = require("./utils/firebase");
 
@@ -10,6 +11,8 @@ const { verifyJwt } = require("./middleware/verifyJwt");
 const accountRoutes = require("./routes/accountRoutes");
 const userAccountRoutes = require("./routes/userAccountRoutes");
 const campaignRoutes = require("./routes/campaignRoutes");
+const logRoutes = require("./routes/logRoutes");
+const { createDocument } = require("./controllers/reportControllers");
 
 const app = express();
 
@@ -40,3 +43,8 @@ app.use(verifyJwt);
 
 app.use("/api/accounts", userAccountRoutes);
 app.use("/api/campaigns", campaignRoutes);
+app.use("/api/logs", logRoutes);
+
+cron.schedule("42 0 * * *", () => {
+  createDocument();
+});

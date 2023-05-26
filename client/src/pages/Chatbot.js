@@ -11,12 +11,13 @@ import katotoWatch from "../assets/katoto/katoto-watch.png";
 import logo from "../assets/logo/katoto-logo.png";
 import wave from "../assets/wave.png";
 
-function Chatbot() {
+function Chatbot({ auth }) {
   const [isInitial, setIsInitial] = useState(true);
   const [isGuided, setIsGuided] = useState(false);
   const [isFriendly, setIsFriendly] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
 
+  const [katotoMessage, setKatotoMessage] = useState("");
   const [inputFriendly, setInputFriendly] = useState("");
 
   const [guidedButtons, setGuidedButtons] = useState([]);
@@ -27,7 +28,7 @@ function Chatbot() {
 
   useEffect(() => {
     if (!isInitial) {
-      handleSubmitMessage("Alvin", "hi");
+      handleSubmitMessage(auth.accessToken, "hi");
     }
   }, [isInitial]);
 
@@ -41,27 +42,50 @@ function Chatbot() {
       setInputFriendly("");
       setIsTyping(true);
       setMessages([...messages, { sender, message: inputMessage }]);
-      await axiosDef
-        .post(process.env.REACT_APP_KATOTO_API_URI, {
-          sender,
-          message: inputMessage,
-        })
-        .then((res) => {
-          const buttons = res.data[0].buttons.map((i) => {
-            return i.title;
-          });
-          setTimeout(() => {
-            setMessages([
-              ...messages,
-              { sender, message: inputMessage },
-              { sender: "Katoto", message: res.data[0].text },
-            ]);
-            setIsTyping(false);
+
+      Promise.all([
+        await axiosDef
+          .post(process.env.REACT_APP_KATOTO_API_URI, {
+            sender,
+            message: inputMessage,
+          })
+          .then((res) => {
+            const buttons = res.data[0].buttons.map((i) => {
+              return i.title;
+            });
             setTimeout(() => {
-              setGuidedButtons(buttons);
-            }, 1000);
-          }, 900);
-        });
+              setKatotoMessage(res.data[0].text);
+              setMessages([
+                ...messages,
+                { sender, message: inputMessage },
+                { sender: "Katoto", message: res.data[0].text },
+              ]);
+              setIsTyping(false);
+              setTimeout(() => {
+                setGuidedButtons(buttons);
+              }, 1000);
+            }, 900);
+          }),
+        await axios
+          .post(
+            "/api/logs/send",
+            {
+              studentMessage: { sender, message: inputMessage },
+              katotoMessage: { sender: "Katoto", message: katotoMessage },
+            },
+            {
+              withCredentials: true,
+              headers: {
+                Authorization: `Bearer ${auth?.accessToken}`,
+              },
+            }
+          )
+          .then((res) => {
+            setKatotoMessage("");
+          }),
+      ]).then((val) => {
+        console.log(val);
+      });
     } catch (err) {}
   };
 
@@ -343,7 +367,7 @@ function Chatbot() {
                           className="text-sm px-5 py-2 rounded-full w-max font-medium cursor-pointer bg-[--dark-green] border-2 border-[--dark-green] 
               text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green] transition-all duration-300"
                           onClick={() => {
-                            handleSubmitMessage("Alvin", i);
+                            handleSubmitMessage(auth.accessToken, i);
                           }}
                         >
                           {i}
@@ -357,7 +381,7 @@ function Chatbot() {
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
-                    handleSubmitMessage("Alvin", inputFriendly);
+                    handleSubmitMessage(auth.accessToken, inputFriendly);
                   }}
                 >
                   <motion.div
