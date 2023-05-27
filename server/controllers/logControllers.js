@@ -1,10 +1,13 @@
 const jwt = require("jsonwebtoken");
 
 const db = require("../utils/firebase");
+const { QuerySnapshot } = require("firebase-admin/firestore");
 
 const sendConversation = async (req, res) => {
   const { studentMessage, katotoMessage } = req.body;
   try {
+    const token = jwt.decode(studentMessage.sender);
+
     const currentDate = new Date()
       .toLocaleDateString("en-US", {
         month: "2-digit",
@@ -16,24 +19,91 @@ const sendConversation = async (req, res) => {
     const document = await db.collection("reports").doc(currentDate);
 
     let reports = await document.get();
-    console.log(reports.data().reports.conversationLogs);
 
-    conversationLogsArray = reports.data().reports.conversationLogs;
+    let conversationLogsArray = reports.data().reports.conversationLogs;
 
-    conversationLogsArray.push({
-      email: studentMessage.sender,
-      conversation: [{ katotoMessage, studentMessage }],
-    });
+    if (conversationLogsArray.length === 0) {
+      conversationLogsArray.push({
+        email: token.email,
+        conversation: [
+          {
+            katotoMessage,
+            studentMessage: {
+              message: studentMessage.message,
+              sender: token.email,
+            },
+            dateTime: new Date(),
+          },
+        ],
+      });
+    } else {
+      if (conversationLogsArray.some((i) => i.email === token.email)) {
+        console.log("norem");
+        conversationLogsArray.map((i) => {
+          if (i.email === token.email) {
+            i.conversation.push({
+              katotoMessage,
+              studentMessage: {
+                message: studentMessage.message,
+                sender: token.email,
+              },
+              dateTime: new Date(),
+            });
+          }
+        });
+      } else {
+        conversationLogsArray.push({
+          email: token.email,
+          conversation: [
+            {
+              katotoMessage,
+              studentMessage: {
+                message: studentMessage.message,
+                sender: token.email,
+              },
+              dateTime: new Date(),
+            },
+          ],
+        });
+      }
+    }
 
-    document.update({
+    await document.update({
       "reports.conversationLogs": conversationLogsArray,
     });
 
-    // document.update({
-    //   "reports.conversationLogs": firebase.firestore.FieldValue.arrayUnion({
-    //     asd: "asd",
-    //   }),
-    // });
+    res.status(200);
+  } catch (err) {
+    res.status(404).send("Error");
+  }
+};
+
+const getStudentConversation = async (req, res) => {
+  try {
+    const token = jwt.decode(
+      req.headers.authorization.slice(7, req.headers.authorization.length)
+    );
+
+    await db
+      .collection("reports")
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          return res.status(404).send("Error");
+        }
+        let conversationArray = [];
+        querySnapshot.forEach((i) => {
+          i.data().reports.conversationLogs.forEach((j) => {
+            if (token.email === j.email) {
+              j.conversation.forEach((k) => {
+                conversationArray.push(k.studentMessage);
+                conversationArray.push(k.katotoMessage);
+              });
+            }
+          });
+        });
+        res.status(200).json({ conversation: conversationArray });
+      });
   } catch (err) {
     res.status(404).send("Error");
   }
@@ -41,4 +111,5 @@ const sendConversation = async (req, res) => {
 
 module.exports = {
   sendConversation,
+  getStudentConversation,
 };

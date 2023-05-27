@@ -55,7 +55,10 @@ function App() {
                 />
               }
             >
-              <Route path="/chat" element={<Chatbot auth={auth} />}></Route>
+              <Route
+                path="/chat"
+                element={<Chatbot toast={toast} auth={auth} />}
+              ></Route>
               <Route
                 path="/view-campaigns"
                 element={<CampaignView toast={toast} auth={auth} />}

@@ -11,7 +11,7 @@ import katotoWatch from "../assets/katoto/katoto-watch.png";
 import logo from "../assets/logo/katoto-logo.png";
 import wave from "../assets/wave.png";
 
-function Chatbot({ auth }) {
+function Chatbot({ toast, auth }) {
   const [isInitial, setIsInitial] = useState(true);
   const [isGuided, setIsGuided] = useState(false);
   const [isFriendly, setIsFriendly] = useState(false);
@@ -27,6 +27,7 @@ function Chatbot({ auth }) {
   const bottomRef = useRef(null);
 
   useEffect(() => {
+    handleGetConversation();
     if (!isInitial) {
       handleSubmitMessage(auth.accessToken, "hi");
     }
@@ -36,6 +37,26 @@ function Chatbot({ auth }) {
     bottomRef?.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, guidedButtons]);
 
+  const handleGetConversation = async (req, res) => {
+    try {
+      await axios
+        .get("/api/logs/get/student", {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${auth?.accessToken}`,
+          },
+        })
+        .then((res) => {
+          setMessages(res?.data?.conversation);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data);
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
   const handleSubmitMessage = async (sender, inputMessage) => {
     try {
       setGuidedButtons([]);
@@ -43,35 +64,37 @@ function Chatbot({ auth }) {
       setIsTyping(true);
       setMessages([...messages, { sender, message: inputMessage }]);
 
-      Promise.all([
-        await axiosDef
-          .post(process.env.REACT_APP_KATOTO_API_URI, {
-            sender,
-            message: inputMessage,
-          })
-          .then((res) => {
-            const buttons = res.data[0].buttons.map((i) => {
-              return i.title;
-            });
+      axiosDef
+        .post(process.env.REACT_APP_KATOTO_API_URI, {
+          sender,
+          message: inputMessage,
+        })
+        .then((res) => {
+          const buttons = res.data[0].buttons.map((i) => {
+            return i.title;
+          });
+          setKatotoMessage(res.data[0].text);
+
+          setTimeout(() => {
+            setMessages([
+              ...messages,
+              { sender, message: inputMessage },
+              { sender: "Katoto", message: res.data[0].text },
+            ]);
+            setIsTyping(false);
             setTimeout(() => {
-              setKatotoMessage(res.data[0].text);
-              setMessages([
-                ...messages,
-                { sender, message: inputMessage },
-                { sender: "Katoto", message: res.data[0].text },
-              ]);
-              setIsTyping(false);
-              setTimeout(() => {
-                setGuidedButtons(buttons);
-              }, 1000);
-            }, 900);
-          }),
-        await axios
-          .post(
+              setGuidedButtons(buttons);
+            }, 1000);
+          }, 900);
+
+          return axios.post(
             "/api/logs/send",
             {
               studentMessage: { sender, message: inputMessage },
-              katotoMessage: { sender: "Katoto", message: katotoMessage },
+              katotoMessage: {
+                sender: "Katoto",
+                message: res.data[0].text,
+              },
             },
             {
               withCredentials: true,
@@ -79,14 +102,17 @@ function Chatbot({ auth }) {
                 Authorization: `Bearer ${auth?.accessToken}`,
               },
             }
-          )
-          .then((res) => {
-            setKatotoMessage("");
-          }),
-      ]).then((val) => {
-        console.log(val);
-      });
-    } catch (err) {}
+          );
+        })
+        .then((res) => {
+          setKatotoMessage("");
+        })
+        .catch((err) => {
+          toast.error("Error");
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
   };
 
   return (
@@ -98,6 +124,7 @@ function Chatbot({ auth }) {
             alt="katoto"
             className="h-[270px] absolute -top-[250px] right-1/2 translate-x-1/2"
           />
+
           <div className="h-max w-[350px] bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg pt-10 pb-5 px-5">
             <p className="text-2xl font-extrabold flex justify-center mb-5">
               Quote of the Day
@@ -122,7 +149,6 @@ function Chatbot({ auth }) {
               <button
                 className="z-20"
                 onClick={() => {
-                  setMessages([]);
                   setIsTyping(false);
                   setIsGuided(false);
                   setIsFriendly(false);
@@ -177,6 +203,7 @@ function Chatbot({ auth }) {
                       className="text-sm px-5 py-2 rounded-full w-max font-medium cursor-pointer bg-[--dark-green] border-2 border-[--dark-green] 
                       text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green] transition-all duration-300"
                       onClick={() => {
+                        handleGetConversation();
                         setIsGuided(true);
                         setIsFriendly(false);
                         setIsInitial(false);
