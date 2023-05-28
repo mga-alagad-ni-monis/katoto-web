@@ -74,7 +74,7 @@ function SideBar({ toast }) {
                     {isHovered ? (
                       <div className="flex gap-5 items-center">
                         <BsChatDots size={20} />
-                        <span className=" word-in">Conversation</span>
+                        <span className=" word-in">Conversations</span>
                       </div>
                     ) : (
                       <BsChatDots size={24} />

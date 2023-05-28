@@ -430,7 +430,11 @@ function Campaigns({ toast, auth }) {
                     </p>
                   </td>
                 </tr>
-                {console.log(deleteCampaigns)}
+                <tr className="w-1/2 pl-12">
+                  <td className="mr-5 flex justify-start truncate text-ellipsis">
+                    Campaign Status
+                  </td>
+                </tr>
                 <tr className="w-1/2 pl-12">
                   <td className="mr-5 flex justify-start truncate text-ellipsis">
                     Created/Effectivity Date
@@ -460,7 +464,7 @@ function Campaigns({ toast, auth }) {
                             handleChecked(k, i.isChecked, i?.id);
                           }}
                         >
-                          <div className="flex gap-5 items-center w-1/2">
+                          <div className="flex gap-5 items-center w-1/3">
                             <div className="w-5 h-5">
                               <input
                                 id="checkbox-1"
@@ -488,14 +492,29 @@ checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:af
                                 {i?.title[0].toUpperCase()}
                               </div>
                             )}
-                            <div className="flex flex-col justify-between h-full py-1">
-                              <p className="font-bold">{i?.title}</p>
-                              <p className="w-[608px] text-ellipsis truncate text-sm">
-                                <div>{i?.description}</div>
+                            <div className="w-[320px] flex flex-col justify-between h-full py-1">
+                              <p className="text-ellipsis truncate font-bold">
+                                {i?.title}
+                              </p>
+                              <p className="text-ellipsis truncate text-sm">
+                                {i?.description}
                               </p>
                             </div>
                           </div>
-                          <div className="pl-12 flex gap-5 w-1/2 items-center">
+                          <div className="pl-12 flex gap-5 w-2/3 items-center">
+                            <div className="w-1/5">
+                              {i?.isPublished ? (
+                                <p className="flex gap-2 items-center">
+                                  <div className="w-[12px] h-[12px] bg-[--dark-green] rounded-full"></div>
+                                  Published
+                                </p>
+                              ) : (
+                                <p className="flex gap-2 items-center">
+                                  <div className="w-[12px] h-[12px] bg-[--red] rounded-full"></div>
+                                  Draft
+                                </p>
+                              )}
+                            </div>
                             <div className="w-2/5 text-sm flex flex-col justify-between h-full py-2">
                               <p className=" text-sm">
                                 Created:&nbsp;
@@ -551,7 +570,15 @@ checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:af
                                     (new Date(i?.effectivityDate).getTime() -
                                       new Date().getTime()) /
                                       (1000 * 60 * 60 * 24)
-                                  )}
+                                  ) < 0
+                                    ? 0
+                                    : Math.ceil(
+                                        (new Date(
+                                          i?.effectivityDate
+                                        ).getTime() -
+                                          new Date().getTime()) /
+                                          (1000 * 60 * 60 * 24)
+                                      )}
                                   d
                                 </p>
                               </div>
@@ -586,7 +613,34 @@ checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:af
                                                 ).getTime()) /
                                                 (1000 * 60 * 60 * 24)
                                             )) *
+                                          100 <=
                                         100
+                                          ? (1 -
+                                              Math.ceil(
+                                                (new Date(
+                                                  i?.effectivityDate
+                                                ).getTime() -
+                                                  new Date().getTime()) /
+                                                  (1000 * 60 * 60 * 24)
+                                              ) /
+                                                Math.ceil(
+                                                  (new Date(
+                                                    i?.effectivityDate
+                                                  ).getTime() -
+                                                    new Date(
+                                                      new Date(
+                                                        i?.createDate
+                                                          ?._seconds *
+                                                          1000 +
+                                                          i?.createDate
+                                                            ?._nanoseconds /
+                                                            1000000
+                                                      ).toLocaleDateString()
+                                                    ).getTime()) /
+                                                    (1000 * 60 * 60 * 24)
+                                                )) *
+                                            100
+                                          : 100
                                       }%`,
                                     }}
                                   ></div>

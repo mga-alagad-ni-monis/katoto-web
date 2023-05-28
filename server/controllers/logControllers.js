@@ -109,7 +109,34 @@ const getStudentConversation = async (req, res) => {
   }
 };
 
+const getAllConversations = async (req, res) => {
+  try {
+    // const token = jwt.decode(
+    //   req.headers.authorization.slice(7, req.headers.authorization.length)
+    // );
+
+    await db
+      .collection("reports")
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          return res.status(404).send("Error");
+        }
+        let conversationArray = [];
+        querySnapshot.forEach((i) => {
+          i.data().reports.conversationLogs.forEach((j) => {
+            conversationArray.push(j);
+          });
+        });
+        res.status(200).json({ conversations: conversationArray });
+      });
+  } catch (err) {
+    res.status(404).send("Error");
+  }
+};
+
 module.exports = {
   sendConversation,
   getStudentConversation,
+  getAllConversations,
 };

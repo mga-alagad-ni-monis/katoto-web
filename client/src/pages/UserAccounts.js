@@ -335,7 +335,6 @@ function UserAccounts({ toast, auth }) {
 
   return (
     <div className="bg-[--light-brown] h-screen">
-      {console.log("asdsad", editUser)}
       {isOpenAddModal ? (
         <form
           className="w-full justify-between flex"
@@ -981,7 +980,6 @@ function UserAccounts({ toast, auth }) {
           border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
                 onClick={() => {
                   if (editUser.length === 1) {
-                    console.log(editUser[0].email);
                     setEmail(editUser[0].email);
                     setName(editUser[0].name);
                     setUserType(editUser[0].userType);

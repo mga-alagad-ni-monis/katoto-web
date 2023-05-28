@@ -74,7 +74,6 @@ function Chatbot({ toast, auth }) {
             return i.title;
           });
           setKatotoMessage(res.data[0].text);
-
           setTimeout(() => {
             setMessages([
               ...messages,

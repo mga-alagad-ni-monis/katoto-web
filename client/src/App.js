@@ -17,6 +17,7 @@ import Loading from "./components/Loading";
 import Chatbot from "./pages/Chatbot";
 import Campaigns from "./pages/Campaigns";
 import CampaignView from "./pages/CampaignView";
+import Conversations from "./pages/Conversations";
 
 function App() {
   const { auth } = useAuth();
@@ -88,6 +89,19 @@ function App() {
               <Route
                 path="/accounts"
                 element={<UserAccounts toast={toast} auth={auth} />}
+              ></Route>
+            </Route>
+            {/* conversation logs module */}
+            <Route
+              element={
+                <RequiredAuth
+                  allowedRoles={["guidanceCounselor", "systemAdministrator"]}
+                />
+              }
+            >
+              <Route
+                path="/logs"
+                element={<Conversations toast={toast} auth={auth} />}
               ></Route>
             </Route>
             {/* campaigns module */}
