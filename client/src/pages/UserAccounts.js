@@ -924,7 +924,9 @@ function UserAccounts({ toast, auth }) {
               <button
                 className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-                // onClick={}
+                onClick={() => {
+                  window.open("/UserAccountTemplate.xlsx");
+                }}
               >
                 <RiFileExcel2Line size={16} />
                 Download Template
