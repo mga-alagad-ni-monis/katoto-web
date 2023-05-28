@@ -15,11 +15,13 @@ function Campaigns({ toast, auth }) {
   const [imageHeader, setImageHeader] = useState("");
   const [search, setSearch] = useState("");
   const [description, setDescription] = useState("");
+  const [id, setId] = useState(null);
 
   const [isAdd, setIsAdd] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
   const [reload, setReload] = useState(false);
+  const [openKebab, setOpenKebab] = useState(false);
 
   const [campaigns, setCampaigns] = useState([]);
   const [deleteCampaigns, setDeleteCampaigns] = useState([]);
@@ -45,13 +47,14 @@ function Campaigns({ toast, auth }) {
     } catch (err) {}
   };
 
-  const handleAddCampaign = async () => {
+  const handleAddCampaign = async (isPublishedParam) => {
     try {
       await axios
         .post(
           "/api/campaigns/add",
           {
-            isPublished,
+            id,
+            isPublished: isPublishedParam,
             title,
             description,
             campaignType,
@@ -75,6 +78,8 @@ function Campaigns({ toast, auth }) {
           setIsPreview(false);
           setIsPublished(false);
           setReload(!reload);
+          setId(null);
+          setImageHeader("");
           toast.success(res?.data?.message);
         });
     } catch (err) {
@@ -96,6 +101,16 @@ function Campaigns({ toast, auth }) {
     }
   };
 
+  const handleOpenKebab = (id, openKebab) => {
+    setCampaigns(
+      campaigns.map((i, k) => {
+        return id === i.id
+          ? { ...i, openKebab: !openKebab }
+          : { ...i, openKebab: false };
+      })
+    );
+  };
+
   const handleDeleteCampaigns = async () => {
     try {
       await axios
@@ -114,6 +129,31 @@ function Campaigns({ toast, auth }) {
           setDeleteCampaigns([]);
           // setIsAllChecked(false);
           setReload(!reload);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data);
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
+  const handlePublish = async (id) => {
+    try {
+      await axios
+        .post(
+          "/api/campaigns/publish",
+          { id },
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${auth?.accessToken}`,
+            },
+          }
+        )
+        .then((res) => {
+          setReload(!reload);
+          toast.success(res?.data?.message);
         })
         .catch((err) => {
           toast.error(err?.response?.data);
@@ -177,6 +217,11 @@ function Campaigns({ toast, auth }) {
                     ) {
                       setAddCampaignInfo("");
                       setIsAdd(false);
+                      setId(null);
+                      setTitle("");
+                      setEffectivityDate("");
+                      setCampaignType("");
+                      setImageHeader("");
                     }
                   }}
                 >
@@ -187,8 +232,7 @@ function Campaigns({ toast, auth }) {
                   className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
   border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                   onClick={() => {
-                    setIsPublished(false);
-                    handleAddCampaign();
+                    handleAddCampaign(false);
                   }}
                 >
                   Save as Draft
@@ -198,8 +242,7 @@ function Campaigns({ toast, auth }) {
                   className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
   border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                   onClick={() => {
-                    setIsPublished(true);
-                    handleAddCampaign();
+                    handleAddCampaign(true);
                   }}
                 >
                   Save and Publish
@@ -256,6 +299,11 @@ function Campaigns({ toast, auth }) {
                     ) {
                       setAddCampaignInfo("");
                       setIsAdd(false);
+                      setId(null);
+                      setTitle("");
+                      setEffectivityDate("");
+                      setCampaignType("");
+                      setImageHeader("");
                     }
                   }}
                 >
@@ -266,8 +314,7 @@ function Campaigns({ toast, auth }) {
                   className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
   border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                   onClick={() => {
-                    setIsPublished(false);
-                    handleAddCampaign();
+                    handleAddCampaign(false);
                   }}
                 >
                   Save as Draft
@@ -277,8 +324,7 @@ function Campaigns({ toast, auth }) {
                   className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
   border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                   onClick={() => {
-                    setIsPublished(true);
-                    handleAddCampaign();
+                    handleAddCampaign(true);
                   }}
                 >
                   Save and Publish
@@ -460,9 +506,6 @@ function Campaigns({ toast, auth }) {
                           className={`flex font-medium mx-1 px-5 mb-1 py-3 text-sm ${
                             k % 2 ? "bg-[--light-green] rounded-lg" : null
                           }`}
-                          onClick={() => {
-                            handleChecked(k, i.isChecked, i?.id);
-                          }}
                         >
                           <div className="flex gap-5 items-center w-1/3">
                             <div className="w-5 h-5">
@@ -501,7 +544,7 @@ checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:af
                               </p>
                             </div>
                           </div>
-                          <div className="pl-12 flex gap-5 w-2/3 items-center">
+                          <div className="pl-12 flex gap-5 w-2/3 items-center ">
                             <div className="w-1/5">
                               {i?.isPublished ? (
                                 <p className="flex gap-2 items-center">
@@ -647,10 +690,47 @@ checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:af
                                 </div>
                               </div>
                             </div>
-                            <div className="w-1/5 flex justify-end">
-                              <button className="pointer">
+                            <div className="w-1/5 flex justify-end relative">
+                              <button
+                                className="pointer"
+                                onClick={() => {
+                                  handleOpenKebab(i?.id, i?.openKebab);
+                                }}
+                              >
                                 <GoKebabVertical size={24} />
                               </button>
+                              <div
+                                className={`${
+                                  i?.openKebab ? "visible" : "hidden"
+                                } w-max h-max bg-[--dark-green] rounded-lg absolute top-7 p-2 z-30`}
+                              >
+                                {i.isPublished ? null : (
+                                  <button
+                                    className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] 
+                                  hover:bg-[--light-brown] hover:text-[--dark-green]"
+                                    onClick={() => {
+                                      handlePublish(i?.id);
+                                    }}
+                                  >
+                                    Publish
+                                  </button>
+                                )}
+                                <button
+                                  className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] 
+                                  hover:bg-[--light-brown] hover:text-[--dark-green]"
+                                  onClick={() => {
+                                    setIsAdd(true);
+                                    setId(i?.id);
+                                    setTitle(i?.title);
+                                    setEffectivityDate(i?.effectivityDate);
+                                    setCampaignType(i?.campaignType);
+                                    setAddCampaignInfo(i?.campaignInfo);
+                                    setImageHeader(i?.imageHeader);
+                                  }}
+                                >
+                                  Edit
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </td>

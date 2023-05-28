@@ -31,6 +31,7 @@ const uploadPictures = (req, res) => {
 
 const addCampaign = (req, res) => {
   const {
+    id,
     isPublished,
     title,
     description,
@@ -41,25 +42,51 @@ const addCampaign = (req, res) => {
   } = req.body;
 
   try {
-    if (title && campaignType && effectivityDate && campaignInfo) {
+    if (id) {
       db.collection("campaigns")
-        .add({
-          isPublished,
-          title,
-          description,
-          campaignType,
-          effectivityDate,
-          campaignInfo,
-          imageHeader,
-          createDate: new Date(),
-          id: uniqid.time(),
-        })
+        .where("id", "==", id)
+        .get()
         .then((querySnapshot) => {
           if (querySnapshot.empty) {
-            return res.status(404).send("Error");
+            return res.status(404).send("Error!");
           }
-          res.status(200).json({ message: "Successfully added!" });
+
+          querySnapshot.forEach((i) => {
+            i.ref.update({
+              isPublished,
+              title,
+              description,
+              campaignType,
+              effectivityDate,
+              campaignInfo,
+              imageHeader,
+            });
+          });
+          res
+            .status(200)
+            .json({ message: "Successfully published a campaign!" });
         });
+    } else {
+      if (title && campaignType && effectivityDate && campaignInfo) {
+        db.collection("campaigns")
+          .add({
+            isPublished,
+            title,
+            description,
+            campaignType,
+            effectivityDate,
+            campaignInfo,
+            imageHeader,
+            createDate: new Date(),
+            id: uniqid.time(),
+          })
+          .then((querySnapshot) => {
+            if (querySnapshot.empty) {
+              return res.status(404).send("Error");
+            }
+            res.status(200).json({ message: "Successfully added!" });
+          });
+      }
     }
   } catch (err) {
     res.status(404).send("Error");
@@ -108,6 +135,7 @@ const getPublishedCampaigns = (req, res) => {
     res.status(404).send("Error");
   }
 };
+
 const deleteCampaign = async (req, res) => {
   const { deleteCampaigns } = req.body;
   try {
@@ -138,6 +166,31 @@ const deleteCampaign = async (req, res) => {
     res.status(404).send("Error");
   }
 };
+
+const publishCampaign = async (req, res) => {
+  const { id } = req.body;
+  try {
+    await db
+      .collection("campaigns")
+      .where("id", "==", id)
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          return res.status(404).send("Error!");
+        }
+
+        querySnapshot.forEach((i) => {
+          i.ref.update({
+            isPublished: true,
+          });
+        });
+        res.status(200).json({ message: "Successfully published a campaign!" });
+      });
+  } catch (err) {
+    res.status(404).send("Error");
+  }
+};
+
 module.exports = {
   addCampaign,
   uploadPictures,
@@ -145,4 +198,5 @@ module.exports = {
   getCampaigns,
   getPublishedCampaigns,
   deleteCampaign,
+  publishCampaign,
 };

@@ -9,6 +9,7 @@ const {
   getCampaigns,
   getPublishedCampaigns,
   deleteCampaign,
+  publishCampaign,
 } = require("../controllers/campaignControllers");
 
 const router = express.Router();
@@ -42,6 +43,12 @@ router.get(
   "/get-published",
   verifyRoles(["systemAdministrator", "guidanceCounselor", "student"]),
   getPublishedCampaigns
+);
+
+router.post(
+  "/publish",
+  verifyRoles(["systemAdministrator", "guidanceCounselor"]),
+  publishCampaign
 );
 
 module.exports = router;
