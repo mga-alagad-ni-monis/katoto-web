@@ -2,6 +2,7 @@ import React from "react";
 import { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
+import axios from "./api/axios";
 
 import RequiredAuth from "./components/RequiredAuth";
 import PersistLogin from "./components/PersistLogin";
@@ -20,9 +21,25 @@ import CampaignView from "./pages/CampaignView";
 import Conversations from "./pages/Conversations";
 
 function App() {
-  const { auth } = useAuth();
+  const { auth, setAuth } = useAuth();
 
   const [loading, setLoading] = useState(false);
+
+  const logout = async () => {
+    setAuth({});
+    try {
+      await axios
+        .get("/api/logout", { withCredentials: true })
+        .then((res) => {
+          toast.success(res?.data?.message);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data);
+        });
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     <BrowserRouter>
@@ -43,7 +60,7 @@ function App() {
 
         <Route element={<PersistLogin />}>
           {/* navbar component */}
-          <Route element={<NavBar />}>
+          <Route element={<NavBar auth={auth} logout={logout} />}>
             {/* home/chatbot module*/}
             <Route
               element={
@@ -68,7 +85,9 @@ function App() {
           </Route>
 
           {/* sidebar component */}
-          <Route element={<SideBar toast={toast} auth={auth} />}>
+          <Route
+            element={<SideBar toast={toast} auth={auth} logout={logout} />}
+          >
             {/* reports module*/}
             <Route
               element={

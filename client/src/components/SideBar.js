@@ -1,33 +1,14 @@
 import axios from "../api/axios";
 import { useState } from "react";
 import { Link, Outlet } from "react-router-dom";
-import useAuth from "../hooks/useAuth";
 
 import logo from "../assets/logo/katoto-logo.png";
 
 import { BsCardList, BsChatDots, BsMegaphone, BsPeople } from "react-icons/bs";
 import { AiOutlineLogout } from "react-icons/ai";
 
-function SideBar({ toast }) {
+function SideBar({ toast, logout }) {
   const [isHovered, setIsHovered] = useState(false);
-
-  const { setAuth } = useAuth();
-
-  const logout = async () => {
-    setAuth({});
-    try {
-      await axios
-        .get("/api/logout", { withCredentials: true })
-        .then((res) => {
-          toast.success(res?.data?.message);
-        })
-        .catch((err) => {
-          toast.error(err?.response?.data);
-        });
-    } catch (err) {
-      console.log(err);
-    }
-  };
 
   return (
     <>

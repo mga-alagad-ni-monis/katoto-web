@@ -1,7 +1,7 @@
 import { useLocation } from "react-router-dom";
 import { Link, Outlet } from "react-router-dom";
 
-function NavBar() {
+function NavBar({ auth, logout }) {
   const location = useLocation();
 
   return (
@@ -31,9 +31,14 @@ function NavBar() {
                   <Link to={"/view-campaigns"}>Campaigns</Link>
                 </ul>
               </li>
-              <button className="bg-black rounded-full font-semibold text-[--light-brown] text-sm py-2 px-8">
-                Login
-              </button>
+              {auth ? (
+                <button
+                  className="bg-black rounded-full font-semibold text-[--light-brown] text-sm py-2 px-8 hover:bg-transparent hover:text-black border-2 border-black transition-all duration-300"
+                  onClick={logout}
+                >
+                  Logout
+                </button>
+              ) : null}
             </div>
           </nav>
         </div>

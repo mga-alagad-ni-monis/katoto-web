@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { IoSend } from "react-icons/io5";
 import { IoIosSettings } from "react-icons/io";
+import { GiSiren } from "react-icons/gi";
 
 import katoto from "../assets/katoto/katoto-full.png";
 import katotoWatch from "../assets/katoto/katoto-watch.png";
@@ -145,17 +146,22 @@ function Chatbot({ toast, auth }) {
                   <p className="text-xl font-extrabold z-20">KATOTO</p>
                 </div>
               </div>
-              <button
-                className="z-20"
-                onClick={() => {
-                  setIsTyping(false);
-                  setIsGuided(false);
-                  setIsFriendly(false);
-                  setIsInitial(true);
-                }}
-              >
-                <IoIosSettings size={26} />
-              </button>
+              <div className="z-30 flex gap-6 justify-center">
+                <button className="bg-[--red] rounded-full p-1 text-white border border-2 border-[--red] hover:bg-transparent hover:text-[--red] transition-all duration-300">
+                  <GiSiren size={26} />
+                </button>
+                <button
+                  className="z-20"
+                  onClick={() => {
+                    setIsTyping(false);
+                    setIsGuided(false);
+                    setIsFriendly(false);
+                    setIsInitial(true);
+                  }}
+                >
+                  <IoIosSettings size={26} />
+                </button>
+              </div>
             </div>
             <img src={wave} className="w-full absolute top-12" alt="" />
           </div>

@@ -57,7 +57,7 @@ function CampaignView({ token, auth }) {
                   return (
                     <div
                       key={k}
-                      className="bg-[--light-green] rounded-xl py-4 px-6"
+                      className="bg-[--light-green] rounded-xl py-4 px-6 shadow-lg"
                     >
                       <p className="bg-[--dark-green] text-[--light-green] font-semibold rounded-lg w-max p-2 py-1 text-xs">
                         {i?.campaignType}
