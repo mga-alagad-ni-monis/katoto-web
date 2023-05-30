@@ -21,7 +21,7 @@ const uploadPictures = (req, res) => {
       res
         .status(200)
         .send(
-          `${process.env.SERVER_URI}/${process.env.FILE_STORAGE_PATH}${req.files[0].filename}`
+          `${process.env.SERVER_URI}${process.env.FILE_STORAGE_PATH}${req.files[0].filename}`
         );
     }
   } catch (err) {

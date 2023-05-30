@@ -21,7 +21,8 @@ app.listen(process.env.PORT, () => {
 });
 
 //middlewares
-app.use("/tmp", express.static("tmp"));
+
+app.use("/tmp", express.static(process.env.FILE_STORAGE_PATH));
 
 app.use(cors({ origin: process.env.CLIENT_URI, credentials: true }));
 
