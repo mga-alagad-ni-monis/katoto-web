@@ -175,6 +175,7 @@ function Chatbot({ toast, auth }) {
                     setIsGuided(false);
                     setIsFriendly(false);
                     setIsInitial(true);
+                    setFriendlyMessages([]);
                   }}
                 >
                   <AiOutlineCloseCircle size={26} />
