@@ -1,10 +1,10 @@
 const jwt = require("jsonwebtoken");
 
 const db = require("../utils/firebase");
-const { QuerySnapshot } = require("firebase-admin/firestore");
 
 const sendConversation = async (req, res) => {
   const { studentMessage, katotoMessage } = req.body;
+
   try {
     const token = jwt.decode(studentMessage.sender);
 
@@ -111,10 +111,6 @@ const getStudentConversation = async (req, res) => {
 
 const getAllConversations = async (req, res) => {
   try {
-    // const token = jwt.decode(
-    //   req.headers.authorization.slice(7, req.headers.authorization.length)
-    // );
-
     await db
       .collection("reports")
       .get()

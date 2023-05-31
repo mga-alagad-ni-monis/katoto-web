@@ -9,6 +9,8 @@ import "swiper/css/pagination";
 
 import { Pagination } from "swiper";
 
+import { IoChevronBackOutline } from "react-icons/io5";
+
 import katotoWatch from "../assets/katoto/katoto-watch.png";
 
 function CampaignView({ token, auth }) {
@@ -42,7 +44,19 @@ function CampaignView({ token, auth }) {
     <div className="bg-[--light-brown] min-h-screen pt-24">
       <div className="flex flex-col px-52">
         {isShow ? (
-          <div className="pt-24">
+          <div className="pt-20">
+            <div className="w-full pb-12">
+              <button
+                className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
+                onClick={() => {
+                  setIsShow(false);
+                }}
+              >
+                <IoChevronBackOutline size={16} />
+                Back
+              </button>
+            </div>
             <Markup content={campaignInfo} />
           </div>
         ) : (

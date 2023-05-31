@@ -764,7 +764,7 @@ function UserAccounts({ toast, auth }) {
                     value={department}
                     onChange={(e) => {
                       setDepartment(e.target.value);
-                    }}
+                    }}  
                     required
                   >
                     <option
@@ -788,7 +788,7 @@ function UserAccounts({ toast, auth }) {
           hover:bg-transparent hover:text-[--dark-green] transition-all duration-300 font-semibold"
                 type="submit"
               >
-                Submit
+                Save
               </button>
             </div>
           </Modal>

@@ -4,8 +4,8 @@ import axiosDef from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { IoSend } from "react-icons/io5";
-import { IoIosSettings } from "react-icons/io";
-import { GiSiren } from "react-icons/gi";
+import { AiOutlineCloseCircle } from "react-icons/ai";
+import { MdSos } from "react-icons/md";
 
 import katoto from "../assets/katoto/katoto-full.png";
 import katotoWatch from "../assets/katoto/katoto-watch.png";
@@ -24,6 +24,7 @@ function Chatbot({ toast, auth }) {
   const [guidedButtons, setGuidedButtons] = useState([]);
 
   const [messages, setMessages] = useState([]);
+  const [friendlyMessages, setFriendlyMessages] = useState([]);
 
   const bottomRef = useRef(null);
 
@@ -64,6 +65,10 @@ function Chatbot({ toast, auth }) {
       setInputFriendly("");
       setIsTyping(true);
       setMessages([...messages, { sender, message: inputMessage }]);
+      setFriendlyMessages([
+        ...friendlyMessages,
+        { sender, message: inputMessage },
+      ]);
 
       axiosDef
         .post(process.env.REACT_APP_KATOTO_API_URI, {
@@ -71,38 +76,51 @@ function Chatbot({ toast, auth }) {
           message: inputMessage,
         })
         .then((res) => {
-          const buttons = res.data[0].buttons.map((i) => {
-            return i.title;
-          });
-          setKatotoMessage(res.data[0].text);
-          setTimeout(() => {
-            setMessages([
-              ...messages,
-              { sender, message: inputMessage },
-              { sender: "Katoto", message: res.data[0].text },
-            ]);
-            setIsTyping(false);
-            setTimeout(() => {
-              setGuidedButtons(buttons);
-            }, 1000);
-          }, 900);
+          if (isGuided) {
+            const buttons = res.data[0].buttons.map((i) => {
+              return i.title;
+            });
 
-          return axios.post(
-            "/api/logs/send",
-            {
-              studentMessage: { sender, message: inputMessage },
-              katotoMessage: {
-                sender: "Katoto",
-                message: res.data[0].text,
+            setKatotoMessage(res.data[0].text);
+            setTimeout(() => {
+              setMessages([
+                ...messages,
+                { sender, message: inputMessage },
+                { sender: "Katoto", message: res.data[0].text },
+              ]);
+              setIsTyping(false);
+              setTimeout(() => {
+                setGuidedButtons(buttons);
+              }, 1000);
+            }, 900);
+
+            return axios.post(
+              "/api/logs/send",
+              {
+                studentMessage: { sender, message: inputMessage },
+                katotoMessage: {
+                  sender: "Katoto",
+                  message: res.data[0].text,
+                },
               },
-            },
-            {
-              withCredentials: true,
-              headers: {
-                Authorization: `Bearer ${auth?.accessToken}`,
-              },
-            }
-          );
+              {
+                withCredentials: true,
+                headers: {
+                  Authorization: `Bearer ${auth?.accessToken}`,
+                },
+              }
+            );
+          } else {
+            setKatotoMessage(res.data[0].text);
+            setTimeout(() => {
+              setFriendlyMessages([
+                ...friendlyMessages,
+                { sender, message: inputMessage },
+                { sender: "Katoto", message: res.data[0].text },
+              ]);
+              setIsTyping(false);
+            }, 900);
+          }
         })
         .then((res) => {
           setKatotoMessage("");
@@ -148,7 +166,7 @@ function Chatbot({ toast, auth }) {
               </div>
               <div className="z-30 flex gap-6 justify-center">
                 <button className="bg-[--red] rounded-full p-1 text-white border border-2 border-[--red] hover:bg-transparent hover:text-[--red] transition-all duration-300">
-                  <GiSiren size={26} />
+                  <MdSos size={34} />
                 </button>
                 <button
                   className="z-20"
@@ -159,7 +177,7 @@ function Chatbot({ toast, auth }) {
                     setIsInitial(true);
                   }}
                 >
-                  <IoIosSettings size={26} />
+                  <AiOutlineCloseCircle size={26} />
                 </button>
               </div>
             </div>
@@ -259,74 +277,143 @@ function Chatbot({ toast, auth }) {
               </div>
             ) : (
               <div className="px-5 mb-1 flex flex-col overflow-y-auto gap-3 pt-10">
-                {messages.map((i, k) => {
-                  return i.sender === "Katoto" ? (
-                    <motion.div
-                      key={k}
-                      variants={{
-                        hidden: { opacity: 1, scale: 0 },
-                        visible: {
-                          opacity: 1,
-                          scale: 1,
-                          transition: {
-                            delayChildren: 0.2,
-                            staggerChildren: 0.2,
-                          },
-                        },
-                      }}
-                      initial="hidden"
-                      animate="visible"
-                      className="flex w-full justify-start gap-3"
-                    >
-                      <motion.li
-                        variants={{
-                          hidden: { y: 20, opacity: 0 },
-                          visible: {
-                            y: 0,
-                            opacity: 1,
-                          },
-                        }}
-                        className="flex w-full justify-start gap-3 list-none"
-                      >
-                        <img src={logo} alt="logo" className="h-[30px]" />
-                        <div className="bg-black/10 max-w-[50%] py-3 px-4 rounded-b-3xl rounded-tr-3xl text-sm flex items-center text-left mt-5">
-                          {i.message}
-                        </div>
-                      </motion.li>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key={k}
-                      variants={{
-                        hidden: { opacity: 1, scale: 0 },
-                        visible: {
-                          opacity: 1,
-                          scale: 1,
-                          transition: {
-                            delayChildren: 0.2,
-                            staggerChildren: 0.2,
-                          },
-                        },
-                      }}
-                      initial="hidden"
-                      animate="visible"
-                      className="flex w-full justify-end"
-                    >
-                      <motion.li
-                        variants={{
-                          hidden: { y: 20, opacity: 0 },
-                          visible: {
-                            y: 0,
-                            opacity: 1,
-                          },
-                        }}
-                        className="bg-[--light-green] max-w-[50%] py-3 px-4 rounded-t-3xl rounded-bl-3xl text-sm flex items-center text-left"
-                      >
-                        {i.message}
-                      </motion.li>
-                    </motion.div>
-                  );
-                })}
+                {isGuided
+                  ? messages.map((i, k) => {
+                      return i.sender === "Katoto" ? (
+                        <motion.div
+                          key={k}
+                          variants={{
+                            hidden: { opacity: 1, scale: 0 },
+                            visible: {
+                              opacity: 1,
+                              scale: 1,
+                              transition: {
+                                delayChildren: 0.2,
+                                staggerChildren: 0.2,
+                              },
+                            },
+                          }}
+                          initial="hidden"
+                          animate="visible"
+                          className="flex w-full justify-start gap-3"
+                        >
+                          <motion.li
+                            variants={{
+                              hidden: { y: 20, opacity: 0 },
+                              visible: {
+                                y: 0,
+                                opacity: 1,
+                              },
+                            }}
+                            className="flex w-full justify-start gap-3 list-none"
+                          >
+                            <img src={logo} alt="logo" className="h-[30px]" />
+                            <div className="bg-black/10 max-w-[50%] py-3 px-4 rounded-b-3xl rounded-tr-3xl text-sm flex items-center text-left mt-5">
+                              {i.message}
+                            </div>
+                          </motion.li>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key={k}
+                          variants={{
+                            hidden: { opacity: 1, scale: 0 },
+                            visible: {
+                              opacity: 1,
+                              scale: 1,
+                              transition: {
+                                delayChildren: 0.2,
+                                staggerChildren: 0.2,
+                              },
+                            },
+                          }}
+                          initial="hidden"
+                          animate="visible"
+                          className="flex w-full justify-end"
+                        >
+                          <motion.li
+                            variants={{
+                              hidden: { y: 20, opacity: 0 },
+                              visible: {
+                                y: 0,
+                                opacity: 1,
+                              },
+                            }}
+                            className="bg-[--light-green] max-w-[50%] py-3 px-4 rounded-t-3xl rounded-bl-3xl text-sm flex items-center text-left"
+                          >
+                            {i.message}
+                          </motion.li>
+                        </motion.div>
+                      );
+                    })
+                  : friendlyMessages.map((i, k) => {
+                      return i.sender === "Katoto" ? (
+                        <motion.div
+                          key={k}
+                          variants={{
+                            hidden: { opacity: 1, scale: 0 },
+                            visible: {
+                              opacity: 1,
+                              scale: 1,
+                              transition: {
+                                delayChildren: 0.2,
+                                staggerChildren: 0.2,
+                              },
+                            },
+                          }}
+                          initial="hidden"
+                          animate="visible"
+                          className="flex w-full justify-start gap-3"
+                        >
+                          <motion.li
+                            variants={{
+                              hidden: { y: 20, opacity: 0 },
+                              visible: {
+                                y: 0,
+                                opacity: 1,
+                              },
+                            }}
+                            className="flex w-full justify-start gap-3 list-none"
+                          >
+                            <img src={logo} alt="logo" className="h-[30px]" />
+                            <div className="bg-black/10 max-w-[50%] py-3 px-4 rounded-b-3xl rounded-tr-3xl text-sm flex items-center text-left mt-5">
+                              {i.message}
+                            </div>
+                          </motion.li>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key={k}
+                          variants={{
+                            hidden: { opacity: 1, scale: 0 },
+                            visible: {
+                              opacity: 1,
+                              scale: 1,
+                              transition: {
+                                delayChildren: 0.2,
+                                staggerChildren: 0.2,
+                              },
+                            },
+                          }}
+                          initial="hidden"
+                          animate="visible"
+                          className="flex w-full justify-end"
+                        >
+                          <motion.li
+                            variants={{
+                              hidden: { y: 20, opacity: 0 },
+                              visible: {
+                                y: 0,
+                                opacity: 1,
+                              },
+                            }}
+                            className="bg-[--light-green] max-w-[50%] py-3 px-4 rounded-t-3xl rounded-bl-3xl text-sm flex items-center text-left"
+                          >
+                            {i.message}
+                          </motion.li>
+                        </motion.div>
+                      );
+                    })}
                 {isTyping ? (
                   <motion.div
                     variants={{
@@ -381,7 +468,7 @@ function Chatbot({ toast, auth }) {
                   }}
                   initial="hidden"
                   animate="visible"
-                  className="px-5 py-3 list-none justify-between flex w-full mb-3"
+                  className="px-5 py-3 list-none gap-2 justify-center flex w-full mb-3 flex-wrap"
                 >
                   {guidedButtons.map((i, k) => {
                     return (
