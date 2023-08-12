@@ -3,8 +3,8 @@ const jwt = require("jsonwebtoken");
 const db = require("../utils/firebase");
 
 const sendConversation = async (req, res) => {
-  const { studentMessage, katotoMessage } = req.body;
-
+  const { studentMessage, katotoMessage, isGuided } = req.body;
+  console.log(studentMessage, isGuided);
   try {
     const token = jwt.decode(studentMessage.sender);
 
@@ -20,38 +20,16 @@ const sendConversation = async (req, res) => {
 
     let reports = await document.get();
 
-    let conversationLogsArray = reports.data().reports.conversationLogs;
+    if (isGuided) {
+      let guidedArray = reports.data().reports.dailyUsers.guided;
 
-    if (conversationLogsArray.length === 0) {
-      conversationLogsArray.push({
-        email: token.email,
-        conversation: [
-          {
-            katotoMessage,
-            studentMessage: {
-              message: studentMessage.message,
-              sender: token.email,
-            },
-            dateTime: new Date(),
-          },
-        ],
-      });
-    } else {
-      if (conversationLogsArray.some((i) => i.email === token.email)) {
-        console.log("norem");
-        conversationLogsArray.map((i) => {
-          if (i.email === token.email) {
-            i.conversation.push({
-              katotoMessage,
-              studentMessage: {
-                message: studentMessage.message,
-                sender: token.email,
-              },
-              dateTime: new Date(),
-            });
-          }
-        });
-      } else {
+      if (!guidedArray.includes(token.email)) {
+        guidedArray.push(token.email);
+      }
+
+      let conversationLogsArray = reports.data().reports.conversationLogs;
+
+      if (conversationLogsArray.length === 0) {
         conversationLogsArray.push({
           email: token.email,
           conversation: [
@@ -65,12 +43,52 @@ const sendConversation = async (req, res) => {
             },
           ],
         });
+      } else {
+        if (conversationLogsArray.some((i) => i.email === token.email)) {
+          conversationLogsArray.map((i) => {
+            if (i.email === token.email) {
+              i.conversation.push({
+                katotoMessage,
+                studentMessage: {
+                  message: studentMessage.message,
+                  sender: token.email,
+                },
+                dateTime: new Date(),
+              });
+            }
+          });
+        } else {
+          conversationLogsArray.push({
+            email: token.email,
+            conversation: [
+              {
+                katotoMessage,
+                studentMessage: {
+                  message: studentMessage.message,
+                  sender: token.email,
+                },
+                dateTime: new Date(),
+              },
+            ],
+          });
+        }
       }
-    }
 
-    await document.update({
-      "reports.conversationLogs": conversationLogsArray,
-    });
+      await document.update({
+        "reports.conversationLogs": conversationLogsArray,
+        "reports.dailyUsers.guided": guidedArray,
+      });
+    } else {
+      let friendlyArray = reports.data().reports.dailyUsers.friendly;
+
+      if (!friendlyArray.includes(token.email)) {
+        friendlyArray.push(token.email);
+      }
+
+      await document.update({
+        "reports.dailyUsers.friendly": friendlyArray,
+      });
+    }
 
     res.status(200);
   } catch (err) {

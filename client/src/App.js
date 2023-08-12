@@ -98,7 +98,7 @@ function App() {
             >
               <Route
                 path="/reports"
-                element={<Reports toast={toast} />}
+                element={<Reports auth={auth} toast={toast} />}
               ></Route>
             </Route>
             {/* user-accounts module */}

@@ -12,6 +12,7 @@ const accountRoutes = require("./routes/accountRoutes");
 const userAccountRoutes = require("./routes/userAccountRoutes");
 const campaignRoutes = require("./routes/campaignRoutes");
 const logRoutes = require("./routes/logRoutes");
+const reportRoutes = require("./routes/reportRoutes");
 const { createDocument } = require("./controllers/reportControllers");
 
 const app = express();
@@ -45,6 +46,7 @@ app.use(verifyJwt);
 app.use("/api/accounts", userAccountRoutes);
 app.use("/api/campaigns", campaignRoutes);
 app.use("/api/logs", logRoutes);
+app.use("/api/reports", reportRoutes);
 
 cron.schedule("0 0 * * *", () => {
   createDocument();

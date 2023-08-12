@@ -7,7 +7,7 @@ import logo from "../assets/logo/katoto-logo.png";
 import { BsCardList, BsChatDots, BsMegaphone, BsPeople } from "react-icons/bs";
 import { AiOutlineLogout } from "react-icons/ai";
 
-function SideBar({ toast, logout }) {
+function SideBar({ toast, logout, auth }) {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -75,19 +75,23 @@ function SideBar({ toast, logout }) {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    to={"/accounts"}
-                    className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
-                  >
-                    {isHovered ? (
-                      <div className="flex gap-5 items-center">
-                        <BsPeople size={20} />
-                        <span className="word-in">User Accounts</span>
-                      </div>
-                    ) : (
-                      <BsPeople size={24} />
-                    )}
-                  </Link>
+                  {auth.roles !== undefined ? (
+                    auth.roles[0] !== "systemAdministrator" ? null : (
+                      <Link
+                        to={"/accounts"}
+                        className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
+                      >
+                        {isHovered ? (
+                          <div className="flex gap-5 items-center">
+                            <BsPeople size={20} />
+                            <span className="word-in">User Accounts</span>
+                          </div>
+                        ) : (
+                          <BsPeople size={24} />
+                        )}
+                      </Link>
+                    )
+                  ) : null}
                 </li>
               </ul>
             </div>

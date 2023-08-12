@@ -102,6 +102,7 @@ function Chatbot({ toast, auth }) {
                   sender: "Katoto",
                   message: res.data[0].text,
                 },
+                isGuided,
               },
               {
                 withCredentials: true,
@@ -120,6 +121,20 @@ function Chatbot({ toast, auth }) {
               ]);
               setIsTyping(false);
             }, 900);
+
+            return axios.post(
+              "/api/logs/send",
+              {
+                studentMessage: { sender },
+                isGuided,
+              },
+              {
+                withCredentials: true,
+                headers: {
+                  Authorization: `Bearer ${auth?.accessToken}`,
+                },
+              }
+            );
           }
         })
         .then((res) => {
