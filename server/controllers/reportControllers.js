@@ -19,7 +19,10 @@ const createDocument = async () => {
           friendly: [],
           guided: [],
         },
-        demographics: [],
+        demographics: {
+          friendly: [],
+          guided: [],
+        },
         feedback: [],
         conversationLogs: [],
       },

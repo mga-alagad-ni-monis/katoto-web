@@ -2,9 +2,11 @@ const jwt = require("jsonwebtoken");
 
 const db = require("../utils/firebase");
 
+const ageCalculator = require("age-calculator");
+
 const sendConversation = async (req, res) => {
   const { studentMessage, katotoMessage, isGuided } = req.body;
-  console.log(studentMessage, isGuided);
+
   try {
     const token = jwt.decode(studentMessage.sender);
 
@@ -19,6 +21,44 @@ const sendConversation = async (req, res) => {
     const document = await db.collection("reports").doc(currentDate);
 
     let reports = await document.get();
+
+    db.collection("accounts")
+      .where("credentials.email", "==", token.email)
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          return res.status(404).send("Unknown user!");
+        }
+
+        querySnapshot.forEach(async (doc) => {
+          let demographics = reports.data().reports.demographics;
+
+          let user = {
+            email: doc.data().credentials.email,
+            idNo: doc.data().idNo,
+            age: new ageCalculator.AgeFromDateString(doc.data().birthday).age,
+            gender: doc.data().gender,
+            department: doc.data().department,
+            mainDepartment: doc.data().mainDepartment,
+            concern: "",
+          };
+          if (isGuided) {
+            if (!demographics.guided.some((i) => i.idNo == doc.data().idNo)) {
+              demographics.guided.push(user);
+              await document.update({
+                "reports.demographics.guided": demographics.guided,
+              });
+            }
+          } else {
+            if (!demographics.friendly.some((i) => i.idNo == doc.data().idNo)) {
+              demographics.friendly.push(user);
+              await document.update({
+                "reports.demographics.friendly": demographics.friendly,
+              });
+            }
+          }
+        });
+      });
 
     if (isGuided) {
       let guidedArray = reports.data().reports.dailyUsers.guided;

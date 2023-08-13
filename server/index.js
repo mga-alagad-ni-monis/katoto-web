@@ -48,6 +48,6 @@ app.use("/api/campaigns", campaignRoutes);
 app.use("/api/logs", logRoutes);
 app.use("/api/reports", reportRoutes);
 
-cron.schedule("0 0 * * *", () => {
+cron.schedule("34 15 * * *", () => {
   createDocument();
 });
