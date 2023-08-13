@@ -18,11 +18,13 @@ function UserDemographics({ data, isGuided }) {
   const [mainDeparmentData, setMainDeparmentData] = useState([]);
   const [deparmentData, setDeparmentData] = useState([]);
   const [ageData, setAgeData] = useState([]);
+  const [genderData, setGenderData] = useState([]);
 
   useEffect(() => {
     getMainDepartmentData();
     getDepartmentData();
     getAgeData();
+    getGenderData();
   }, [data, isGuided]);
 
   const COLORS = ["#000000", "#a9e6c2", "#00000033", "#ff6961"];
@@ -160,6 +162,34 @@ function UserDemographics({ data, isGuided }) {
     }
   };
 
+  const getGenderData = () => {
+    if (data !== undefined) {
+      let genders = ["Male", "Female", "Other"];
+
+      let gender = [];
+
+      genders.map((i) => gender.push({ name: i, value: 0 }));
+
+      data.forEach((i) => {
+        let demographicsArray = isGuided
+          ? i.demographics.guided
+          : i.demographics.friendly;
+
+        if (demographicsArray !== undefined) {
+          demographicsArray.forEach((j) => {
+            gender.forEach((k) => {
+              if (j.gender === k.name) {
+                k.value++;
+              }
+            });
+          });
+        }
+      });
+
+      setGenderData(gender);
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between w-full items-center mb-5">
@@ -218,6 +248,29 @@ function UserDemographics({ data, isGuided }) {
             <Legend />
             <Bar dataKey="value" fill="#8884d8" />
           </BarChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="h-[500px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart width={400} height={400}>
+            <Pie
+              data={genderData}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              label={renderCustomizedLabel}
+              outerRadius={80}
+              fill="#8884d8"
+              dataKey="value"
+            >
+              {data.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={COLORS[index % COLORS.length]}
+                />
+              ))}
+            </Pie>
+          </PieChart>
         </ResponsiveContainer>
       </div>
     </div>
