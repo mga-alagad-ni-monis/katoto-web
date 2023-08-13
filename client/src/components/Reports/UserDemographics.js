@@ -1,14 +1,28 @@
 import { useState, useEffect } from "react";
 
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  Bar,
+} from "recharts";
 
 function UserDemographics({ data, isGuided }) {
   const [mainDeparmentData, setMainDeparmentData] = useState([]);
   const [deparmentData, setDeparmentData] = useState([]);
+  const [ageData, setAgeData] = useState([]);
 
   useEffect(() => {
     getMainDepartmentData();
     getDepartmentData();
+    getAgeData();
   }, [data, isGuided]);
 
   const COLORS = ["#000000", "#a9e6c2", "#00000033", "#ff6961"];
@@ -118,10 +132,38 @@ function UserDemographics({ data, isGuided }) {
     }
   };
 
+  const getAgeData = () => {
+    if (data !== undefined) {
+      let ages = ["18", "19", "20", "21", "22"];
+
+      let age = [];
+
+      ages.map((i) => age.push({ name: i, value: 0 }));
+
+      data.forEach((i) => {
+        let demographicsArray = isGuided
+          ? i.demographics.guided
+          : i.demographics.friendly;
+
+        if (demographicsArray !== undefined) {
+          demographicsArray.forEach((j) => {
+            age.forEach((k) => {
+              if (j.age.toString() === k.name) {
+                k.value++;
+              }
+            });
+          });
+        }
+      });
+
+      setAgeData(age);
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between w-full items-center mb-5">
-        <p className="flex text-xl font-extrabold">Daily Active Users</p>
+        <p className="flex text-xl font-extrabold">User Demographics</p>
       </div>
       <div className="h-[500px] w-full">
         <ResponsiveContainer width={"100%"} height={"100%"}>
@@ -154,6 +196,28 @@ function UserDemographics({ data, isGuided }) {
               label
             ></Pie>
           </PieChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="h-[500px] w-full">
+        <ResponsiveContainer width={"100%"} height={"100%"}>
+          <BarChart
+            width={500}
+            height={300}
+            data={ageData}
+            margin={{
+              top: 5,
+              right: 30,
+              left: 20,
+              bottom: 5,
+            }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="value" fill="#8884d8" />
+          </BarChart>
         </ResponsiveContainer>
       </div>
     </div>
