@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import NavBar from "./components/NavBar";
 import Home from "./pages/Home";
 import Reports from "./pages/Reports";
+import Train from "./pages/Train";
 import UserAccounts from "./pages/UserAccounts";
 import SideBar from "./components/SideBar";
 import Loading from "./components/Loading";
@@ -99,6 +100,19 @@ function App() {
               <Route
                 path="/reports"
                 element={<Reports auth={auth} toast={toast} />}
+              ></Route>
+            </Route>
+            {/* train module */}
+            <Route
+              element={
+                <RequiredAuth
+                  allowedRoles={["guidanceCounselor", "systemAdministrator"]}
+                />
+              }
+            >
+              <Route
+                path="/train"
+                element={<Train auth={auth} toast={toast} />}
               ></Route>
             </Route>
             {/* user-accounts module */}

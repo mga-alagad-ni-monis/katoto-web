@@ -60,6 +60,7 @@ function Chatbot({ toast, auth }) {
   };
 
   const handleSubmitMessage = async (sender, inputMessage) => {
+    console.log(typeof inputMessage);
     try {
       setGuidedButtons([]);
       setInputFriendly("");

@@ -4,7 +4,13 @@ import { Link, Outlet } from "react-router-dom";
 
 import logo from "../assets/logo/katoto-logo.png";
 
-import { BsCardList, BsChatDots, BsMegaphone, BsPeople } from "react-icons/bs";
+import {
+  BsCardList,
+  BsChatDots,
+  BsMegaphone,
+  BsPeople,
+  BsRobot,
+} from "react-icons/bs";
 import { AiOutlineLogout } from "react-icons/ai";
 
 function SideBar({ toast, logout, auth }) {
@@ -44,6 +50,21 @@ function SideBar({ toast, logout, auth }) {
                       </div>
                     ) : (
                       <BsCardList size={24} />
+                    )}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to={"/train"}
+                    className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
+                  >
+                    {isHovered ? (
+                      <div className="flex gap-5 items-center">
+                        <BsRobot size={20} />
+                        <span className="word-in">Train</span>
+                      </div>
+                    ) : (
+                      <BsRobot size={24} />
                     )}
                   </Link>
                 </li>

@@ -13,6 +13,7 @@ const userAccountRoutes = require("./routes/userAccountRoutes");
 const campaignRoutes = require("./routes/campaignRoutes");
 const logRoutes = require("./routes/logRoutes");
 const reportRoutes = require("./routes/reportRoutes");
+const trainRoutes = require("./routes/trainRoutes");
 const { createDocument } = require("./controllers/reportControllers");
 
 const app = express();
@@ -47,7 +48,8 @@ app.use("/api/accounts", userAccountRoutes);
 app.use("/api/campaigns", campaignRoutes);
 app.use("/api/logs", logRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/train", trainRoutes);
 
-cron.schedule("34 15 * * *", () => {
+cron.schedule("0 0 * * *", () => {
   createDocument();
 });

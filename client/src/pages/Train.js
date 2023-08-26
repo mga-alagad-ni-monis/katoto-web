@@ -1,34 +1,58 @@
 import { useEffect, useState } from "react";
+
 import axios from "../api/axios";
+import TrainingEditor from "../components/Train/TrainingEditor";
 
 import { FiChevronDown } from "react-icons/fi";
 
-import UserNumberReport from "../components/Reports/UserNumberReport";
-import UserDemographics from "../components/Reports/UserDemographics";
-
-function Reports({ auth, toast }) {
-  const [reports, setReports] = useState([]);
+function Train({ auth, toast }) {
+  const [trainingData, setTrainingData] = useState();
   const [isGuided, setIsGuided] = useState(true);
   const [isOpenModeDropDown, setIsOpenModeDropDown] = useState(false);
   const [selectedMode, setSelectedMode] = useState("Counselor-Guided");
-
-  const mode = ["Counselor-Guided", "Friendly Conversation"];
+  const [mode, setMode] = useState("cg");
 
   useEffect(() => {
-    handleGetReports();
+    handleGetFiles();
   }, []);
 
-  const handleGetReports = async () => {
+  const handleGetFiles = async () => {
     try {
       await axios
-        .get("/api/reports/reports", {
+        .get("/api/train/get-files", {
           withCredentials: true,
           headers: {
             Authorization: `Bearer ${auth?.accessToken}`,
           },
         })
         .then((res) => {
-          setReports(res.data.reports);
+          setTrainingData(res?.data?.trainingData);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data);
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
+  const modes = ["Counselor-Guided", "Friendly Conversation"];
+
+  const handleSetFiles = async (data, file) => {
+    try {
+      await axios
+        .post(
+          "/api/train/set-files",
+          { data, mode, file },
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${auth?.accessToken}`,
+            },
+          }
+        )
+        .then((res) => {
+          toast.success(res?.data?.message);
         })
         .catch((err) => {
           toast.error(err?.response?.data);
@@ -41,9 +65,7 @@ function Reports({ auth, toast }) {
   return (
     <div className="bg-[--light-brown] h-full">
       <div className="flex flex-col px-52">
-        <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">
-          Reports
-        </p>
+        <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">Train</p>
         <div className="flex gap-5">
           <div className="hs-dropdown relative inline-flex gap-5">
             <button
@@ -63,7 +85,7 @@ function Reports({ auth, toast }) {
               } absolute top-9 right-0 transition-all duration-100 w-[12.6rem]
               z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
             >
-              {mode.map((i, k) => {
+              {modes.map((i, k) => {
                 return (
                   <button
                     key={k}
@@ -71,8 +93,10 @@ function Reports({ auth, toast }) {
                     onClick={() => {
                       if (i === "Counselor-Guided") {
                         setIsGuided(true);
+                        setMode("cg");
                       } else {
                         setIsGuided(false);
+                        setMode("fc");
                       }
                       setIsOpenModeDropDown(!isOpenModeDropDown);
                       setSelectedMode(i);
@@ -85,11 +109,14 @@ function Reports({ auth, toast }) {
             </div>
           </div>
         </div>
-        <UserNumberReport data={reports} isGuided={isGuided}></UserNumberReport>
-        <UserDemographics data={reports} isGuided={isGuided}></UserDemographics>
+        <TrainingEditor
+          trainingData={isGuided ? trainingData?.cG : trainingData?.fC}
+          handleSetFiles={handleSetFiles}
+          selectedMode={selectedMode}
+        ></TrainingEditor>
       </div>
     </div>
   );
 }
 
-export default Reports;
+export default Train;
