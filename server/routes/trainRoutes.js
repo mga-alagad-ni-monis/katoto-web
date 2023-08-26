@@ -2,7 +2,11 @@ const verifyRoles = require("../middleware/verifyRoles");
 
 const express = require("express");
 
-const { getFiles, setFiles } = require("../controllers/trainControllers");
+const {
+  getFiles,
+  setFiles,
+  train,
+} = require("../controllers/trainControllers");
 
 const router = express.Router();
 
@@ -16,6 +20,12 @@ router.post(
   "/set-files",
   verifyRoles(["guidanceCounselor", "systemAdministrator"]),
   setFiles
+);
+
+router.post(
+  "/train",
+  verifyRoles(["guidanceCounselor", "systemAdministrator"]),
+  train
 );
 
 module.exports = router;

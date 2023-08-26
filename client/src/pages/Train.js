@@ -62,6 +62,30 @@ function Train({ auth, toast }) {
     }
   };
 
+  const handleTrain = async () => {
+    try {
+      await axios
+        .post(
+          "/api/train/train",
+          { mode },
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${auth?.accessToken}`,
+            },
+          }
+        )
+        .then((res) => {
+          toast.success(res?.data?.message);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data);
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
   return (
     <div className="bg-[--light-brown] h-full">
       <div className="flex flex-col px-52">
@@ -113,6 +137,7 @@ function Train({ auth, toast }) {
           trainingData={isGuided ? trainingData?.cG : trainingData?.fC}
           handleSetFiles={handleSetFiles}
           selectedMode={selectedMode}
+          handleTrain={handleTrain}
         ></TrainingEditor>
       </div>
     </div>

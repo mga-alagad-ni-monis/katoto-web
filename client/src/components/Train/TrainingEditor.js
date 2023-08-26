@@ -6,7 +6,12 @@ import Editor from "@monaco-editor/react";
 import { MdUpdate } from "react-icons/md";
 import { FiUploadCloud, FiChevronDown } from "react-icons/fi";
 
-function TrainingEditor({ trainingData, handleSetFiles, selectedMode }) {
+function TrainingEditor({
+  trainingData,
+  handleSetFiles,
+  selectedMode,
+  handleTrain,
+}) {
   const [updatedTrainingData, setUpdatedTrainingData] = useState("");
   const [isOpenFileButton, setIsOpenFileButton] = useState(false);
   const [filterFile, setFilterFile] = useState("Domain file");
@@ -110,11 +115,11 @@ function TrainingEditor({ trainingData, handleSetFiles, selectedMode }) {
             className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
       border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
             onClick={() => {
-              handleSetFiles(updatedTrainingData);
+              handleTrain();
             }}
           >
             <FiUploadCloud size={16} />
-            Update and Train
+            Train
           </button>
         </div>
       </div>
