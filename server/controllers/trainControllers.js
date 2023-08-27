@@ -1,6 +1,6 @@
 const yaml = require("js-yaml");
 const fs = require("fs");
-const { spawn, exec } = require("child_process");
+const { spawn } = require("child_process");
 
 const getFiles = async (req, res) => {
   try {
@@ -69,38 +69,7 @@ const setSpecificFile = (directory, file, data) => {
   return;
 };
 
-const train = async (req, res) => {
-  const { mode } = req.body;
-  try {
-    const trainData = spawn(
-      `conda activate katoto-ml-${mode} && rasa train --config config.yml && rasa run --enable-api --cors \"*\" -p 8080 --debug`,
-      {
-        shell: true,
-        cwd: `${process.env.RASA_FILES_PATH}katoto-ml-${mode}`,
-      }
-    );
-    trackLogs(trainData);
-  } catch (err) {
-    res.status(404).send("Error");
-  }
-};
-
-const trackLogs = (command) => {
-  command.stdout.on("data", (data) => {
-    console.log(`stdout: ${data}`);
-  });
-
-  command.stderr.on("data", (data) => {
-    console.error(`stderr: ${data}`);
-  });
-
-  command.on("close", (code) => {
-    console.log(`child process exited with code ${code}`);
-  });
-};
-
 module.exports = {
   getFiles,
   setFiles,
-  train,
 };

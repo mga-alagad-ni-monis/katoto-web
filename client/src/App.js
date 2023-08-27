@@ -1,8 +1,10 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "./api/axios";
+import io from "socket.io-client";
+import jwt_decode from "jwt-decode";
 
 import RequiredAuth from "./components/RequiredAuth";
 import PersistLogin from "./components/PersistLogin";
@@ -25,6 +27,18 @@ function App() {
   const { auth, setAuth } = useAuth();
 
   const [loading, setLoading] = useState(false);
+  const [socket, setSocket] = useState(null);
+  const [email, setEmail] = useState(null);
+
+  useEffect(() => {
+    setSocket(io(process.env.REACT_APP_API_URI));
+  }, []);
+
+  useEffect(() => {
+    if (auth?.accessToken !== undefined) {
+      socket?.emit("newUser", jwt_decode(auth?.accessToken)?.email);
+    }
+  }, [socket, email, auth]);
 
   const logout = async () => {
     setAuth({});
@@ -112,7 +126,7 @@ function App() {
             >
               <Route
                 path="/train"
-                element={<Train auth={auth} toast={toast} />}
+                element={<Train auth={auth} toast={toast} socket={socket} />}
               ></Route>
             </Route>
             {/* user-accounts module */}

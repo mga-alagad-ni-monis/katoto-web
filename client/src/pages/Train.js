@@ -4,8 +4,9 @@ import axios from "../api/axios";
 import TrainingEditor from "../components/Train/TrainingEditor";
 
 import { FiChevronDown } from "react-icons/fi";
+import { fetchEventSource } from "@microsoft/fetch-event-source";
 
-function Train({ auth, toast }) {
+function Train({ auth, toast, socket }) {
   const [trainingData, setTrainingData] = useState();
   const [isGuided, setIsGuided] = useState(true);
   const [isOpenModeDropDown, setIsOpenModeDropDown] = useState(false);
@@ -14,6 +15,16 @@ function Train({ auth, toast }) {
 
   useEffect(() => {
     handleGetFiles();
+  }, []);
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("displayData", (data) => {
+        var buffer = new Uint8Array(data.data);
+        var fileString = String.fromCharCode.apply(null, buffer);
+        console.log(fileString);
+      });
+    }
   }, []);
 
   const handleGetFiles = async () => {
@@ -64,23 +75,10 @@ function Train({ auth, toast }) {
 
   const handleTrain = async () => {
     try {
-      await axios
-        .post(
-          "/api/train/train",
-          { mode },
-          {
-            withCredentials: true,
-            headers: {
-              Authorization: `Bearer ${auth?.accessToken}`,
-            },
-          }
-        )
-        .then((res) => {
-          toast.success(res?.data?.message);
-        })
-        .catch((err) => {
-          toast.error(err?.response?.data);
-        });
+      socket.emit("train", {
+        mode: mode,
+        id: socket.id,
+      });
     } catch (err) {
       toast.error("Error");
     }
@@ -133,6 +131,7 @@ function Train({ auth, toast }) {
             </div>
           </div>
         </div>
+
         <TrainingEditor
           trainingData={isGuided ? trainingData?.cG : trainingData?.fC}
           handleSetFiles={handleSetFiles}

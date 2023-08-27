@@ -27,6 +27,8 @@ function TrainingEditor({
     setFile("domain");
   }, [selectedMode]);
 
+  useEffect(() => {}, []);
+
   const monacoRef = useRef(null);
 
   const handleEditorDidMount = (editor, monaco) => {
