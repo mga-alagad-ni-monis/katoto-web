@@ -17,16 +17,6 @@ function Train({ auth, toast, socket }) {
     handleGetFiles();
   }, []);
 
-  useEffect(() => {
-    if (socket) {
-      socket.on("displayData", (data) => {
-        var buffer = new Uint8Array(data.data);
-        var fileString = String.fromCharCode.apply(null, buffer);
-        console.log(fileString);
-      });
-    }
-  }, []);
-
   const handleGetFiles = async () => {
     try {
       await axios
@@ -85,7 +75,7 @@ function Train({ auth, toast, socket }) {
   };
 
   return (
-    <div className="bg-[--light-brown] h-full">
+    <div className="bg-[--light-brown] h-screen">
       <div className="flex flex-col px-52">
         <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">Train</p>
         <div className="flex gap-5">
@@ -137,6 +127,7 @@ function Train({ auth, toast, socket }) {
           handleSetFiles={handleSetFiles}
           selectedMode={selectedMode}
           handleTrain={handleTrain}
+          socket={socket}
         ></TrainingEditor>
       </div>
     </div>

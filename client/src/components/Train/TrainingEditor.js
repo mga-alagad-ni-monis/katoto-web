@@ -11,12 +11,18 @@ function TrainingEditor({
   handleSetFiles,
   selectedMode,
   handleTrain,
+  socket,
 }) {
+  const monacoRef = useRef(null);
+  const bottomRef = useRef(null);
+
   const [updatedTrainingData, setUpdatedTrainingData] = useState("");
   const [isOpenFileButton, setIsOpenFileButton] = useState(false);
   const [filterFile, setFilterFile] = useState("Domain file");
   const [file, setFile] = useState("domain");
   const [data, setData] = useState({});
+  const [train, setTrain] = useState(false);
+  const [shellLogs, setShellLogs] = useState([]);
 
   useEffect(() => {
     setData(trainingData?.domainFile);
@@ -27,9 +33,19 @@ function TrainingEditor({
     setFile("domain");
   }, [selectedMode]);
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    if (socket) {
+      socket.on("displayData", (data) => {
+        var buffer = new Uint8Array(data.data);
+        var fileString = String.fromCharCode.apply(null, buffer);
+        setShellLogs((shellLogs) => [...shellLogs, fileString]);
+      });
+    }
+  }, [train]);
 
-  const monacoRef = useRef(null);
+  useEffect(() => {
+    bottomRef?.current?.scrollIntoView({ behavior: "smooth" });
+  }, [shellLogs]);
 
   const handleEditorDidMount = (editor, monaco) => {
     monacoRef.current = monaco;
@@ -64,11 +80,25 @@ function TrainingEditor({
       setFile("stories");
     }
   };
+
   const files = ["Domain file", "NLU file", "Rules file", "Stories file"];
+
+  const getDate = () => {
+    const date = new Date();
+    const options = {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      hour12: true,
+    };
+    return new Intl.DateTimeFormat("en-US", options).format(date);
+  };
 
   return (
     <div>
-      <div className="flex justify-between">
+      <div className="flex justify-between mb-5 mt-5">
         <div className="hs-dropdown relative inline-flex gap-5">
           <button
             type="button"
@@ -103,21 +133,36 @@ function TrainingEditor({
           </div>
         </div>
         <div className="flex gap-5">
-          <button
-            className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+          {train ? (
+            <button
+              className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+      border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
+              onClick={() => {
+                setTrain(false);
+                setShellLogs([]);
+              }}
+            >
+              <MdUpdate size={16} />
+              Close
+            </button>
+          ) : (
+            <button
+              className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
       border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
-            onClick={() => {
-              handleSetFiles(updatedTrainingData, file);
-            }}
-          >
-            <MdUpdate size={16} />
-            Update
-          </button>
+              onClick={() => {
+                handleSetFiles(updatedTrainingData, file);
+              }}
+            >
+              <MdUpdate size={16} />
+              Update
+            </button>
+          )}
           <button
             className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
       border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
             onClick={() => {
               handleTrain();
+              setTrain(true);
             }}
           >
             <FiUploadCloud size={16} />
@@ -125,17 +170,32 @@ function TrainingEditor({
           </button>
         </div>
       </div>
-      <Editor
-        height="50vh"
-        defaultLanguage="yaml"
-        value={yaml.dump(data, {
-          lineWidth: -1,
-        })}
-        onMount={handleEditorDidMount}
-        theme="vs-dark"
-        onChange={handleEditorChange}
-        onValidate={handleEditorValidation}
-      />
+
+      {train ? (
+        <div className="bg-black rounded-lg shadow-lg text-sm text-[--light-brown] p-10 max-h-[624px] h-[624px] overflow-y-auto">
+          {shellLogs.map((i, k) => {
+            return (
+              <div className="mb-4 flex gap-2" key={k}>
+                <div className="w-[170px]">{getDate()}</div>
+                <div className="w-full">{i}</div>
+              </div>
+            );
+          })}
+          <div ref={bottomRef} />
+        </div>
+      ) : (
+        <Editor
+          height="624px"
+          defaultLanguage="yaml"
+          value={yaml.dump(data, {
+            lineWidth: -1,
+          })}
+          onMount={handleEditorDidMount}
+          theme="vs-dark"
+          onChange={handleEditorChange}
+          onValidate={handleEditorValidation}
+        />
+      )}
     </div>
   );
 }

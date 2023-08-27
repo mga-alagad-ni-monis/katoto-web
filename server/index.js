@@ -81,7 +81,7 @@ io.on("connection", (socket) => {
   socket.on("train", ({ mode, id }) => {
     let port = mode === "cg" ? 8080 : 8081;
     const trainData = spawn(
-      `conda activate katoto-ml-${mode} && rasa train --config config.yml && rasa run --enable-api --cors \"*\" -p ${port} --debug`,
+      `echo Training has started, Please wait and do not close the window. && conda activate katoto-ml-${mode} && rasa train --config config.yml && rasa run --enable-api --cors \"*\" -p ${port} --debug`,
       {
         shell: true,
         cwd: `${process.env.RASA_FILES_PATH}katoto-ml-${mode}`,
