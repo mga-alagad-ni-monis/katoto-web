@@ -1,7 +1,6 @@
 import axios from "../api/axios";
 import { useState, useEffect } from "react";
 import { Link, Outlet } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 
 import logo from "../assets/logo/katoto-logo.png";
 import NotificationContainer from "./NotificationContainer";
@@ -20,10 +19,16 @@ function SideBar({ toast, logout, auth, socket }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isOpenNotifications, setIsOpenNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   useEffect(() => {
     getNotification();
   }, []);
+
+  useEffect(() => {
+    setUnreadNotifications(0);
+    countUnreadNotifications();
+  }, [notifications]);
 
   useEffect(() => {
     if (socket) {
@@ -53,8 +58,14 @@ function SideBar({ toast, logout, auth, socket }) {
     }
   };
 
-  const handleOpenNotification = () => {
-    console.log("asdasdsadadads");
+  const countUnreadNotifications = () => {
+    notifications.forEach((i) => {
+      if (!i.isSeen) {
+        setUnreadNotifications(
+          (unreadNotifications) => unreadNotifications + 1
+        );
+      }
+    });
   };
 
   return (
@@ -161,21 +172,26 @@ function SideBar({ toast, logout, auth, socket }) {
           <div className="flex justify-center">
             <div className="flex flex-col gap-7 font-medium 2xl:mt-36">
               <div
-                onClick={handleOpenNotification}
+                onClick={() => {
+                  setIsOpenNotifications(!isOpenNotifications);
+                }}
                 className="flex gap-7 items-center justify-start transition-all duration-200 cursor-pointer"
               >
                 {isHovered ? (
-                  <div
-                    className="flex gap-5 items-center text--black] font-medium"
-                    onClick={() => {
-                      setIsOpenNotifications(!isOpenNotifications);
-                    }}
-                  >
+                  <div className="flex gap-5 items-center text--black] font-medium relative">
                     <BsBell size={20} />
-                    <span className=" word-in">Notifications</span>
+                    <div className="word-in relative">Notifications</div>
+                    <span className="absolute p-1 h-6 w-6 bg-[--dark-green] rounded-full -top-0 -right-8 text-xs text-center flex justify-center items-center text-white">
+                      {unreadNotifications}
+                    </span>
                   </div>
                 ) : (
-                  <BsBell size={24} className="text-black]" />
+                  <div className="relative">
+                    <BsBell size={24} className="text-black]" />
+                    <span className="absolute p-1 w-full h-full min-w-6 min-h-6 bg-[--dark-green] rounded-full -top-3 -right-3 text-xs text-center flex justify-center items-center text-white">
+                      {unreadNotifications}
+                    </span>
+                  </div>
                 )}
               </div>
               <div
