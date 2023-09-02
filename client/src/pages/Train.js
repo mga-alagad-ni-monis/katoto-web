@@ -4,7 +4,6 @@ import axios from "../api/axios";
 import TrainingEditor from "../components/Train/TrainingEditor";
 
 import { FiChevronDown } from "react-icons/fi";
-import { fetchEventSource } from "@microsoft/fetch-event-source";
 
 function Train({ auth, toast, socket }) {
   const [trainingData, setTrainingData] = useState();
@@ -16,6 +15,7 @@ function Train({ auth, toast, socket }) {
   useEffect(() => {
     handleGetFiles();
   }, []);
+  
 
   const handleGetFiles = async () => {
     try {

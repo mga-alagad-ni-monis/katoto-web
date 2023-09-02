@@ -4,6 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const cron = require("node-cron");
 const { spawn } = require("child_process");
+const jwt = require("jsonwebtoken");
 
 const { db } = require("./utils/firebase");
 
@@ -15,7 +16,13 @@ const campaignRoutes = require("./routes/campaignRoutes");
 const logRoutes = require("./routes/logRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const trainRoutes = require("./routes/trainRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 const { createDocument } = require("./controllers/reportControllers");
+const { getUser } = require("./controllers/userAccountControllers");
+const { addSOSAppointment } = require("./controllers/scheduleControllers");
+const {
+  addNotificationGcSa,
+} = require("./controllers/notificationControllers");
 
 const app = express();
 
@@ -56,13 +63,20 @@ app.use((req, res, next) => {
 //newly added
 let onlineUsers = [];
 
-const addNewUser = (username, socketId) => {
-  !onlineUsers.some((user) => user.username === username) &&
-    onlineUsers.push({ username, socketId });
+const addNewUser = (email, role, idNo, socketId) => {
+  !onlineUsers.some((user) => user.email === email) &&
+    onlineUsers.push({ email, role, idNo, socketId });
 };
 
-const getUser = (username) => {
-  return onlineUsers.find((user) => user.username === username);
+const getOnlineUser = (email) => {
+  return onlineUsers.find((user) => user.email === email);
+};
+
+const getGCnSA = () => {
+  return (onlineUsers = onlineUsers.filter(
+    (user) =>
+      user.role === "systemAdministrator" || user.role === "guidanceCounselor"
+  ));
 };
 
 const removeUser = (socketId) => {
@@ -70,10 +84,15 @@ const removeUser = (socketId) => {
 };
 
 io.on("connection", (socket) => {
-  socket.on("newUser", (email) => {
+  socket.on("newUser", (token) => {
     const isPresent = onlineUsers.some((i) => i.socketId === socket.id);
     if (!isPresent) {
-      addNewUser(email, socket.id);
+      addNewUser(
+        jwt.decode(token)?.email,
+        jwt.decode(token)?.role,
+        jwt.decode(token)?.idNo,
+        socket.id
+      );
     }
     console.log(onlineUsers);
   });
@@ -108,6 +127,25 @@ io.on("connection", (socket) => {
     });
   });
 
+  socket.on("scheduleRequest", async ({ id, token, type }) => {
+    if (jwt.decode(token)?.role === "student") {
+      const counselorAdmin = getGCnSA();
+      const idNo = jwt.decode(token)?.idNo;
+      const userDetails = await getUser(idNo);
+
+      if (counselorAdmin.length > 0) {
+        const sosDetails = await addSOSAppointment(userDetails);
+        await addNotificationGcSa(sosDetails);
+        counselorAdmin.forEach((user) => {
+          io.to(user.socketId).emit("scheduleResponse", {
+            id: id,
+            type: type,
+          });
+        });
+      }
+    }
+  });
+
   socket.on("disconnect", () => {
     removeUser(socket.id);
     console.log(onlineUsers);
@@ -131,6 +169,7 @@ app.use("/api/campaigns", campaignRoutes);
 app.use("/api/logs", logRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/train", trainRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 cron.schedule("0 0 * * *", () => {
   createDocument();

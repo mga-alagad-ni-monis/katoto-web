@@ -36,7 +36,8 @@ function App() {
 
   useEffect(() => {
     if (auth?.accessToken !== undefined) {
-      socket?.emit("newUser", jwt_decode(auth?.accessToken)?.email);
+      console.log();
+      socket?.emit("newUser", auth?.accessToken);
     }
   }, [socket, email, auth]);
 
@@ -90,7 +91,7 @@ function App() {
             >
               <Route
                 path="/chat"
-                element={<Chatbot toast={toast} auth={auth} />}
+                element={<Chatbot toast={toast} auth={auth} socket={socket} />}
               ></Route>
               <Route
                 path="/view-campaigns"
@@ -101,7 +102,14 @@ function App() {
 
           {/* sidebar component */}
           <Route
-            element={<SideBar toast={toast} auth={auth} logout={logout} />}
+            element={
+              <SideBar
+                toast={toast}
+                auth={auth}
+                logout={logout}
+                socket={socket}
+              />
+            }
           >
             {/* reports module*/}
             <Route

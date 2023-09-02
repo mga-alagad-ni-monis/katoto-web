@@ -43,6 +43,7 @@ const handleLogin = async (req, res) => {
                   {
                     email: doc.data().credentials.email,
                     role: doc.data().credentials.privilegeType,
+                    idNo: doc.data().idNo,
                   },
                   process.env.ACCESS_TOKEN,
                   {
@@ -54,6 +55,7 @@ const handleLogin = async (req, res) => {
                   {
                     email: doc.data().credentials.email,
                     role: doc.data().credentials.privilegeType,
+                    idNo: doc.data().idNo,
                   },
                   process.env.REFRESH_TOKEN,
                   { expiresIn: "1d" }
@@ -114,6 +116,7 @@ const handleRefreshToken = async (req, res) => {
                 {
                   email: decoded.email,
                   role,
+                  idNo: doc.data().idNo,
                 },
                 process.env.ACCESS_TOKEN,
                 { expiresIn: "1d" }

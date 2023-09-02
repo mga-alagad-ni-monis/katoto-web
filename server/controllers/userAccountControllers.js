@@ -2,10 +2,10 @@ const bcrypt = require("bcrypt");
 const multer = require("multer");
 const fs = require("fs");
 const csv = require("csv-parser");
-const FileType = require("file-type");
+// const FileType = require("file-type");
 
 const db = require("../utils/firebase");
-const { type } = require("os");
+// const { type } = require("os");
 
 const addUser = async (req, res) => {
   const {
@@ -45,84 +45,111 @@ const addUser = async (req, res) => {
 
     await db
       .collection("accounts")
-      .where("credentials.email", "==", email)
+      .where("idNo", "==", idNo)
       .get()
-      .then((querySnapshot) => {
+      .then(async (querySnapshot) => {
         if (!querySnapshot.empty) {
           return res
             .status(404)
-            .send("This email address is already registered!");
+            .send("This school ID no. is already registered!");
         }
-        bcrypt.genSalt(10).then((salt) => {
-          bcrypt.hash(password, salt).then(async (hashedPassword) => {
-            let COED = [
-              "Bachelor of Early Childhood Education (BECED)",
-              "Bachelor of Secondary Education Major in English (BSED English)",
-              "Bachelor of Secondary Education Major in Filipino (BSED Filipino)",
-              "Bachelor of Secondary Education Major in Mathematics (BSED Mathematics)",
-              "Bachelor of Secondary Education Major in Science (BSED Science)",
-              "Bachelor of Secondary Education Major in Social Studies (BSED Social Studies)",
-            ];
-
-            let CAS = [
-              "Bachelor of Arts in Communication (BAC)",
-              "Bachelor of Science in Psychology (BSP)",
-              "Bachelor of Science in Social Work (BSSW)",
-            ];
-
-            let CEIT = [
-              "Bachelor of Science in Civil Engineering (BSCE)",
-              "Bachelor of Science in Electrical Engineering (BSEE)",
-              "Bachelor of Science in Information Technology (BSIT)",
-            ];
-
-            let CABA = [
-              "Bachelor of Science in Accountancy (BSA)",
-              "Bachelor of Science in Business Administration Major in Financial Management (BSBA FM)",
-              "Bachelor of Science in Business Administration Major in Human Resource Development Management (BSBA HRDM)",
-              "Bachelor of Science in Business Administration Major in Marketing Management (BSBA MM)",
-              "Bachelor of Science in Public Administration (BSPA)",
-            ];
-
-            let mainDepartment = "";
-
-            if (COED.includes(department)) {
-              mainDepartment = "College of Education";
-            } else if (CAS.includes(department)) {
-              mainDepartment = "College of Arts and Sciences";
-            } else if (CEIT.includes(department)) {
-              mainDepartment =
-                "College of Engineering and Information Technology";
-            } else if (CABA.includes(department)) {
-              mainDepartment =
-                "College of Business Administration, Public Administration and Accountancy";
+        await db
+          .collection("accounts")
+          .where("credentials.email", "==", email)
+          .get()
+          .then((querySnapshot) => {
+            if (!querySnapshot.empty) {
+              return res
+                .status(404)
+                .send("This email address is already registered!");
             }
+            bcrypt.genSalt(10).then((salt) => {
+              bcrypt.hash(password, salt).then(async (hashedPassword) => {
+                let COED = [
+                  "Bachelor of Early Childhood Education (BECED)",
+                  "Bachelor of Secondary Education Major in English (BSED English)",
+                  "Bachelor of Secondary Education Major in Filipino (BSED Filipino)",
+                  "Bachelor of Secondary Education Major in Mathematics (BSED Mathematics)",
+                  "Bachelor of Secondary Education Major in Science (BSED Science)",
+                  "Bachelor of Secondary Education Major in Social Studies (BSED Social Studies)",
+                ];
 
-            await db
-              .collection("accounts")
-              .add({
-                name,
-                idNo,
-                credentials: {
-                  email,
-                  password: hashedPassword,
-                  privilegeType: userType,
-                },
-                gender,
-                contactNo,
-                birthday,
-                department,
-                yearSection,
-                mainDepartment,
-              })
-              .then((querySnapshot) => {
-                if (querySnapshot.empty) {
-                  return res.status(404).send("Error");
+                let CAS = [
+                  "Bachelor of Arts in Communication (BAC)",
+                  "Bachelor of Science in Psychology (BSP)",
+                  "Bachelor of Science in Social Work (BSSW)",
+                ];
+
+                let CEIT = [
+                  "Bachelor of Science in Civil Engineering (BSCE)",
+                  "Bachelor of Science in Electrical Engineering (BSEE)",
+                  "Bachelor of Science in Information Technology (BSIT)",
+                ];
+
+                let CABA = [
+                  "Bachelor of Science in Accountancy (BSA)",
+                  "Bachelor of Science in Business Administration Major in Financial Management (BSBA FM)",
+                  "Bachelor of Science in Business Administration Major in Human Resource Development Management (BSBA HRDM)",
+                  "Bachelor of Science in Business Administration Major in Marketing Management (BSBA MM)",
+                  "Bachelor of Science in Public Administration (BSPA)",
+                ];
+
+                let mainDepartment = "";
+
+                if (COED.includes(department)) {
+                  mainDepartment = "College of Education";
+                } else if (CAS.includes(department)) {
+                  mainDepartment = "College of Arts and Sciences";
+                } else if (CEIT.includes(department)) {
+                  mainDepartment =
+                    "College of Engineering and Information Technology";
+                } else if (CABA.includes(department)) {
+                  mainDepartment =
+                    "College of Business Administration, Public Administration and Accountancy";
                 }
-                res.status(200).json({ message: "Successfully added!" });
+
+                await db
+                  .collection("accounts")
+                  .add({
+                    name,
+                    idNo,
+                    credentials: {
+                      email,
+                      password: hashedPassword,
+                      privilegeType: userType,
+                    },
+                    gender,
+                    contactNo,
+                    birthday,
+                    department,
+                    yearSection,
+                    mainDepartment,
+                  })
+                  .then(async (querySnapshot) => {
+                    if (querySnapshot.empty) {
+                      return res.status(404).send("Error");
+                    }
+                    await db
+                      .collection("notifications")
+                      .add({
+                        name,
+                        idNo,
+                        email,
+                        privilegeType: userType,
+                        notifications: [],
+                      })
+                      .then((querySnapshot) => {
+                        if (querySnapshot.empty) {
+                          return res.status(404).send("Error");
+                        }
+                        res
+                          .status(200)
+                          .json({ message: "Successfully added!" });
+                      });
+                  });
               });
+            });
           });
-        });
       });
   } catch (err) {
     res.status(404).send("Error");
@@ -144,10 +171,10 @@ const getUsers = async (req, res) => {
           user.credentials.password = "";
           users.push(user);
         });
-        res.status(200).json({ users });
+        return res.status(200).json({ users });
       });
   } catch (err) {
-    res.status(404).send("Error");
+    return res.status(404).send("Error");
   }
 };
 
@@ -431,6 +458,35 @@ const editUser = async (req, res) => {
   }
 };
 
+const getUser = async (idNo) => {
+  console.log(idNo);
+  const querySnapshot = await db
+    .collection("accounts")
+    .where("idNo", "==", idNo)
+    .get();
+
+  if (querySnapshot.empty) {
+    return;
+  }
+
+  const userDetails = {};
+
+  querySnapshot.forEach((i) => {
+    userDetails["name"] = i.data().name;
+    userDetails["email"] = i.data().credentials.email;
+    userDetails["privilegeType"] = i.data().credentials.privilegeType;
+    userDetails["idNo"] = i.data().idNo;
+    userDetails["gender"] = i.data().gender;
+    userDetails["yearSection"] = i.data().yearSection;
+    userDetails["department"] = i.data().department;
+    userDetails["mainDepartment"] = i.data().mainDepartment;
+    userDetails["birthday"] = i.data().birthday;
+    userDetails["contactNo"] = i.data().contactNo;
+  });
+
+  return userDetails;
+};
+
 module.exports = {
   addUser,
   getUsers,
@@ -438,4 +494,5 @@ module.exports = {
   upload,
   deleteUsers,
   editUser,
+  getUser,
 };

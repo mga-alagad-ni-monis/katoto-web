@@ -1,8 +1,10 @@
 import axios from "../api/axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, Outlet } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 import logo from "../assets/logo/katoto-logo.png";
+import NotificationContainer from "./NotificationContainer";
 
 import {
   BsCardList,
@@ -10,11 +12,50 @@ import {
   BsMegaphone,
   BsPeople,
   BsRobot,
+  BsBell,
 } from "react-icons/bs";
 import { AiOutlineLogout } from "react-icons/ai";
 
-function SideBar({ toast, logout, auth }) {
+function SideBar({ toast, logout, auth, socket }) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isOpenNotifications, setIsOpenNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    getNotification();
+  }, []);
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("scheduleResponse", async () => {
+        await getNotification();
+      });
+    }
+  }, [socket]);
+
+  const getNotification = async () => {
+    try {
+      await axios
+        .get("/api/notifications/get", {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${auth?.accessToken}`,
+          },
+        })
+        .then((res) => {
+          setNotifications(res?.data?.notifications);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data);
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
+  const handleOpenNotification = () => {
+    console.log("asdasdsadadads");
+  };
 
   return (
     <>
@@ -29,7 +70,7 @@ function SideBar({ toast, logout, auth }) {
       >
         <div className="flex justify-between flex-col h-full py-12">
           <div>
-            <div className="flex justify-center ">
+            <div className="flex justify-center">
               <img src={logo} alt="logo" className="w-[80px] h-[80px]" />
             </div>
             <div className="flex justify-center">
@@ -117,21 +158,47 @@ function SideBar({ toast, logout, auth }) {
               </ul>
             </div>
           </div>
-          <div
-            onClick={logout}
-            className="flex gap-5 items-center justify-center transition-all duration-200 cursor-pointer"
-          >
-            {isHovered ? (
-              <div className="flex gap-5 items-center text-[--red] font-medium">
-                <AiOutlineLogout size={20} />
-                <span className=" word-in">Log out</span>
+          <div className="flex justify-center">
+            <div className="flex flex-col gap-7 font-medium 2xl:mt-36">
+              <div
+                onClick={handleOpenNotification}
+                className="flex gap-7 items-center justify-start transition-all duration-200 cursor-pointer"
+              >
+                {isHovered ? (
+                  <div
+                    className="flex gap-5 items-center text--black] font-medium"
+                    onClick={() => {
+                      setIsOpenNotifications(!isOpenNotifications);
+                    }}
+                  >
+                    <BsBell size={20} />
+                    <span className=" word-in">Notifications</span>
+                  </div>
+                ) : (
+                  <BsBell size={24} className="text-black]" />
+                )}
               </div>
-            ) : (
-              <AiOutlineLogout size={24} className="text-[--red]" />
-            )}
+              <div
+                onClick={logout}
+                className="flex gap-5 items-center justify-start transition-all duration-200 cursor-pointer"
+              >
+                {isHovered ? (
+                  <div className="flex gap-5 items-center text-[--red] font-medium">
+                    <AiOutlineLogout size={20} />
+                    <span className=" word-in">Log out</span>
+                  </div>
+                ) : (
+                  <AiOutlineLogout size={24} className="text-[--red]" />
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
+      <NotificationContainer
+        isOpenNotifications={isOpenNotifications}
+        notifications={notifications}
+      />
       <Outlet />
     </>
   );

@@ -25,6 +25,8 @@ const createDocument = async () => {
         },
         feedback: [],
         conversationLogs: [],
+        sosSchedules: [],
+        appointmentSchedules: [],
       },
     });
   } catch (err) {
@@ -68,6 +70,8 @@ const getReports = async (req, res) => {
             dailyUsers: i.data().reports.dailyUsers,
             demographics: i.data().reports.demographics,
             feedback: i.data().reports.feedback,
+            sosSchedules: i.data().reports.sosSchedules,
+            appointmentSchedules: i.data().reports.appointmentSchedules,
           });
         });
         res.status(200).json({ reports: reportsArray });

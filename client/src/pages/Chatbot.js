@@ -6,17 +6,20 @@ import { motion, AnimatePresence } from "framer-motion";
 import { IoSend } from "react-icons/io5";
 import { AiOutlineCloseCircle } from "react-icons/ai";
 import { MdSos } from "react-icons/md";
+import { FaTimes } from "react-icons/fa";
 
+import Modal from "../components/Modal";
 import katoto from "../assets/katoto/katoto-full.png";
 import katotoWatch from "../assets/katoto/katoto-watch.png";
 import logo from "../assets/logo/katoto-logo.png";
 import wave from "../assets/wave.png";
 
-function Chatbot({ toast, auth }) {
+function Chatbot({ toast, auth, socket }) {
   const [isInitial, setIsInitial] = useState(true);
   const [isGuided, setIsGuided] = useState(false);
   const [isFriendly, setIsFriendly] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [popUpSOS, setPopUpSOS] = useState(false);
 
   const [katotoMessage, setKatotoMessage] = useState("");
   const [inputFriendly, setInputFriendly] = useState("");
@@ -37,7 +40,7 @@ function Chatbot({ toast, auth }) {
 
   useEffect(() => {
     bottomRef?.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, guidedButtons]);
+  }, [messages, guidedButtons, friendlyMessages]);
 
   const handleGetConversation = async (req, res) => {
     try {
@@ -60,7 +63,6 @@ function Chatbot({ toast, auth }) {
   };
 
   const handleSubmitMessage = async (sender, inputMessage) => {
-    console.log(typeof inputMessage);
     try {
       setGuidedButtons([]);
       setInputFriendly("");
@@ -72,11 +74,21 @@ function Chatbot({ toast, auth }) {
       ]);
 
       axiosDef
-        .post(process.env.REACT_APP_KATOTO_API_URI, {
-          sender,
-          message: inputMessage,
-        })
+        .post(
+          isGuided
+            ? process.env.REACT_APP_KATOTO_CG_API_URI
+            : process.env.REACT_APP_KATOTO_FC_API_URI,
+          {
+            sender,
+            message: inputMessage,
+          }
+        )
         .then((res) => {
+          res.data[0].text =
+            res.data[0].custom !== undefined
+              ? res.data[0].custom.text
+              : res.data[0].text;
+
           if (isGuided) {
             const buttons = res.data[0].buttons.map((i) => {
               return i.title;
@@ -121,6 +133,11 @@ function Chatbot({ toast, auth }) {
                 { sender: "Katoto", message: res.data[0].text },
               ]);
               setIsTyping(false);
+              if (res.data[0].custom !== undefined) {
+                setTimeout(() => {
+                  setPopUpSOS(res.data[0].custom.opensos);
+                }, 900);
+              }
             }, 900);
 
             return axios.post(
@@ -149,8 +166,51 @@ function Chatbot({ toast, auth }) {
     }
   };
 
+  const handleClickSOS = async () => {
+    try {
+      socket.emit("scheduleRequest", {
+        id: socket.id,
+        token: auth?.accessToken,
+        type: "sos",
+      });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
   return (
     <div className="flex items-center bg-[--light-brown] justify-center h-screen">
+      {popUpSOS ? (
+        <Modal>
+          <div className="w-full justify-between flex">
+            <p className="text-2xl font-extrabold">SOS</p>
+
+            <button
+              onClick={() => {
+                setPopUpSOS(false);
+              }}
+              type="button"
+            >
+              <FaTimes size={20} />
+            </button>
+          </div>
+          <div className="flex flex-col gap-4 mt-5">
+            <p className="text-md">
+              Click here if you feel bad and if you want to consult with
+              Guidance Counselors
+            </p>
+            <div className="w-auto">
+              <button
+                className="bg-[--red] rounded-full p-1 text-white border border-2 border-[--red] hover:bg-transparent hover:text-[--red] 
+              transition-all duration-300"
+                onClick={handleClickSOS}
+              >
+                <MdSos size={80} />
+              </button>
+            </div>
+          </div>
+        </Modal>
+      ) : null}
       <div className="flex items-center gap-32">
         <div className="relative">
           <img
@@ -158,7 +218,6 @@ function Chatbot({ toast, auth }) {
             alt="katoto"
             className="h-[270px] absolute -top-[250px] right-1/2 translate-x-1/2"
           />
-
           <div className="h-max w-[350px] bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg pt-10 pb-5 px-5">
             <p className="text-2xl font-extrabold flex justify-center mb-5">
               Quote of the Day
