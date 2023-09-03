@@ -1,7 +1,8 @@
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Link, Outlet } from "react-router-dom";
 
-function NavBar({ auth, logout }) {
+function NavBar({ auth, logout, socket }) {
   const location = useLocation();
 
   return (

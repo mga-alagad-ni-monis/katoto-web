@@ -28,6 +28,8 @@ const addSOSAppointment = async (userDetails) => {
     scheduledDate: new Date(date.setDate(date.getDate() + 1)).toLocaleString(),
   };
 
+  console.log("date ito", date.toLocaleString());
+
   sosSchedules.push(sosDetails);
 
   await document.update({

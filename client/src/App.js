@@ -4,7 +4,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "./api/axios";
 import io from "socket.io-client";
-import jwt_decode from "jwt-decode";
 
 import RequiredAuth from "./components/RequiredAuth";
 import PersistLogin from "./components/PersistLogin";
@@ -36,7 +35,6 @@ function App() {
 
   useEffect(() => {
     if (auth?.accessToken !== undefined) {
-      console.log();
       socket?.emit("newUser", auth?.accessToken);
     }
   }, [socket, email, auth]);
@@ -63,7 +61,7 @@ function App() {
       <Routes>
         {/* login module*/}
         {/* <Route element={<NavBar />}> */}
-        <Route element={<NavBar />}>
+        <Route element={<NavBar socket={socket} />}>
           <Route
             path="/login"
             element={
@@ -73,10 +71,11 @@ function App() {
         </Route>
         {/* </Route> */}
         {/* <Route path="/loading" element={<Loading />}></Route> */}
-
         <Route element={<PersistLogin />}>
           {/* navbar component */}
-          <Route element={<NavBar auth={auth} logout={logout} />}>
+          <Route
+            element={<NavBar auth={auth} logout={logout} socket={socket} />}
+          >
             {/* home/chatbot module*/}
             <Route
               element={

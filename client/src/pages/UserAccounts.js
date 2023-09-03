@@ -1,5 +1,6 @@
 import axios from "../api/axios";
 import { FileUploader } from "react-drag-drop-files";
+import { motion } from "framer-motion";
 
 import { useState, useEffect, useRef } from "react";
 import {
@@ -335,565 +336,587 @@ function UserAccounts({ toast, auth }) {
 
   return (
     <div className="bg-[--light-brown] h-screen">
-      {isOpenAddModal ? (
-        <form
-          className="w-full justify-between flex"
-          onSubmit={handleSubmitAddUser}
-        >
-          <Modal>
-            <div className="w-full justify-between flex">
-              <p className="text-2xl font-extrabold">Add User</p>
-              <button
-                onClick={() => {
-                  setIsOpenAddModal(false);
-                }}
-                type="button"
-              >
-                <FaTimes size={20} />
-              </button>
-            </div>
-            <div className="flex flex-col gap-4 mt-5">
-              <div className="flex gap-5 w-full">
-                <div className="w-1/2 flex flex-col gap-2">
-                  <label htmlFor="name" className="font-semibold">
-                    Name *
-                  </label>
-                  <input
-                    id="name"
-                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold mr-3"
-                    type="text"
-                    placeholder="Firstname Surname"
-                    value={name}
-                    onChange={(e) => {
-                      setName(e.target.value);
-                    }}
-                    required
-                  />
-                </div>
-                <div className="w-1/2 flex flex-col gap-2">
-                  <label htmlFor="usertype" className="font-semibold">
-                    User Type *
-                  </label>
-                  <select
-                    id="usertype"
-                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                    value={userType}
-                    onChange={(e) => {
-                      setUserType(e.target.value);
-                    }}
-                    required
-                  >
-                    <option
-                      hidden
-                      value=""
-                      defaultValue
-                      className="text-black/30"
-                    ></option>
-                    <option value="student">Student</option>
-                    <option value="guidanceCounselor">
-                      Guidance Counselor
-                    </option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex gap-5 w-full">
-                <div className="w-1/2 flex flex-col gap-2">
-                  <label htmlFor="email" className="font-semibold">
-                    Email *
-                  </label>
-                  <input
-                    id="idNo"
-                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                    type="email"
-                    placeholder="namesurname@plv.edu.ph"
-                    pattern="[\w.%+-]+@plv\.edu\.ph"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                    }}
-                    onInvalid={(e) =>
-                      e.target.setCustomValidity(
-                        "Please enter required domain: namesurname@plv.edu.ph"
-                      )
-                    }
-                    onInput={(e) => e.target.setCustomValidity("")}
-                    required
-                  />
-                </div>
-                <div className="w-1/2 flex flex-col gap-2">
-                  <label htmlFor="password" className="font-semibold">
-                    Password *
-                  </label>
-                  <input
-                    id="password"
-                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                    type="password"
-                    placeholder="mmddyyyy or other"
-                    pattern=".{8}"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                    }}
-                    onInvalid={(e) =>
-                      e.target.setCustomValidity(
-                        "Please enter 8 characters or more!"
-                      )
-                    }
-                    onInput={(e) => e.target.setCustomValidity("")}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="flex gap-5 w-full">
-                <div className="w-1/2 flex flex-col gap-2">
-                  <label htmlFor="id-no" className="font-semibold">
-                    Identification Number *
-                  </label>
-                  <input
-                    id="id-no"
-                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                    type="text"
-                    placeholder="xx-xxxx"
-                    value={idNo}
-                    onChange={(e) => {
-                      setIdNo(e.target.value);
-                    }}
-                    required
-                  />
-                </div>
-                <div className="w-1/2 flex flex-col gap-2">
-                  <label htmlFor="gender" className="font-semibold">
-                    Gender *
-                  </label>
-                  <select
-                    id="gender"
-                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                    value={gender}
-                    onChange={(e) => {
-                      setGender(e.target.value);
-                    }}
-                    required
-                  >
-                    <option
-                      hidden
-                      value=""
-                      defaultValue
-                      className="text-black/30"
-                    ></option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex gap-5 w-full">
-                <div className="w-1/3 flex flex-col gap-2">
-                  <label htmlFor="year-sec" className="font-semibold">
-                    Year and Section *
-                  </label>
-                  <input
-                    id="year-sec"
-                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                    type="tel"
-                    placeholder="1-4"
-                    pattern="[1-4]{1}[-]{1}[1-20]{1-2}"
-                    value={yearSection}
-                    onChange={(e) => {
-                      setYearSection(e.target.value);
-                    }}
-                  />
-                </div>
-                <div className="w-1/3 flex flex-col gap-2">
-                  <label htmlFor="contact-no" className="font-semibold">
-                    Contact Number *
-                  </label>
-                  <input
-                    id="contact-no"
-                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                    type="tel"
-                    placeholder="09xxxxxxxxx"
-                    pattern="[0]{1}[9]{1}[0-9]{9}"
-                    value={contactNo}
-                    onChange={(e) => {
-                      setContactNo(e.target.value);
-                    }}
-                    required
-                  />
-                </div>
-                <div className="w-1/3 flex flex-col gap-2">
-                  <label htmlFor="birthday" className="font-semibold">
-                    Birthday *
-                  </label>
-                  <input
-                    type="date"
-                    id="birthday"
-                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                    value={birthday}
-                    onChange={(e) => {
-                      setBirthday(e.target.value);
-                    }}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="flex gap-5 w-full">
-                <div className="w-full flex flex-col gap-2">
-                  <label htmlFor="department" className="font-semibold">
-                    Department/Courses *
-                  </label>
-                  <select
-                    id="department"
-                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                    value={department}
-                    onChange={(e) => {
-                      setDepartment(e.target.value);
-                    }}
-                    required
-                  >
-                    <option
-                      hidden
-                      defaultValue
-                      value=""
-                      className="text-black/30"
-                    ></option>
-                    {courses?.map((i, k) => {
-                      return (
-                        <option value={i} key={k}>
-                          {i}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </div>
-              </div>
-              <button
-                className="bg-[--dark-green] w-full p-3 text-[--light-brown] text-sm rounded-lg border border-2 border-[--dark-green] 
-          hover:bg-transparent hover:text-[--dark-green] transition-all duration-300 font-semibold"
-                type="submit"
-              >
-                Submit
-              </button>
-            </div>
-          </Modal>
-        </form>
+      {isOpenAddModal || isOpenEditModal || isOpenImportModal ? (
+        <motion.div
+          className="bg-black/50 absolute w-screen h-screen z-40"
+          variants={{
+            show: {
+              opacity: 1,
+              transition: {
+                type: "spring",
+                stiffness: 500,
+                damping: 40,
+              },
+            },
+            hide: {
+              opacity: 0,
+              transition: {
+                type: "spring",
+                stiffness: 500,
+                damping: 40,
+              },
+            },
+          }}
+          animate={
+            isOpenAddModal || isOpenEditModal || isOpenImportModal
+              ? "show"
+              : "hide"
+          }
+          initial={{
+            opacity: 0,
+          }}
+        ></motion.div>
       ) : null}
-      {isOpenEditModal ? (
-        <form className="w-full justify-between flex" onSubmit={handleEditUser}>
-          <Modal>
-            <div className="w-full justify-between flex">
-              <p className="text-2xl font-extrabold">Edit User</p>
-              <button
-                onClick={() => {
-                  setIsOpenEditModal(false);
-                }}
-                type="button"
-              >
-                <FaTimes size={20} />
-              </button>
+      <form
+        className="w-full justify-between flex"
+        onSubmit={handleSubmitAddUser}
+      >
+        <Modal isOpen={isOpenAddModal}>
+          <div className="w-full justify-between flex">
+            <p className="text-2xl font-extrabold">Add User</p>
+            <button
+              onClick={() => {
+                setIsOpenAddModal(false);
+              }}
+              type="button"
+            >
+              <FaTimes size={20} />
+            </button>
+          </div>
+          <div className="flex flex-col gap-4 mt-5">
+            <div className="flex gap-5 w-full">
+              <div className="w-1/2 flex flex-col gap-2">
+                <label htmlFor="name" className="font-semibold">
+                  Name *
+                </label>
+                <input
+                  id="name"
+                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold mr-3"
+                  type="text"
+                  placeholder="Firstname Surname"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                  }}
+                  required
+                />
+              </div>
+              <div className="w-1/2 flex flex-col gap-2">
+                <label htmlFor="usertype" className="font-semibold">
+                  User Type *
+                </label>
+                <select
+                  id="usertype"
+                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                  value={userType}
+                  onChange={(e) => {
+                    setUserType(e.target.value);
+                  }}
+                  required
+                >
+                  <option
+                    hidden
+                    value=""
+                    defaultValue
+                    className="text-black/30"
+                  ></option>
+                  <option value="student">Student</option>
+                  <option value="guidanceCounselor">Guidance Counselor</option>
+                </select>
+              </div>
             </div>
-            <div className="flex flex-col gap-4 mt-5">
-              <div className="flex gap-5 w-full">
-                <div className="w-1/2 flex flex-col gap-2">
-                  <label htmlFor="name" className="font-semibold">
-                    Name *
-                  </label>
-                  <input
-                    id="name"
-                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold mr-3"
-                    type="text"
-                    placeholder="Firstname Surname"
-                    value={name}
-                    onChange={(e) => {
-                      setName(e.target.value);
-                    }}
-                    required
-                  />
-                </div>
-                <div className="w-1/2 flex flex-col gap-2">
-                  <label htmlFor="usertype" className="font-semibold">
-                    User Type *
-                  </label>
-                  <select
-                    id="usertype"
-                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                    value={userType}
-                    onChange={(e) => {
-                      setUserType(e.target.value);
-                    }}
-                    required
-                  >
-                    <option
-                      hidden
-                      value=""
-                      defaultValue
-                      className="text-black/30"
-                    ></option>
-                    <option value="student">Student</option>
-                    <option value="guidanceCounselor">
-                      Guidance Counselor
-                    </option>
-                  </select>
-                </div>
+            <div className="flex gap-5 w-full">
+              <div className="w-1/2 flex flex-col gap-2">
+                <label htmlFor="email" className="font-semibold">
+                  Email *
+                </label>
+                <input
+                  id="idNo"
+                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                  type="email"
+                  placeholder="namesurname@plv.edu.ph"
+                  pattern="[\w.%+-]+@plv\.edu\.ph"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                  }}
+                  onInvalid={(e) =>
+                    e.target.setCustomValidity(
+                      "Please enter required domain: namesurname@plv.edu.ph"
+                    )
+                  }
+                  onInput={(e) => e.target.setCustomValidity("")}
+                  required
+                />
               </div>
-              <div className="flex gap-5 w-full">
-                <div className="w-1/2 flex flex-col gap-2">
-                  <label htmlFor="email" className="font-semibold">
-                    Email *
-                  </label>
-                  <input
-                    id="idNo"
-                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold opacity-50 text-black/50"
-                    type="email"
-                    placeholder="namesurname@plv.edu.ph"
-                    pattern="[\w.%+-]+@plv\.edu\.ph"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                    }}
-                    onInvalid={(e) =>
-                      e.target.setCustomValidity(
-                        "Please enter required domain: namesurname@plv.edu.ph"
-                      )
-                    }
-                    onInput={(e) => e.target.setCustomValidity("")}
-                    disabled
-                  />
-                </div>
-                <div className="w-1/2 flex flex-col gap-2">
-                  <label htmlFor="contact-no" className="font-semibold">
-                    Contact Number *
-                  </label>
-                  <input
-                    id="contact-no"
-                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                    type="tel"
-                    placeholder="09xxxxxxxxx"
-                    pattern="[0]{1}[9]{1}[0-9]{9}"
-                    value={contactNo}
-                    onChange={(e) => {
-                      setContactNo(e.target.value);
-                    }}
-                    required
-                  />
-                </div>
+              <div className="w-1/2 flex flex-col gap-2">
+                <label htmlFor="password" className="font-semibold">
+                  Password *
+                </label>
+                <input
+                  id="password"
+                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                  type="password"
+                  placeholder="mmddyyyy or other"
+                  pattern=".{8}"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                  }}
+                  onInvalid={(e) =>
+                    e.target.setCustomValidity(
+                      "Please enter 8 characters or more!"
+                    )
+                  }
+                  onInput={(e) => e.target.setCustomValidity("")}
+                  required
+                />
               </div>
-              <div className="flex gap-5 w-full">
-                <div className="w-1/2 flex flex-col gap-2">
-                  <label htmlFor="id-no" className="font-semibold">
-                    Identification Number *
-                  </label>
-                  <input
-                    id="id-no"
-                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                    type="text"
-                    placeholder="xx-xxxx"
-                    value={idNo}
-                    onChange={(e) => {
-                      setIdNo(e.target.value);
-                    }}
-                    required
-                  />
-                </div>
-                <div className="w-1/2 flex flex-col gap-2">
-                  <label htmlFor="gender" className="font-semibold">
-                    Gender *
-                  </label>
-                  <select
-                    id="gender"
-                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                    value={gender}
-                    onChange={(e) => {
-                      setGender(e.target.value);
-                    }}
-                    required
-                  >
-                    <option
-                      hidden
-                      value=""
-                      defaultValue
-                      className="text-black/30"
-                    ></option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
+            </div>
+            <div className="flex gap-5 w-full">
+              <div className="w-1/2 flex flex-col gap-2">
+                <label htmlFor="id-no" className="font-semibold">
+                  Identification Number *
+                </label>
+                <input
+                  id="id-no"
+                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                  type="text"
+                  placeholder="xx-xxxx"
+                  value={idNo}
+                  onChange={(e) => {
+                    setIdNo(e.target.value);
+                  }}
+                  required
+                />
               </div>
-              <div className="flex gap-5 w-full">
-                <div className="w-1/2 flex flex-col gap-2">
-                  <label htmlFor="year-sec" className="font-semibold">
-                    Year and Section *
-                  </label>
-                  <input
-                    id="year-sec"
-                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                    type="tel"
-                    placeholder="1-4"
-                    pattern="[1-4]{1}[-]{1}[1-20]{1-2}"
-                    value={yearSection}
-                    onChange={(e) => {
-                      setYearSection(e.target.value);
-                    }}
-                  />
-                </div>
+              <div className="w-1/2 flex flex-col gap-2">
+                <label htmlFor="gender" className="font-semibold">
+                  Gender *
+                </label>
+                <select
+                  id="gender"
+                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                  value={gender}
+                  onChange={(e) => {
+                    setGender(e.target.value);
+                  }}
+                  required
+                >
+                  <option
+                    hidden
+                    value=""
+                    defaultValue
+                    className="text-black/30"
+                  ></option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-5 w-full">
+              <div className="w-1/3 flex flex-col gap-2">
+                <label htmlFor="year-sec" className="font-semibold">
+                  Year and Section *
+                </label>
+                <input
+                  id="year-sec"
+                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                  type="tel"
+                  placeholder="1-4"
+                  pattern="[1-4]{1}[-]{1}[1-20]{1-2}"
+                  value={yearSection}
+                  onChange={(e) => {
+                    setYearSection(e.target.value);
+                  }}
+                />
+              </div>
+              <div className="w-1/3 flex flex-col gap-2">
+                <label htmlFor="contact-no" className="font-semibold">
+                  Contact Number *
+                </label>
+                <input
+                  id="contact-no"
+                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                  type="tel"
+                  placeholder="09xxxxxxxxx"
+                  pattern="[0]{1}[9]{1}[0-9]{9}"
+                  value={contactNo}
+                  onChange={(e) => {
+                    setContactNo(e.target.value);
+                  }}
+                  required
+                />
+              </div>
+              <div className="w-1/3 flex flex-col gap-2">
+                <label htmlFor="birthday" className="font-semibold">
+                  Birthday *
+                </label>
+                <input
+                  type="date"
+                  id="birthday"
+                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                  value={birthday}
+                  onChange={(e) => {
+                    setBirthday(e.target.value);
+                  }}
+                  required
+                />
+              </div>
+            </div>
+            <div className="flex gap-5 w-full">
+              <div className="w-full flex flex-col gap-2">
+                <label htmlFor="department" className="font-semibold">
+                  Department/Courses *
+                </label>
+                <select
+                  id="department"
+                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                  value={department}
+                  onChange={(e) => {
+                    setDepartment(e.target.value);
+                  }}
+                  required
+                >
+                  <option
+                    hidden
+                    defaultValue
+                    value=""
+                    className="text-black/30"
+                  ></option>
+                  {courses?.map((i, k) => {
+                    return (
+                      <option value={i} key={k}>
+                        {i}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            </div>
+            <button
+              className="bg-[--dark-green] w-full p-3 text-[--light-brown] text-sm rounded-lg border border-2 border-[--dark-green] 
+          hover:bg-transparent hover:text-[--dark-green] transition-all duration-300 font-semibold"
+              type="submit"
+            >
+              Submit
+            </button>
+          </div>
+        </Modal>
+      </form>
+      <form className="w-full justify-between flex" onSubmit={handleEditUser}>
+        <Modal isOpen={isOpenEditModal}>
+          <div className="w-full justify-between flex">
+            <p className="text-2xl font-extrabold">Edit User</p>
+            <button
+              onClick={() => {
+                setIsOpenEditModal(false);
+              }}
+              type="button"
+            >
+              <FaTimes size={20} />
+            </button>
+          </div>
+          <div className="flex flex-col gap-4 mt-5">
+            <div className="flex gap-5 w-full">
+              <div className="w-1/2 flex flex-col gap-2">
+                <label htmlFor="name" className="font-semibold">
+                  Name *
+                </label>
+                <input
+                  id="name"
+                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold mr-3"
+                  type="text"
+                  placeholder="Firstname Surname"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                  }}
+                  required
+                />
+              </div>
+              <div className="w-1/2 flex flex-col gap-2">
+                <label htmlFor="usertype" className="font-semibold">
+                  User Type *
+                </label>
+                <select
+                  id="usertype"
+                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                  value={userType}
+                  onChange={(e) => {
+                    setUserType(e.target.value);
+                  }}
+                  required
+                >
+                  <option
+                    hidden
+                    value=""
+                    defaultValue
+                    className="text-black/30"
+                  ></option>
+                  <option value="student">Student</option>
+                  <option value="guidanceCounselor">Guidance Counselor</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-5 w-full">
+              <div className="w-1/2 flex flex-col gap-2">
+                <label htmlFor="email" className="font-semibold">
+                  Email *
+                </label>
+                <input
+                  id="idNo"
+                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold opacity-50 text-black/50"
+                  type="email"
+                  placeholder="namesurname@plv.edu.ph"
+                  pattern="[\w.%+-]+@plv\.edu\.ph"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                  }}
+                  onInvalid={(e) =>
+                    e.target.setCustomValidity(
+                      "Please enter required domain: namesurname@plv.edu.ph"
+                    )
+                  }
+                  onInput={(e) => e.target.setCustomValidity("")}
+                  disabled
+                />
+              </div>
+              <div className="w-1/2 flex flex-col gap-2">
+                <label htmlFor="contact-no" className="font-semibold">
+                  Contact Number *
+                </label>
+                <input
+                  id="contact-no"
+                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                  type="tel"
+                  placeholder="09xxxxxxxxx"
+                  pattern="[0]{1}[9]{1}[0-9]{9}"
+                  value={contactNo}
+                  onChange={(e) => {
+                    setContactNo(e.target.value);
+                  }}
+                  required
+                />
+              </div>
+            </div>
+            <div className="flex gap-5 w-full">
+              <div className="w-1/2 flex flex-col gap-2">
+                <label htmlFor="id-no" className="font-semibold">
+                  Identification Number *
+                </label>
+                <input
+                  id="id-no"
+                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                  type="text"
+                  placeholder="xx-xxxx"
+                  value={idNo}
+                  onChange={(e) => {
+                    setIdNo(e.target.value);
+                  }}
+                  required
+                />
+              </div>
+              <div className="w-1/2 flex flex-col gap-2">
+                <label htmlFor="gender" className="font-semibold">
+                  Gender *
+                </label>
+                <select
+                  id="gender"
+                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                  value={gender}
+                  onChange={(e) => {
+                    setGender(e.target.value);
+                  }}
+                  required
+                >
+                  <option
+                    hidden
+                    value=""
+                    defaultValue
+                    className="text-black/30"
+                  ></option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-5 w-full">
+              <div className="w-1/2 flex flex-col gap-2">
+                <label htmlFor="year-sec" className="font-semibold">
+                  Year and Section *
+                </label>
+                <input
+                  id="year-sec"
+                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                  type="tel"
+                  placeholder="1-4"
+                  pattern="[1-4]{1}[-]{1}[1-20]{1-2}"
+                  value={yearSection}
+                  onChange={(e) => {
+                    setYearSection(e.target.value);
+                  }}
+                />
+              </div>
 
-                <div className="w-1/2 flex flex-col gap-2">
-                  <label htmlFor="birthday" className="font-semibold">
-                    Birthday *
-                  </label>
-                  <input
-                    type="date"
-                    id="birthday"
-                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                    value={birthday}
-                    onChange={(e) => {
-                      setBirthday(e.target.value);
-                    }}
-                    required
-                  />
-                </div>
+              <div className="w-1/2 flex flex-col gap-2">
+                <label htmlFor="birthday" className="font-semibold">
+                  Birthday *
+                </label>
+                <input
+                  type="date"
+                  id="birthday"
+                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                  value={birthday}
+                  onChange={(e) => {
+                    setBirthday(e.target.value);
+                  }}
+                  required
+                />
               </div>
-              <div className="flex gap-5 w-full">
-                <div className="w-full flex flex-col gap-2">
-                  <label htmlFor="department" className="font-semibold">
-                    Department/Courses *
-                  </label>
-                  <select
-                    id="department"
-                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                    value={department}
-                    onChange={(e) => {
-                      setDepartment(e.target.value);
-                    }}  
-                    required
-                  >
-                    <option
-                      hidden
-                      defaultValue
-                      value=""
-                      className="text-black/30"
-                    ></option>
-                    {courses?.map((i, k) => {
-                      return (
-                        <option value={i} key={k}>
-                          {i}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </div>
+            </div>
+            <div className="flex gap-5 w-full">
+              <div className="w-full flex flex-col gap-2">
+                <label htmlFor="department" className="font-semibold">
+                  Department/Courses *
+                </label>
+                <select
+                  id="department"
+                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                  value={department}
+                  onChange={(e) => {
+                    setDepartment(e.target.value);
+                  }}
+                  required
+                >
+                  <option
+                    hidden
+                    defaultValue
+                    value=""
+                    className="text-black/30"
+                  ></option>
+                  {courses?.map((i, k) => {
+                    return (
+                      <option value={i} key={k}>
+                        {i}
+                      </option>
+                    );
+                  })}
+                </select>
               </div>
-              <button
-                className="bg-[--dark-green] w-full p-3 text-[--light-brown] text-sm rounded-lg border border-2 border-[--dark-green] 
+            </div>
+            <button
+              className="bg-[--dark-green] w-full p-3 text-[--light-brown] text-sm rounded-lg border border-2 border-[--dark-green] 
           hover:bg-transparent hover:text-[--dark-green] transition-all duration-300 font-semibold"
-                type="submit"
-              >
-                Save
-              </button>
-            </div>
-          </Modal>
-        </form>
-      ) : null}
-      {isOpenImportModal ? (
-        <form className="w-full justify-between flex" onSubmit={handleImport}>
-          <Modal>
-            <div className="w-full justify-between flex">
-              <p className="text-2xl font-extrabold">Import CSV</p>
-              <button
-                onClick={() => {
-                  setIsOpenImportModal(false);
-                  setFile(null);
-                  setErrorMessages([]);
-                }}
-                type="button"
-              >
-                <FaTimes size={20} />
-              </button>
-            </div>
-            {file ? (
-              <div className="mt-5 p-5 border border-2 border-[--light-gray] w-full rounded-xl h-max flex justify-between">
-                <div className="flex gap-5">
-                  <div className="border border-1 border-[--light-gray] w-max h-max p-3 rounded-xl">
-                    <BsFiletypeCsv size={24} />
-                  </div>
-                  <div>
-                    <p className="font-semibold">{file.name}</p>
-                    <div className="mt-5 max-h-[140px] overflow-auto">
-                      {errorMessages.map((i, k) => {
-                        return (
-                          <p
-                            className="text-sm text-[--red] font-semibold"
-                            key={k}
-                          >
-                            {i}
-                          </p>
-                        );
-                      })}
-                    </div>
-                  </div>
+              type="submit"
+            >
+              Save
+            </button>
+          </div>
+        </Modal>
+      </form>
+
+      <form className="w-full justify-between flex" onSubmit={handleImport}>
+        <Modal isOpen={isOpenImportModal}>
+          <div className="w-full justify-between flex">
+            <p className="text-2xl font-extrabold">Import CSV</p>
+            <button
+              onClick={() => {
+                setIsOpenImportModal(false);
+                setFile(null);
+                setErrorMessages([]);
+              }}
+              type="button"
+            >
+              <FaTimes size={20} />
+            </button>
+          </div>
+          {file ? (
+            <div className="mt-5 p-5 border border-2 border-[--light-gray] w-full rounded-xl h-max flex justify-between">
+              <div className="flex gap-5">
+                <div className="border border-1 border-[--light-gray] w-max h-max p-3 rounded-xl">
+                  <BsFiletypeCsv size={24} />
                 </div>
                 <div>
-                  <button
-                    onClick={() => {
-                      setFile(null);
-                      setErrorMessages([]);
-                    }}
-                    type="button"
-                  >
-                    <BsFillTrash3Fill size={20} className="text-red-500" />
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <FileUploader
-                handleChange={handleFileChangeDragDrop}
-                name="file"
-                types={["CSV"]}
-              >
-                <div className="mt-5 border border-4 border-[--dark-green] rounded-xl border-dashed w-full h-max p-8">
-                  <div className="flex flex-col gap-1 items-center font-semibold">
-                    <BsCloudUploadFill
-                      size={32}
-                      className="text-[--dark-green]"
-                    />
-                    <p> Drag and Drop CSV File</p>
-                    <p className="text-[--dark-green]">― OR ―</p>
-                    <p>1. Click the "Attach File" button.</p>
-                    <p>2. Locate the CSV file in your computer.</p>
-                    <p>3. Click the "Import" button.</p>
-                    <p>4. Wait for the successful/error confirmation.</p>
+                  <p className="font-semibold">{file.name}</p>
+                  <div className="mt-5 max-h-[140px] overflow-auto">
+                    {errorMessages.map((i, k) => {
+                      return (
+                        <p
+                          className="text-sm text-[--red] font-semibold"
+                          key={k}
+                        >
+                          {i}
+                        </p>
+                      );
+                    })}
                   </div>
                 </div>
-              </FileUploader>
-            )}
-            <div className="w-full flex gap-3 mt-10">
-              <input
-                style={{ display: "none" }}
-                ref={inputRef}
-                type="file"
-                onChange={handleFileChange}
-              />
-              <button
-                className="w-1/2 bg-black w-full p-3 text-[--light-brown] text-sm rounded-lg border border-2 border-black
-          hover:bg-transparent hover:text-black transition-all duration-300 font-semibold"
-                onClick={() => {
-                  inputRef.current.click();
-                }}
-                type="button"
-              >
-                Attach File
-              </button>
-              <button
-                className="w-1/2 bg-[--dark-green] w-full p-3 text-[--light-brown] text-sm rounded-lg border border-2 border-[--dark-green] 
-          hover:bg-transparent hover:text-[--dark-green] transition-all duration-300 font-semibold"
-                type="submit"
-              >
-                Import
-              </button>
+              </div>
+              <div>
+                <button
+                  onClick={() => {
+                    setFile(null);
+                    setErrorMessages([]);
+                  }}
+                  type="button"
+                >
+                  <BsFillTrash3Fill size={20} className="text-red-500" />
+                </button>
+              </div>
             </div>
-          </Modal>
-        </form>
-      ) : null}
+          ) : (
+            <FileUploader
+              handleChange={handleFileChangeDragDrop}
+              name="file"
+              types={["CSV"]}
+            >
+              <div className="mt-5 border border-4 border-[--dark-green] rounded-xl border-dashed w-full h-max p-8">
+                <div className="flex flex-col gap-1 items-center font-semibold">
+                  <BsCloudUploadFill
+                    size={32}
+                    className="text-[--dark-green]"
+                  />
+                  <p> Drag and Drop CSV File</p>
+                  <p className="text-[--dark-green]">― OR ―</p>
+                  <p>1. Click the "Attach File" button.</p>
+                  <p>2. Locate the CSV file in your computer.</p>
+                  <p>3. Click the "Import" button.</p>
+                  <p>4. Wait for the successful/error confirmation.</p>
+                </div>
+              </div>
+            </FileUploader>
+          )}
+          <div className="w-full flex gap-3 mt-10">
+            <input
+              style={{ display: "none" }}
+              ref={inputRef}
+              type="file"
+              onChange={handleFileChange}
+            />
+            <button
+              className="w-1/2 bg-black w-full p-3 text-[--light-brown] text-sm rounded-lg border border-2 border-black
+          hover:bg-transparent hover:text-black transition-all duration-300 font-semibold"
+              onClick={() => {
+                inputRef.current.click();
+              }}
+              type="button"
+            >
+              Attach File
+            </button>
+            <button
+              className="w-1/2 bg-[--dark-green] w-full p-3 text-[--light-brown] text-sm rounded-lg border border-2 border-[--dark-green] 
+          hover:bg-transparent hover:text-[--dark-green] transition-all duration-300 font-semibold"
+              type="submit"
+            >
+              Import
+            </button>
+          </div>
+        </Modal>
+      </form>
       <div className="flex flex-col px-52">
         <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">
           User Accounts

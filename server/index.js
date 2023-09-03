@@ -22,6 +22,7 @@ const { getUser } = require("./controllers/userAccountControllers");
 const { addSOSAppointment } = require("./controllers/scheduleControllers");
 const {
   addNotificationGcSa,
+  addNotificationStudent,
 } = require("./controllers/notificationControllers");
 
 const app = express();
@@ -73,10 +74,10 @@ const getOnlineUser = (email) => {
 };
 
 const getGCnSA = () => {
-  return (onlineUsers = onlineUsers.filter(
+  return onlineUsers.filter(
     (user) =>
       user.role === "systemAdministrator" || user.role === "guidanceCounselor"
-  ));
+  );
 };
 
 const removeUser = (socketId) => {
@@ -132,10 +133,12 @@ io.on("connection", (socket) => {
       const counselorAdmin = getGCnSA();
       const idNo = jwt.decode(token)?.idNo;
       const userDetails = await getUser(idNo);
-
+      //adding SOS appointment to appointment
+      //adding to guidance counselors and system admin
+      //sending notifs to guidance counselors and system admin
+      const sosDetails = await addSOSAppointment(userDetails);
+      await addNotificationGcSa(sosDetails);
       if (counselorAdmin.length > 0) {
-        const sosDetails = await addSOSAppointment(userDetails);
-        await addNotificationGcSa(sosDetails);
         counselorAdmin.forEach((user) => {
           io.to(user.socketId).emit("scheduleResponse", {
             id: id,
@@ -143,6 +146,16 @@ io.on("connection", (socket) => {
           });
         });
       }
+
+      await addNotificationStudent(sosDetails, idNo);
+      onlineUsers.forEach((user) => {
+        if (idNo === user.idNo) {
+          console.log(user.socketId);
+          return io.to(user.socketId).emit("studentScheduleResponse", {
+            sosDetails,
+          });
+        }
+      });
     }
   });
 

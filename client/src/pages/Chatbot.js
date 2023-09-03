@@ -8,6 +8,13 @@ import { AiOutlineCloseCircle } from "react-icons/ai";
 import { MdSos } from "react-icons/md";
 import { FaTimes } from "react-icons/fa";
 
+import {
+  BsCalendar4Week,
+  BsClockHistory,
+  BsFillTrash3Fill,
+  BsPatchCheck,
+} from "react-icons/bs";
+
 import Modal from "../components/Modal";
 import katoto from "../assets/katoto/katoto-full.png";
 import katotoWatch from "../assets/katoto/katoto-watch.png";
@@ -20,6 +27,8 @@ function Chatbot({ toast, auth, socket }) {
   const [isFriendly, setIsFriendly] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [popUpSOS, setPopUpSOS] = useState(false);
+  const [sosDetails, setSosDetails] = useState({});
+  const [isOpenNotificationModal, setIsOpenNotificationModal] = useState(false);
 
   const [katotoMessage, setKatotoMessage] = useState("");
   const [inputFriendly, setInputFriendly] = useState("");
@@ -32,6 +41,21 @@ function Chatbot({ toast, auth, socket }) {
   const bottomRef = useRef(null);
 
   useEffect(() => {
+    if (socket) {
+      socket.on("studentScheduleResponse", (details) => {
+        setPopUpSOS(false);
+        setSosDetails(details);
+      });
+    }
+  }, [socket]);
+
+  useEffect(() => {
+    if (Object.keys(sosDetails).length !== 0) {
+      setIsOpenNotificationModal(true);
+    }
+  }, [sosDetails]);
+
+  useEffect(() => {
     handleGetConversation();
     if (!isInitial) {
       handleSubmitMessage(auth.accessToken, "hi");
@@ -41,6 +65,36 @@ function Chatbot({ toast, auth, socket }) {
   useEffect(() => {
     bottomRef?.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, guidedButtons, friendlyMessages]);
+
+  const convertDate = (date) => {
+    const formattedDate = new Date(date);
+
+    const convertedDateTime = formattedDate.toLocaleString("en-PH", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      timeZone: "Asia/Singapore",
+    });
+
+    const convertedDate = formattedDate.toLocaleString("en-PH", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "Asia/Singapore",
+    });
+
+    const convertedTime = formattedDate.toLocaleString("en-PH", {
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      timeZone: "Asia/Singapore",
+    });
+
+    return [convertedDateTime, convertedDate, convertedTime];
+  };
 
   const handleGetConversation = async (req, res) => {
     try {
@@ -179,11 +233,221 @@ function Chatbot({ toast, auth, socket }) {
   };
 
   return (
-    <div className="flex items-center bg-[--light-brown] justify-center h-screen">
-      {popUpSOS ? (
-        <Modal>
+    <>
+      {isOpenNotificationModal ? (
+        <motion.div
+          className="bg-black/50 absolute w-screen h-screen z-50 overflow-hidden"
+          variants={{
+            show: {
+              opacity: 1,
+              transition: {
+                type: "spring",
+                stiffness: 500,
+                damping: 40,
+              },
+            },
+            hide: {
+              opacity: 0,
+              transition: {
+                type: "spring",
+                stiffness: 500,
+                damping: 40,
+              },
+            },
+          }}
+          animate={isOpenNotificationModal ? "show" : "hide"}
+          initial={{
+            opacity: 0,
+          }}
+        ></motion.div>
+      ) : null}
+
+      <Modal isOpen={isOpenNotificationModal}>
+        <div className="w-full justify-between flex">
+          <p className="text-2xl font-extrabold">
+            {(() => {
+              if (sosDetails?.sosDetails?.type === "sos") {
+                return "SOS Emergency Appointment";
+              }
+            })()}
+          </p>
+          <button
+            onClick={() => {
+              setIsOpenNotificationModal(false);
+              handleSubmitMessage(
+                auth?.accessToken,
+                "Nakapag-iskedyul na ako ng SOS Appointment, Salamat!"
+              );
+            }}
+            type="button"
+          >
+            <FaTimes size={20} />
+          </button>
+        </div>
+        <div className="flex flex-col gap-4 mt-5">
+          {(() => {
+            if (sosDetails?.sosDetails?.type === "sos") {
+              return (
+                <div className="flex flex-col gap-5">
+                  <div className="flex gap-5 items-center">
+                    <div className="bg-[--dark-green] h-fit rounded-full p-1 text-white border border-2 border-[--dark-green]">
+                      <BsPatchCheck size={48} />
+                    </div>
+                    <div className="flex flex-col gap-5">
+                      <p>
+                        You have successfully booked an{" "}
+                        <span className="font-bold">
+                          SOS Emergency appointment{" "}
+                        </span>{" "}
+                        on{" "}
+                        {convertDate(sosDetails?.sosDetails?.scheduledDate)[0]}.
+                        This is received and acknowledged by PLV Guidance and
+                        Counselling Center. Thank You!
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-5">
+                      <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                        Appointment Details
+                      </p>
+                      {new Date(sosDetails?.sosDetails?.scheduledDate) >
+                      new Date() ? (
+                        <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3">
+                          Upcoming
+                        </div>
+                      ) : (
+                        <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
+                          Overdue
+                        </div>
+                      )}
+                    </div>
+                    <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
+                      <div className="flex gap-4">
+                        <BsCalendar4Week size={24} />
+                        <p>
+                          {
+                            convertDate(
+                              sosDetails?.sosDetails?.scheduledDate
+                            )[1]
+                          }
+                        </p>
+                        <div className="border-[1px] border-black/20 border-right"></div>
+                        <BsClockHistory size={24} />
+                        <p>
+                          {
+                            convertDate(
+                              sosDetails?.sosDetails?.scheduledDate
+                            )[2]
+                          }
+                        </p>
+                        <p>45 mins</p>
+                      </div>
+                    </div>
+                    <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
+                      Your Details
+                    </p>
+                    <table className="mb-5">
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Name</td>
+                        <td>{sosDetails?.sosDetails?.userDetails?.name}</td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Gender</td>
+                        <td>{sosDetails?.sosDetails?.userDetails?.gender}</td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Email</td>
+                        <td>{sosDetails?.sosDetails?.userDetails?.email}</td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">
+                          {" "}
+                          ID Number
+                        </td>
+                        <td> {sosDetails?.sosDetails?.userDetails?.idNo}</td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Course</td>
+                        <td>
+                          {sosDetails?.sosDetails?.userDetails?.department}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">
+                          Year and Section
+                        </td>
+                        <td>
+                          {sosDetails?.sosDetails?.userDetails?.yearSection}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">
+                          College
+                        </td>
+                        <td>
+                          {sosDetails?.sosDetails?.userDetails?.mainDepartment}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Phone</td>
+                        <td>
+                          {sosDetails?.sosDetails?.userDetails?.contactNo}
+                        </td>
+                      </tr>
+                    </table>
+                    <div className="flex justify-end">
+                      {/* <button
+                      className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+        border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
+                      onClick={() => {
+                        setIsOpenNotificationModal(false);
+                        // handleDeleteNotification(notificationDetails.id);
+                        // handleDeleteLocal(notificationDetails.id);
+                      }}
+                    >
+                      <BsFillTrash3Fill size={14} />
+                      Delete
+                    </button>  */}
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+          })()}
+        </div>
+      </Modal>
+      <div className="flex items-center bg-[--light-brown] justify-center h-screen">
+        {popUpSOS ? (
+          <motion.div
+            className="bg-black/50 absolute w-screen h-screen z-40"
+            variants={{
+              show: {
+                opacity: 1,
+                transition: {
+                  type: "spring",
+                  stiffness: 500,
+                  damping: 40,
+                },
+              },
+              hide: {
+                opacity: 0,
+                transition: {
+                  type: "spring",
+                  stiffness: 500,
+                  damping: 40,
+                },
+              },
+            }}
+            animate={popUpSOS ? "show" : "hide"}
+            initial={{
+              opacity: 0,
+            }}
+          ></motion.div>
+        ) : null}
+        <Modal isOpen={popUpSOS}>
           <div className="w-full justify-between flex">
-            <p className="text-2xl font-extrabold">SOS</p>
+            <p className="text-2xl font-extrabold">SOS Emergency Button</p>
 
             <button
               onClick={() => {
@@ -194,10 +458,18 @@ function Chatbot({ toast, auth, socket }) {
               <FaTimes size={20} />
             </button>
           </div>
-          <div className="flex flex-col gap-4 mt-5">
-            <p className="text-md">
-              Click here if you feel bad and if you want to consult with
-              Guidance Counselors
+          <div className="flex flex-col gap-4 mt-5 items-center text-center text-md">
+            <p className="mb-5">
+              <span className="text-black font-bold">TAKE NOTE:</span> If you
+              are experiencing any{" "}
+              <span className="text-black font-bold">emotional distress</span>,
+              please know that you are not alone. PLV guidance counselors are
+              available to provide support and guidance. You can reach them by
+              clicking the SOS button below to set an{" "}
+              <span className="text-black font-bold">
+                immediate emergency appointment
+              </span>
+              .
             </p>
             <div className="w-auto">
               <button
@@ -205,292 +477,63 @@ function Chatbot({ toast, auth, socket }) {
               transition-all duration-300"
                 onClick={handleClickSOS}
               >
-                <MdSos size={80} />
+                <MdSos size={160} />
               </button>
             </div>
           </div>
         </Modal>
-      ) : null}
-      <div className="flex items-center gap-32">
-        <div className="relative">
-          <img
-            src={katotoWatch}
-            alt="katoto"
-            className="h-[270px] absolute -top-[250px] right-1/2 translate-x-1/2"
-          />
-          <div className="h-max w-[350px] bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg pt-10 pb-5 px-5">
-            <p className="text-2xl font-extrabold flex justify-center mb-5">
-              Quote of the Day
-            </p>
-            <div className="bg-[--light-green] px-5 py-8 rounded-lg text-center font-semibold text-lg">
-              Sometimes you just need to take a deep breath.
+
+        <div className="flex items-center gap-32">
+          <div className="relative">
+            <img
+              src={katotoWatch}
+              alt="katoto"
+              className="h-[270px] absolute -top-[250px] right-1/2 translate-x-1/2"
+            />
+            <div className="h-max w-[350px] bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg pt-10 pb-5 px-5">
+              <p className="text-2xl font-extrabold flex justify-center mb-5">
+                Quote of the Day
+              </p>
+              <div className="bg-[--light-green] px-5 py-8 rounded-lg text-center font-semibold text-lg">
+                Sometimes you just need to take a deep breath.
+              </div>
             </div>
           </div>
-        </div>
-        <div className="h-[510px] w-[600px] bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg">
-          <div className="relative h-max">
-            <div className="h-20 rounded-t-xl flex bg-[--light-green] items-center justify-between px-8">
-              <div className="flex gap-5 py-3 items-center">
-                <img src={logo} alt="logo" className="h-[50px] z-20" />
-                <div className="flex flex-col justify-center">
-                  <p className="text-xs font-medium z-20">
-                    Tara kuwentuhan! kasama si
-                  </p>
-                  <p className="text-xl font-extrabold z-20">KATOTO</p>
+          <div className="h-[510px] w-[600px] bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg">
+            <div className="relative h-max">
+              <div className="h-20 rounded-t-xl flex bg-[--light-green] items-center justify-between px-8">
+                <div className="flex gap-5 py-3 items-center">
+                  <img src={logo} alt="logo" className="h-[50px] z-20" />
+                  <div className="flex flex-col justify-center">
+                    <p className="text-xs font-medium z-20">
+                      Tara kuwentuhan! kasama si
+                    </p>
+                    <p className="text-xl font-extrabold z-20">KATOTO</p>
+                  </div>
+                </div>
+                <div className="z-30 flex gap-6 justify-center">
+                  <button className="bg-[--red] rounded-full p-1 text-white border border-2 border-[--red] hover:bg-transparent hover:text-[--red] transition-all duration-300">
+                    <MdSos size={34} />
+                  </button>
+                  <button
+                    className="z-20"
+                    onClick={() => {
+                      setIsTyping(false);
+                      setIsGuided(false);
+                      setIsFriendly(false);
+                      setIsInitial(true);
+                      setFriendlyMessages([]);
+                    }}
+                  >
+                    <AiOutlineCloseCircle size={26} />
+                  </button>
                 </div>
               </div>
-              <div className="z-30 flex gap-6 justify-center">
-                <button className="bg-[--red] rounded-full p-1 text-white border border-2 border-[--red] hover:bg-transparent hover:text-[--red] transition-all duration-300">
-                  <MdSos size={34} />
-                </button>
-                <button
-                  className="z-20"
-                  onClick={() => {
-                    setIsTyping(false);
-                    setIsGuided(false);
-                    setIsFriendly(false);
-                    setIsInitial(true);
-                    setFriendlyMessages([]);
-                  }}
-                >
-                  <AiOutlineCloseCircle size={26} />
-                </button>
-              </div>
+              <img src={wave} className="w-full absolute top-12" alt="" />
             </div>
-            <img src={wave} className="w-full absolute top-12" alt="" />
-          </div>
-          <div className="flex flex-col justify-between h-[430px]">
-            {isInitial ? (
-              <div className="px-5 pt-10 pb-5 h-full flex items-end justify-center relative">
-                <motion.div
-                  variants={{
-                    hidden: { opacity: 1, scale: 0 },
-                    visible: {
-                      opacity: 1,
-                      scale: 1,
-                      transition: {
-                        delayChildren: 0.8,
-                        staggerChildren: 0.2,
-                      },
-                    },
-                  }}
-                  initial="hidden"
-                  animate="visible"
-                  className="flex flex-col gap-3 items-center list-none mb-5"
-                >
-                  <motion.li
-                    variants={{
-                      hidden: { y: 20, opacity: 0 },
-                      visible: {
-                        y: 0,
-                        opacity: 1,
-                      },
-                    }}
-                  >
-                    <p className="text-xs">Click to choose</p>
-                  </motion.li>
-                  <motion.li
-                    variants={{
-                      hidden: { y: 20, opacity: 0 },
-                      visible: {
-                        y: 0,
-                        opacity: 1,
-                      },
-                    }}
-                  >
-                    <button
-                      className="text-sm px-5 py-2 rounded-full w-max font-medium cursor-pointer bg-[--dark-green] border-2 border-[--dark-green] 
-                      text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green] transition-all duration-300"
-                      onClick={() => {
-                        handleGetConversation();
-                        setIsGuided(true);
-                        setIsFriendly(false);
-                        setIsInitial(false);
-                      }}
-                    >
-                      Counselor-Guided Mode
-                    </button>
-                  </motion.li>
-                  <motion.li
-                    variants={{
-                      hidden: { y: 20, opacity: 0 },
-                      visible: {
-                        y: 0,
-                        opacity: 1,
-                      },
-                    }}
-                  >
-                    <button
-                      className="text-sm px-5 py-2 rounded-full w-max font-medium cursor-pointer bg-[--dark-green] border-2 border-[--dark-green] 
-                      text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green] transition-all duration-300"
-                      onClick={() => {
-                        setIsGuided(false);
-                        setIsFriendly(true);
-                        setIsInitial(false);
-                      }}
-                    >
-                      Friendly Conversation Mode
-                    </button>
-                  </motion.li>
-                  <motion.li
-                    variants={{
-                      hidden: { y: 20, opacity: 0 },
-                      visible: {
-                        y: 0,
-                        opacity: 1,
-                      },
-                    }}
-                  >
-                    <p className="text-xs">
-                      {"Learn more about our "}
-                      <span className="font-bold text-[--dark-green] hover:underline transition-all cursor-pointer">
-                        Privacy Policy
-                      </span>
-                      .
-                    </p>
-                  </motion.li>
-                </motion.div>
-              </div>
-            ) : (
-              <div className="px-5 mb-1 flex flex-col overflow-y-auto gap-3 pt-10">
-                {isGuided
-                  ? messages.map((i, k) => {
-                      return i.sender === "Katoto" ? (
-                        <motion.div
-                          key={k}
-                          variants={{
-                            hidden: { opacity: 1, scale: 0 },
-                            visible: {
-                              opacity: 1,
-                              scale: 1,
-                              transition: {
-                                delayChildren: 0.2,
-                                staggerChildren: 0.2,
-                              },
-                            },
-                          }}
-                          initial="hidden"
-                          animate="visible"
-                          className="flex w-full justify-start gap-3"
-                        >
-                          <motion.li
-                            variants={{
-                              hidden: { y: 20, opacity: 0 },
-                              visible: {
-                                y: 0,
-                                opacity: 1,
-                              },
-                            }}
-                            className="flex w-full justify-start gap-3 list-none"
-                          >
-                            <img src={logo} alt="logo" className="h-[30px]" />
-                            <div className="bg-black/10 max-w-[50%] py-3 px-4 rounded-b-3xl rounded-tr-3xl text-sm flex items-center text-left mt-5">
-                              {i.message}
-                            </div>
-                          </motion.li>
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          key={k}
-                          variants={{
-                            hidden: { opacity: 1, scale: 0 },
-                            visible: {
-                              opacity: 1,
-                              scale: 1,
-                              transition: {
-                                delayChildren: 0.2,
-                                staggerChildren: 0.2,
-                              },
-                            },
-                          }}
-                          initial="hidden"
-                          animate="visible"
-                          className="flex w-full justify-end"
-                        >
-                          <motion.li
-                            variants={{
-                              hidden: { y: 20, opacity: 0 },
-                              visible: {
-                                y: 0,
-                                opacity: 1,
-                              },
-                            }}
-                            className="bg-[--light-green] max-w-[50%] py-3 px-4 rounded-t-3xl rounded-bl-3xl text-sm flex items-center text-left"
-                          >
-                            {i.message}
-                          </motion.li>
-                        </motion.div>
-                      );
-                    })
-                  : friendlyMessages.map((i, k) => {
-                      return i.sender === "Katoto" ? (
-                        <motion.div
-                          key={k}
-                          variants={{
-                            hidden: { opacity: 1, scale: 0 },
-                            visible: {
-                              opacity: 1,
-                              scale: 1,
-                              transition: {
-                                delayChildren: 0.2,
-                                staggerChildren: 0.2,
-                              },
-                            },
-                          }}
-                          initial="hidden"
-                          animate="visible"
-                          className="flex w-full justify-start gap-3"
-                        >
-                          <motion.li
-                            variants={{
-                              hidden: { y: 20, opacity: 0 },
-                              visible: {
-                                y: 0,
-                                opacity: 1,
-                              },
-                            }}
-                            className="flex w-full justify-start gap-3 list-none"
-                          >
-                            <img src={logo} alt="logo" className="h-[30px]" />
-                            <div className="bg-black/10 max-w-[50%] py-3 px-4 rounded-b-3xl rounded-tr-3xl text-sm flex items-center text-left mt-5">
-                              {i.message}
-                            </div>
-                          </motion.li>
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          key={k}
-                          variants={{
-                            hidden: { opacity: 1, scale: 0 },
-                            visible: {
-                              opacity: 1,
-                              scale: 1,
-                              transition: {
-                                delayChildren: 0.2,
-                                staggerChildren: 0.2,
-                              },
-                            },
-                          }}
-                          initial="hidden"
-                          animate="visible"
-                          className="flex w-full justify-end"
-                        >
-                          <motion.li
-                            variants={{
-                              hidden: { y: 20, opacity: 0 },
-                              visible: {
-                                y: 0,
-                                opacity: 1,
-                              },
-                            }}
-                            className="bg-[--light-green] max-w-[50%] py-3 px-4 rounded-t-3xl rounded-bl-3xl text-sm flex items-center text-left"
-                          >
-                            {i.message}
-                          </motion.li>
-                        </motion.div>
-                      );
-                    })}
-                {isTyping ? (
+            <div className="flex flex-col justify-between h-[430px]">
+              {isInitial ? (
+                <div className="px-5 pt-10 pb-5 h-full flex items-end justify-center relative">
                   <motion.div
                     variants={{
                       hidden: { opacity: 1, scale: 0 },
@@ -498,14 +541,14 @@ function Chatbot({ toast, auth, socket }) {
                         opacity: 1,
                         scale: 1,
                         transition: {
-                          delayChildren: 0.2,
+                          delayChildren: 0.8,
                           staggerChildren: 0.2,
                         },
                       },
                     }}
                     initial="hidden"
                     animate="visible"
-                    className="flex w-full justify-start gap-3"
+                    className="flex flex-col gap-3 items-center list-none mb-5"
                   >
                     <motion.li
                       variants={{
@@ -515,41 +558,228 @@ function Chatbot({ toast, auth, socket }) {
                           opacity: 1,
                         },
                       }}
-                      className="flex w-full justify-start gap-3 list-none"
                     >
-                      <img src={logo} alt="logo" className="h-[30px]" />
-                      <div className="bg-black/10 max-w-[50%] py-3 px-4 rounded-b-3xl rounded-tr-3xl text-sm flex items-center text-left mt-5">
-                        <p className="dot-typing my-1 mx-3"></p>
-                      </div>
+                      <p className="text-xs">Click to choose</p>
+                    </motion.li>
+                    <motion.li
+                      variants={{
+                        hidden: { y: 20, opacity: 0 },
+                        visible: {
+                          y: 0,
+                          opacity: 1,
+                        },
+                      }}
+                    >
+                      <button
+                        className="text-sm px-5 py-2 rounded-full w-max font-medium cursor-pointer bg-[--dark-green] border-2 border-[--dark-green] 
+                      text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green] transition-all duration-300"
+                        onClick={() => {
+                          handleGetConversation();
+                          setIsGuided(true);
+                          setIsFriendly(false);
+                          setIsInitial(false);
+                        }}
+                      >
+                        Counselor-Guided Mode
+                      </button>
+                    </motion.li>
+                    <motion.li
+                      variants={{
+                        hidden: { y: 20, opacity: 0 },
+                        visible: {
+                          y: 0,
+                          opacity: 1,
+                        },
+                      }}
+                    >
+                      <button
+                        className="text-sm px-5 py-2 rounded-full w-max font-medium cursor-pointer bg-[--dark-green] border-2 border-[--dark-green] 
+                      text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green] transition-all duration-300"
+                        onClick={() => {
+                          setIsGuided(false);
+                          setIsFriendly(true);
+                          setIsInitial(false);
+                        }}
+                      >
+                        Friendly Conversation Mode
+                      </button>
+                    </motion.li>
+                    <motion.li
+                      variants={{
+                        hidden: { y: 20, opacity: 0 },
+                        visible: {
+                          y: 0,
+                          opacity: 1,
+                        },
+                      }}
+                    >
+                      <p className="text-xs">
+                        {"Learn more about our "}
+                        <span className="font-bold text-[--dark-green] hover:underline transition-all cursor-pointer">
+                          Privacy Policy
+                        </span>
+                        .
+                      </p>
                     </motion.li>
                   </motion.div>
-                ) : null}
-                <div ref={bottomRef} />
-              </div>
-            )}
-
-            <div className="w-full">
-              {isGuided ? (
-                <motion.div
-                  variants={{
-                    hidden: { opacity: 1, scale: 0 },
-                    visible: {
-                      opacity: 1,
-                      scale: 1,
-                      transition: {
-                        delayChildren: 0.3,
-                        staggerChildren: 0.2,
-                      },
-                    },
-                  }}
-                  initial="hidden"
-                  animate="visible"
-                  className="px-5 py-3 list-none gap-2 justify-center flex w-full mb-3 flex-wrap"
-                >
-                  {guidedButtons.map((i, k) => {
-                    return (
+                </div>
+              ) : (
+                <div className="px-5 mb-1 flex flex-col overflow-y-auto gap-3 pt-10">
+                  {isGuided
+                    ? messages.map((i, k) => {
+                        return i.sender === "Katoto" ? (
+                          <motion.div
+                            key={k}
+                            variants={{
+                              hidden: { opacity: 1, scale: 0 },
+                              visible: {
+                                opacity: 1,
+                                scale: 1,
+                                transition: {
+                                  delayChildren: 0.2,
+                                  staggerChildren: 0.2,
+                                },
+                              },
+                            }}
+                            initial="hidden"
+                            animate="visible"
+                            className="flex w-full justify-start gap-3"
+                          >
+                            <motion.li
+                              variants={{
+                                hidden: { y: 20, opacity: 0 },
+                                visible: {
+                                  y: 0,
+                                  opacity: 1,
+                                },
+                              }}
+                              className="flex w-full justify-start gap-3 list-none"
+                            >
+                              <img src={logo} alt="logo" className="h-[30px]" />
+                              <div className="bg-black/10 max-w-[50%] py-3 px-4 rounded-b-3xl rounded-tr-3xl text-sm flex items-center text-left mt-5">
+                                {i.message}
+                              </div>
+                            </motion.li>
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            key={k}
+                            variants={{
+                              hidden: { opacity: 1, scale: 0 },
+                              visible: {
+                                opacity: 1,
+                                scale: 1,
+                                transition: {
+                                  delayChildren: 0.2,
+                                  staggerChildren: 0.2,
+                                },
+                              },
+                            }}
+                            initial="hidden"
+                            animate="visible"
+                            className="flex w-full justify-end"
+                          >
+                            <motion.li
+                              variants={{
+                                hidden: { y: 20, opacity: 0 },
+                                visible: {
+                                  y: 0,
+                                  opacity: 1,
+                                },
+                              }}
+                              className="bg-[--light-green] max-w-[50%] py-3 px-4 rounded-t-3xl rounded-bl-3xl text-sm flex items-center text-left"
+                            >
+                              {i.message}
+                            </motion.li>
+                          </motion.div>
+                        );
+                      })
+                    : friendlyMessages.map((i, k) => {
+                        return i.sender === "Katoto" ? (
+                          <motion.div
+                            key={k}
+                            variants={{
+                              hidden: { opacity: 1, scale: 0 },
+                              visible: {
+                                opacity: 1,
+                                scale: 1,
+                                transition: {
+                                  delayChildren: 0.2,
+                                  staggerChildren: 0.2,
+                                },
+                              },
+                            }}
+                            initial="hidden"
+                            animate="visible"
+                            className="flex w-full justify-start gap-3"
+                          >
+                            <motion.li
+                              variants={{
+                                hidden: { y: 20, opacity: 0 },
+                                visible: {
+                                  y: 0,
+                                  opacity: 1,
+                                },
+                              }}
+                              className="flex w-full justify-start gap-3 list-none"
+                            >
+                              <img src={logo} alt="logo" className="h-[30px]" />
+                              <div className="bg-black/10 max-w-[50%] py-3 px-4 rounded-b-3xl rounded-tr-3xl text-sm flex items-center text-left mt-5">
+                                {i.message}
+                              </div>
+                            </motion.li>
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            key={k}
+                            variants={{
+                              hidden: { opacity: 1, scale: 0 },
+                              visible: {
+                                opacity: 1,
+                                scale: 1,
+                                transition: {
+                                  delayChildren: 0.2,
+                                  staggerChildren: 0.2,
+                                },
+                              },
+                            }}
+                            initial="hidden"
+                            animate="visible"
+                            className="flex w-full justify-end"
+                          >
+                            <motion.li
+                              variants={{
+                                hidden: { y: 20, opacity: 0 },
+                                visible: {
+                                  y: 0,
+                                  opacity: 1,
+                                },
+                              }}
+                              className="bg-[--light-green] max-w-[50%] py-3 px-4 rounded-t-3xl rounded-bl-3xl text-sm flex items-center text-left"
+                            >
+                              {i.message}
+                            </motion.li>
+                          </motion.div>
+                        );
+                      })}
+                  {isTyping ? (
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 1, scale: 0 },
+                        visible: {
+                          opacity: 1,
+                          scale: 1,
+                          transition: {
+                            delayChildren: 0.2,
+                            staggerChildren: 0.2,
+                          },
+                        },
+                      }}
+                      initial="hidden"
+                      animate="visible"
+                      className="flex w-full justify-start gap-3"
+                    >
                       <motion.li
-                        key={k}
                         variants={{
                           hidden: { y: 20, opacity: 0 },
                           visible: {
@@ -557,28 +787,21 @@ function Chatbot({ toast, auth, socket }) {
                             opacity: 1,
                           },
                         }}
+                        className="flex w-full justify-start gap-3 list-none"
                       >
-                        <button
-                          className="text-sm px-5 py-2 rounded-full w-max font-medium cursor-pointer bg-[--dark-green] border-2 border-[--dark-green] 
-              text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green] transition-all duration-300"
-                          onClick={() => {
-                            handleSubmitMessage(auth.accessToken, i);
-                          }}
-                        >
-                          {i}
-                        </button>
+                        <img src={logo} alt="logo" className="h-[30px]" />
+                        <div className="bg-black/10 max-w-[50%] py-3 px-4 rounded-b-3xl rounded-tr-3xl text-sm flex items-center text-left mt-5">
+                          <p className="dot-typing my-1 mx-3"></p>
+                        </div>
                       </motion.li>
-                    );
-                  })}
-                </motion.div>
-              ) : null}
-              {isFriendly ? (
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleSubmitMessage(auth.accessToken, inputFriendly);
-                  }}
-                >
+                    </motion.div>
+                  ) : null}
+                  <div ref={bottomRef} />
+                </div>
+              )}
+
+              <div className="w-full">
+                {isGuided ? (
                   <motion.div
                     variants={{
                       hidden: { opacity: 1, scale: 0 },
@@ -593,61 +816,111 @@ function Chatbot({ toast, auth, socket }) {
                     }}
                     initial="hidden"
                     animate="visible"
-                    className="px-3 py-3 list-none flex gap-5 w-full"
+                    className="px-5 py-3 list-none gap-2 justify-center flex w-full mb-3 flex-wrap"
                   >
-                    <motion.li
+                    {guidedButtons.map((i, k) => {
+                      return (
+                        <motion.li
+                          key={k}
+                          variants={{
+                            hidden: { y: 20, opacity: 0 },
+                            visible: {
+                              y: 0,
+                              opacity: 1,
+                            },
+                          }}
+                        >
+                          <button
+                            className="text-sm px-5 py-2 rounded-full w-max font-medium cursor-pointer bg-[--dark-green] border-2 border-[--dark-green] 
+              text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green] transition-all duration-300"
+                            onClick={() => {
+                              handleSubmitMessage(auth.accessToken, i);
+                            }}
+                          >
+                            {i}
+                          </button>
+                        </motion.li>
+                      );
+                    })}
+                  </motion.div>
+                ) : null}
+                {isFriendly ? (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSubmitMessage(auth.accessToken, inputFriendly);
+                    }}
+                  >
+                    <motion.div
                       variants={{
-                        hidden: { y: 20, opacity: 0 },
+                        hidden: { opacity: 1, scale: 0 },
                         visible: {
-                          y: 0,
                           opacity: 1,
+                          scale: 1,
+                          transition: {
+                            delayChildren: 0.3,
+                            staggerChildren: 0.2,
+                          },
                         },
                       }}
-                      className="w-full"
+                      initial="hidden"
+                      animate="visible"
+                      className="px-3 py-3 list-none flex gap-5 w-full"
                     >
-                      <input
-                        id="message"
-                        className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-none placeholder-black/30 font-semibold w-full"
-                        type="text"
-                        placeholder="Aa..."
-                        value={inputFriendly}
-                        onChange={(e) => {
-                          setInputFriendly(e.target.value);
+                      <motion.li
+                        variants={{
+                          hidden: { y: 20, opacity: 0 },
+                          visible: {
+                            y: 0,
+                            opacity: 1,
+                          },
                         }}
-                        required
-                      />
-                    </motion.li>
-                    <div className="w-[50px] h-[50px]">
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ rotate: 360, scale: 1 }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 260,
-                          damping: 20,
-                          delay: 0.8,
-                        }}
+                        className="w-full"
                       >
-                        <button
-                          className="w-[46px] h-[46px] rounded-full bg-[--dark-green] flex justify-center items-center text-[--light-brown] cursor-pointer border-2 
-                      border-[--dark-green] hover:text-[--dark-green] hover:bg-[--light-brown] transition-all duration-300"
-                          type="submit"
+                        <input
+                          id="message"
+                          className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-none placeholder-black/30 font-semibold w-full"
+                          type="text"
+                          placeholder="Aa..."
+                          value={inputFriendly}
+                          onChange={(e) => {
+                            setInputFriendly(e.target.value);
+                          }}
+                          required
+                        />
+                      </motion.li>
+                      <div className="w-[50px] h-[50px]">
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ rotate: 360, scale: 1 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 260,
+                            damping: 20,
+                            delay: 0.8,
+                          }}
                         >
-                          <IoSend />
-                        </button>
-                      </motion.div>
-                    </div>
-                  </motion.div>
-                </form>
-              ) : null}
+                          <button
+                            className="w-[46px] h-[46px] rounded-full bg-[--dark-green] flex justify-center items-center text-[--light-brown] cursor-pointer border-2 
+                      border-[--dark-green] hover:text-[--dark-green] hover:bg-[--light-brown] transition-all duration-300"
+                            type="submit"
+                          >
+                            <IoSend />
+                          </button>
+                        </motion.div>
+                      </div>
+                    </motion.div>
+                  </form>
+                ) : null}
+              </div>
             </div>
           </div>
         </div>
+        <div className="pb-8">
+          <img src={katoto} alt="katoto" className="h-[600px]" />
+        </div>
       </div>
-      <div className="pb-8">
-        <img src={katoto} alt="katoto" className="h-[600px]" />
-      </div>
-    </div>
+    </>
   );
 }
 

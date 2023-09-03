@@ -48,7 +48,7 @@ function SideBar({ toast, logout, auth, socket }) {
           },
         })
         .then((res) => {
-          setNotifications(res?.data?.notifications);
+          setNotifications(res?.data?.notifications?.reverse());
         })
         .catch((err) => {
           toast.error(err?.response?.data);
@@ -181,16 +181,20 @@ function SideBar({ toast, logout, auth, socket }) {
                   <div className="flex gap-5 items-center text--black] font-medium relative">
                     <BsBell size={20} />
                     <div className="word-in relative">Notifications</div>
-                    <span className="absolute p-1 h-6 w-6 bg-[--dark-green] rounded-full -top-0 -right-8 text-xs text-center flex justify-center items-center text-white">
-                      {unreadNotifications}
-                    </span>
+                    {unreadNotifications > 0 ? (
+                      <span className="absolute p-1 h-6 w-6 bg-[--dark-green] rounded-full -top-0 -right-8 text-xs text-center flex justify-center items-center text-white">
+                        {unreadNotifications}
+                      </span>
+                    ) : null}
                   </div>
                 ) : (
                   <div className="relative">
                     <BsBell size={24} className="text-black]" />
-                    <span className="absolute p-1 w-full h-full min-w-6 min-h-6 bg-[--dark-green] rounded-full -top-3 -right-3 text-xs text-center flex justify-center items-center text-white">
-                      {unreadNotifications}
-                    </span>
+                    {unreadNotifications > 0 ? (
+                      <span className="absolute p-1 w-full h-full min-w-6 min-h-6 bg-[--dark-green] rounded-full -top-3 -right-3 text-xs text-center flex justify-center items-center text-white">
+                        {unreadNotifications}
+                      </span>
+                    ) : null}
                   </div>
                 )}
               </div>
@@ -212,8 +216,12 @@ function SideBar({ toast, logout, auth, socket }) {
         </div>
       </div>
       <NotificationContainer
+        toast={toast}
+        auth={auth}
         isOpenNotifications={isOpenNotifications}
+        setIsOpenNotifications={setIsOpenNotifications}
         notifications={notifications}
+        setNotifications={setNotifications}
       />
       <Outlet />
     </>
