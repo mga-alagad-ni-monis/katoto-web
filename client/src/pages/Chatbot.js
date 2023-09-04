@@ -11,11 +11,12 @@ import { FaTimes } from "react-icons/fa";
 import {
   BsCalendar4Week,
   BsClockHistory,
-  BsFillTrash3Fill,
+  BsCalendarPlus,
   BsPatchCheck,
 } from "react-icons/bs";
 
 import Modal from "../components/Modal";
+import CalendarComponent from "../components/Calendar/CalendarComponent";
 import katoto from "../assets/katoto/katoto-full.png";
 import katotoWatch from "../assets/katoto/katoto-watch.png";
 import logo from "../assets/logo/katoto-logo.png";
@@ -27,6 +28,8 @@ function Chatbot({ toast, auth, socket }) {
   const [isFriendly, setIsFriendly] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [popUpSOS, setPopUpSOS] = useState(false);
+  const [popUpStandard, setPopUpStandard] = useState(false);
+  const [isOpenStandardAppoint, setIsOpenStandardAppoint] = useState(false);
   const [sosDetails, setSosDetails] = useState({});
   const [isOpenNotificationModal, setIsOpenNotificationModal] = useState(false);
 
@@ -34,9 +37,10 @@ function Chatbot({ toast, auth, socket }) {
   const [inputFriendly, setInputFriendly] = useState("");
 
   const [guidedButtons, setGuidedButtons] = useState([]);
-
   const [messages, setMessages] = useState([]);
   const [friendlyMessages, setFriendlyMessages] = useState([]);
+
+  const [appointmentDetails, setAppointmentDetails] = useState({});
 
   const bottomRef = useRef(null);
 
@@ -234,7 +238,10 @@ function Chatbot({ toast, auth, socket }) {
 
   return (
     <>
-      {isOpenNotificationModal ? (
+      {isOpenNotificationModal ||
+      popUpSOS ||
+      popUpStandard ||
+      isOpenStandardAppoint ? (
         <motion.div
           className="bg-black/50 absolute w-screen h-screen z-50 overflow-hidden"
           variants={{
@@ -255,7 +262,14 @@ function Chatbot({ toast, auth, socket }) {
               },
             },
           }}
-          animate={isOpenNotificationModal ? "show" : "hide"}
+          animate={
+            isOpenNotificationModal ||
+            popUpSOS ||
+            popUpStandard ||
+            isOpenStandardAppoint
+              ? "show"
+              : "hide"
+          }
           initial={{
             opacity: 0,
           }}
@@ -417,72 +431,79 @@ function Chatbot({ toast, auth, socket }) {
           })()}
         </div>
       </Modal>
-      <div className="flex items-center bg-[--light-brown] justify-center h-screen">
-        {popUpSOS ? (
-          <motion.div
-            className="bg-black/50 absolute w-screen h-screen z-40"
-            variants={{
-              show: {
-                opacity: 1,
-                transition: {
-                  type: "spring",
-                  stiffness: 500,
-                  damping: 40,
-                },
-              },
-              hide: {
-                opacity: 0,
-                transition: {
-                  type: "spring",
-                  stiffness: 500,
-                  damping: 40,
-                },
-              },
-            }}
-            animate={popUpSOS ? "show" : "hide"}
-            initial={{
-              opacity: 0,
-            }}
-          ></motion.div>
-        ) : null}
-        <Modal isOpen={popUpSOS}>
-          <div className="w-full justify-between flex">
-            <p className="text-2xl font-extrabold">SOS Emergency Button</p>
+      <Modal isOpen={popUpSOS}>
+        <div className="w-full justify-between flex">
+          <p className="text-2xl font-extrabold">SOS Emergency Button</p>
 
+          <button
+            onClick={() => {
+              setPopUpSOS(false);
+            }}
+            type="button"
+          >
+            <FaTimes size={20} />
+          </button>
+        </div>
+        <div className="flex flex-col gap-4 mt-5 items-center text-center text-md">
+          <p className="mb-5">
+            <span className="text-black font-bold">TAKE NOTE:</span> If you are
+            experiencing any{" "}
+            <span className="text-black font-bold">emotional distress</span>,
+            please know that you are not alone. PLV guidance counselors are
+            available to provide support and guidance. You can reach them by
+            clicking the SOS button below to set an{" "}
+            <span className="text-black font-bold">
+              immediate emergency appointment
+            </span>
+            .
+          </p>
+          <div className="w-auto">
             <button
-              onClick={() => {
-                setPopUpSOS(false);
-              }}
-              type="button"
+              className="bg-[--red] rounded-full p-1 text-white border border-2 border-[--red] hover:bg-transparent hover:text-[--red] 
+              transition-all duration-300"
+              onClick={handleClickSOS}
             >
-              <FaTimes size={20} />
+              <MdSos size={160} />
             </button>
           </div>
-          <div className="flex flex-col gap-4 mt-5 items-center text-center text-md">
-            <p className="mb-5">
-              <span className="text-black font-bold">TAKE NOTE:</span> If you
-              are experiencing any{" "}
-              <span className="text-black font-bold">emotional distress</span>,
-              please know that you are not alone. PLV guidance counselors are
-              available to provide support and guidance. You can reach them by
-              clicking the SOS button below to set an{" "}
-              <span className="text-black font-bold">
-                immediate emergency appointment
-              </span>
-              .
-            </p>
-            <div className="w-auto">
-              <button
-                className="bg-[--red] rounded-full p-1 text-white border border-2 border-[--red] hover:bg-transparent hover:text-[--red] 
-              transition-all duration-300"
-                onClick={handleClickSOS}
-              >
-                <MdSos size={160} />
-              </button>
-            </div>
-          </div>
-        </Modal>
-
+        </div>
+      </Modal>
+      <Modal isOpen={popUpStandard} isCalendar={true}>
+        <div className="w-full justify-between flex">
+          <p className="text-2xl font-extrabold">Standard Appointment</p>
+          <button
+            onClick={() => {
+              setPopUpStandard(false);
+            }}
+            type="button"
+          >
+            <FaTimes size={20} />
+          </button>
+        </div>
+        <div className="flex flex-col gap-4 mt-5 items-center text-center text-md">
+          <CalendarComponent
+            setIsOpenStandardAppoint={setIsOpenStandardAppoint}
+            setPopUpStandard={setPopUpStandard}
+            setAppointmentDetails={setAppointmentDetails}
+          ></CalendarComponent>
+        </div>
+      </Modal>
+      <Modal isOpen={isOpenStandardAppoint}>
+        <div className="w-full justify-between flex">
+          <p className="text-2xl font-extrabold">Set an appointment</p>
+          <button
+            onClick={() => {
+              setIsOpenStandardAppoint(false);
+              setPopUpStandard(true);
+            }}
+            type="button"
+          >
+            <FaTimes size={20} />
+          </button>
+        </div>
+        <div className="flex flex-col gap-4 mt-5 items-center text-center text-md"></div>
+      </Modal>
+      <div className="flex items-center bg-[--light-brown] justify-center h-screen">
         <div className="flex items-center gap-32">
           <div className="relative">
             <img
@@ -512,7 +533,22 @@ function Chatbot({ toast, auth, socket }) {
                   </div>
                 </div>
                 <div className="z-30 flex gap-6 justify-center">
-                  <button className="bg-[--red] rounded-full p-1 text-white border border-2 border-[--red] hover:bg-transparent hover:text-[--red] transition-all duration-300">
+                  <button
+                    className="bg-[--dark-green] rounded-full p-1 text-white p-2 border border-2 border-[--dark-green] 
+                  hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                    onClick={() => {
+                      setPopUpStandard(true);
+                    }}
+                  >
+                    <BsCalendarPlus size={24} />
+                  </button>
+                  <button
+                    className="bg-[--red] rounded-full p-1 text-white border border-2 border-[--red] hover:bg-transparent 
+                  hover:text-[--red] transition-all duration-300"
+                    onClick={() => {
+                      setPopUpSOS(true);
+                    }}
+                  >
                     <MdSos size={34} />
                   </button>
                   <button

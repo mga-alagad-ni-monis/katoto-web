@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-function Modal({ children, isOpen }) {
+function Modal({ children, isOpen, isCalendar }) {
   return (
     <motion.div
       className="w-screen h-screen absolute z-50 flex justify-center items-center"
@@ -30,7 +30,11 @@ function Modal({ children, isOpen }) {
         scale: 0,
       }}
     >
-      <motion.div className="w-4/12 h-max z-50 bg-[--light-brown] p-8 rounded-2xl">
+      <motion.div
+        className={`${
+          isCalendar ? null : "w-4/12"
+        } h-max z-50 bg-[--light-brown] p-8 rounded-2xl`}
+      >
         <motion.div>{children}</motion.div>
       </motion.div>
     </motion.div>
