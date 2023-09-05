@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import axios from "../api/axios";
 import axiosDef from "axios";
 import { motion, AnimatePresence } from "framer-motion";
+import moment from "moment";
 
 import { IoSend } from "react-icons/io5";
 import { AiOutlineCloseCircle } from "react-icons/ai";
@@ -30,16 +31,18 @@ function Chatbot({ toast, auth, socket }) {
   const [popUpSOS, setPopUpSOS] = useState(false);
   const [popUpStandard, setPopUpStandard] = useState(false);
   const [isOpenStandardAppoint, setIsOpenStandardAppoint] = useState(false);
-  const [sosDetails, setSosDetails] = useState({});
   const [isOpenNotificationModal, setIsOpenNotificationModal] = useState(false);
 
   const [katotoMessage, setKatotoMessage] = useState("");
   const [inputFriendly, setInputFriendly] = useState("");
+  const [appointmentDateStart, setAppointmentDateStart] = useState("");
+  const [appointmentDateEnd, setAppointmentDateEnd] = useState("");
 
   const [guidedButtons, setGuidedButtons] = useState([]);
   const [messages, setMessages] = useState([]);
   const [friendlyMessages, setFriendlyMessages] = useState([]);
 
+  const [sosDetails, setSosDetails] = useState({});
   const [appointmentDetails, setAppointmentDetails] = useState({});
 
   const bottomRef = useRef(null);
@@ -235,6 +238,48 @@ function Chatbot({ toast, auth, socket }) {
       toast.error("Error");
     }
   };
+
+  const convertDateAppointment = (date, hours, minutes) => {
+    const date_object = new Date(date);
+
+    date_object.setHours(hours);
+    date_object.setMinutes(minutes);
+    date_object.setSeconds(0);
+
+    return date_object.toLocaleString();
+  };
+
+  const handleSetStandardAppointment = async () => {
+    console.log(appointmentDateStart, appointmentDateEnd);
+  };
+
+  const availableTime = [
+    { no: "8", time: "8:00:00 AM" },
+    { no: "9", time: "9:00:00 AM" },
+    { no: "10", time: "10:00:00 AM" },
+    { no: "11", time: "11:00:00 AM" },
+    { no: "13", time: "1:00:00 PM" },
+    { no: "14", time: "2:00:00 PM" },
+  ];
+
+  const events = [
+    {
+      start: "9/5/2023, 1:00:00 PM",
+      end: "9/5/2023, 1:00:00 PM",
+      title: "MRI Registration",
+      data: {
+        type: "Reg",
+      },
+    },
+    {
+      start: moment("2023-09-04T14:00:00").toDate(),
+      end: moment("2023-09-04T15:30:00").toDate(),
+      title: "ENT Appointment",
+      data: {
+        type: "App",
+      },
+    },
+  ];
 
   return (
     <>
@@ -490,18 +535,96 @@ function Chatbot({ toast, auth, socket }) {
       </Modal>
       <Modal isOpen={isOpenStandardAppoint}>
         <div className="w-full justify-between flex">
-          <p className="text-2xl font-extrabold">Set an appointment</p>
+          <p className="text-2xl font-extrabold">Standard Appointment</p>
           <button
             onClick={() => {
               setIsOpenStandardAppoint(false);
               setPopUpStandard(true);
+              setAppointmentDateStart("");
+              setAppointmentDateEnd("");
             }}
             type="button"
           >
             <FaTimes size={20} />
           </button>
         </div>
-        <div className="flex flex-col gap-4 mt-5 items-center text-center text-md"></div>
+
+        <div className="mt-4">
+          <div className="flex items-center gap-5">
+            <p className="text-[--dark-green] font-bold flex items-center mb-3">
+              Appointment Details
+            </p>
+          </div>
+          <div className="bg-black/10 w-full h-auto p-3 rounded-lg mb-5">
+            <div className="flex gap-4">
+              <BsCalendar4Week size={24} />
+              <p>{convertDate(appointmentDetails?.start)[1]}</p>
+              <div className="border-[1px] border-black/20 border-right"></div>
+              <BsClockHistory size={24} />
+              <p>
+                {appointmentDateStart
+                  ? `${new Date(
+                      appointmentDateStart
+                    ).toLocaleTimeString()} - ${new Date(
+                      appointmentDateEnd
+                    ).toLocaleTimeString()}`
+                  : "00:00:00"}
+              </p>
+              <p>45 mins</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-5">
+            {availableTime.map((i, k) => {
+              return events.some(
+                (j) => i.time === new Date(j.start).toLocaleTimeString()
+              ) ? (
+                <button
+                  key={k}
+                  className="bg-black/20 rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+border border-2 border-black/20 transition-all duration-300"
+                  disabled
+                >
+                  {i.time}
+                </button>
+              ) : (
+                <button
+                  key={k}
+                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                  onClick={() => {
+                    setAppointmentDateStart(
+                      convertDateAppointment(
+                        new Date(
+                          convertDate(appointmentDetails?.start)[1]
+                        ).toLocaleString(),
+                        i.no,
+                        0
+                      )
+                    );
+                    setAppointmentDateEnd(
+                      convertDateAppointment(
+                        new Date(
+                          convertDate(appointmentDetails?.start)[1]
+                        ).toLocaleString(),
+                        i.no,
+                        45
+                      )
+                    );
+                  }}
+                >
+                  {i.time}
+                </button>
+              );
+            })}
+          </div>
+          <button
+            className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+            onClick={handleSetStandardAppointment}
+          >
+            Save
+          </button>
+        </div>
       </Modal>
       <div className="flex items-center bg-[--light-brown] justify-center h-screen">
         <div className="flex items-center gap-32">
@@ -538,6 +661,7 @@ function Chatbot({ toast, auth, socket }) {
                   hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                     onClick={() => {
                       setPopUpStandard(true);
+                      setIsOpenNotificationModal(false);
                     }}
                   >
                     <BsCalendarPlus size={24} />
