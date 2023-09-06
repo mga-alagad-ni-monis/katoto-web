@@ -3,6 +3,7 @@ import axios from "../api/axios";
 import axiosDef from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import moment from "moment";
+import jwt_decode from "jwt-decode";
 
 import { IoSend } from "react-icons/io5";
 import { AiOutlineCloseCircle } from "react-icons/ai";
@@ -32,6 +33,7 @@ function Chatbot({ toast, auth, socket }) {
   const [popUpStandard, setPopUpStandard] = useState(false);
   const [isOpenStandardAppoint, setIsOpenStandardAppoint] = useState(false);
   const [isOpenNotificationModal, setIsOpenNotificationModal] = useState(false);
+  const [isAppointmentChecked, setIsAppointmentChecked] = useState(false);
 
   const [katotoMessage, setKatotoMessage] = useState("");
   const [inputFriendly, setInputFriendly] = useState("");
@@ -250,7 +252,25 @@ function Chatbot({ toast, auth, socket }) {
   };
 
   const handleSetStandardAppointment = async () => {
-    console.log(appointmentDateStart, appointmentDateEnd);
+    try {
+      if (
+        appointmentDateStart &&
+        appointmentDateStart !== "" &&
+        appointmentDateEnd !== ""
+      ) {
+        try {
+          socket.emit("scheduleRequest", {
+            id: socket.id,
+            token: auth?.accessToken,
+            type: "standard",
+          });
+        } catch (err) {
+          toast.error("Error");
+        }
+      } else {
+        toast.error("Please select a time");
+      }
+    } catch (err) {}
   };
 
   const availableTime = [
@@ -325,7 +345,7 @@ function Chatbot({ toast, auth, socket }) {
         <div className="w-full justify-between flex">
           <p className="text-2xl font-extrabold">
             {(() => {
-              if (sosDetails?.sosDetails?.type === "sos") {
+              if (sosDetails?.appointmentDetails?.type === "sos") {
                 return "SOS Emergency Appointment";
               }
             })()}
@@ -345,7 +365,7 @@ function Chatbot({ toast, auth, socket }) {
         </div>
         <div className="flex flex-col gap-4 mt-5">
           {(() => {
-            if (sosDetails?.sosDetails?.type === "sos") {
+            if (sosDetails?.appointmentDetails?.type === "sos") {
               return (
                 <div className="flex flex-col gap-5">
                   <div className="flex gap-5 items-center">
@@ -359,8 +379,12 @@ function Chatbot({ toast, auth, socket }) {
                           SOS Emergency appointment{" "}
                         </span>{" "}
                         on{" "}
-                        {convertDate(sosDetails?.sosDetails?.scheduledDate)[0]}.
-                        This is received and acknowledged by PLV Guidance and
+                        {
+                          convertDate(
+                            sosDetails?.appointmentDetails?.scheduledDate
+                          )[0]
+                        }
+                        . This is received and acknowledged by PLV Guidance and
                         Counselling Center. Thank You!
                       </p>
                     </div>
@@ -370,7 +394,7 @@ function Chatbot({ toast, auth, socket }) {
                       <p className="text-[--dark-green] font-bold flex items-center mb-3">
                         Appointment Details
                       </p>
-                      {new Date(sosDetails?.sosDetails?.scheduledDate) >
+                      {new Date(sosDetails?.appointmentDetails?.scheduledDate) >
                       new Date() ? (
                         <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3">
                           Upcoming
@@ -387,7 +411,7 @@ function Chatbot({ toast, auth, socket }) {
                         <p>
                           {
                             convertDate(
-                              sosDetails?.sosDetails?.scheduledDate
+                              sosDetails?.appointmentDetails?.scheduledDate
                             )[1]
                           }
                         </p>
@@ -396,7 +420,7 @@ function Chatbot({ toast, auth, socket }) {
                         <p>
                           {
                             convertDate(
-                              sosDetails?.sosDetails?.scheduledDate
+                              sosDetails?.appointmentDetails?.scheduledDate
                             )[2]
                           }
                         </p>
@@ -409,27 +433,39 @@ function Chatbot({ toast, auth, socket }) {
                     <table className="mb-5">
                       <tr>
                         <td className="w-[150px] flex justify-start">Name</td>
-                        <td>{sosDetails?.sosDetails?.userDetails?.name}</td>
+                        <td>
+                          {sosDetails?.appointmentDetails?.userDetails?.name}
+                        </td>
                       </tr>
                       <tr>
                         <td className="w-[150px] flex justify-start">Gender</td>
-                        <td>{sosDetails?.sosDetails?.userDetails?.gender}</td>
+                        <td>
+                          {sosDetails?.appointmentDetails?.userDetails?.gender}
+                        </td>
                       </tr>
                       <tr>
                         <td className="w-[150px] flex justify-start">Email</td>
-                        <td>{sosDetails?.sosDetails?.userDetails?.email}</td>
+                        <td>
+                          {sosDetails?.appointmentDetails?.userDetails?.email}
+                        </td>
                       </tr>
                       <tr>
                         <td className="w-[150px] flex justify-start">
                           {" "}
                           ID Number
                         </td>
-                        <td> {sosDetails?.sosDetails?.userDetails?.idNo}</td>
+                        <td>
+                          {" "}
+                          {sosDetails?.appointmentDetails?.userDetails?.idNo}
+                        </td>
                       </tr>
                       <tr>
                         <td className="w-[150px] flex justify-start">Course</td>
                         <td>
-                          {sosDetails?.sosDetails?.userDetails?.department}
+                          {
+                            sosDetails?.appointmentDetails?.userDetails
+                              ?.department
+                          }
                         </td>
                       </tr>
                       <tr>
@@ -437,7 +473,10 @@ function Chatbot({ toast, auth, socket }) {
                           Year and Section
                         </td>
                         <td>
-                          {sosDetails?.sosDetails?.userDetails?.yearSection}
+                          {
+                            sosDetails?.appointmentDetails?.userDetails
+                              ?.yearSection
+                          }
                         </td>
                       </tr>
                       <tr>
@@ -445,13 +484,19 @@ function Chatbot({ toast, auth, socket }) {
                           College
                         </td>
                         <td>
-                          {sosDetails?.sosDetails?.userDetails?.mainDepartment}
+                          {
+                            sosDetails?.appointmentDetails?.userDetails
+                              ?.mainDepartment
+                          }
                         </td>
                       </tr>
                       <tr>
                         <td className="w-[150px] flex justify-start">Phone</td>
                         <td>
-                          {sosDetails?.sosDetails?.userDetails?.contactNo}
+                          {
+                            sosDetails?.appointmentDetails?.userDetails
+                              ?.contactNo
+                          }
                         </td>
                       </tr>
                     </table>
@@ -573,7 +618,7 @@ function Chatbot({ toast, auth, socket }) {
               <p>45 mins</p>
             </div>
           </div>
-          <div className="flex flex-wrap gap-5">
+          <div className="flex flex-wrap gap-5 mb-5 gap-y-3">
             {availableTime.map((i, k) => {
               return events.some(
                 (j) => i.time === new Date(j.start).toLocaleTimeString()
@@ -617,13 +662,98 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
               );
             })}
           </div>
-          <button
-            className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
-border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-            onClick={handleSetStandardAppointment}
-          >
-            Save
-          </button>
+          <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
+            Your Details
+          </p>
+
+          <table className="mb-5">
+            <tr>
+              <td className="w-[150px] flex justify-start">Name</td>
+              <td>{auth?.userInfo?.name}</td>
+            </tr>
+            <tr>
+              <td className="w-[150px] flex justify-start">Gender</td>
+              <td>{auth?.userInfo?.gender}</td>
+            </tr>
+            <tr>
+              <td className="w-[150px] flex justify-start">Email</td>
+              <td>{auth?.userInfo?.credentials?.email}</td>
+            </tr>
+            <tr>
+              <td className="w-[150px] flex justify-start"> ID Number</td>
+              <td> {auth?.userInfo?.idNo}</td>
+            </tr>
+            <tr>
+              <td className="w-[150px] flex justify-start">Course</td>
+              <td>{auth?.userInfo?.department}</td>
+            </tr>
+            <tr>
+              <td className="w-[150px] flex justify-start">Year and Section</td>
+              <td>{auth?.userInfo?.yearSection}</td>
+            </tr>
+            <tr>
+              <td className="w-[150px] flex justify-start">College</td>
+              <td>{auth?.userInfo?.mainDepartment}</td>
+            </tr>
+            <tr>
+              <td className="w-[150px] flex justify-start">Phone</td>
+              <td>{auth?.userInfo?.contactNo}</td>
+            </tr>
+          </table>
+          <div className="flex gap-5 mb-5">
+            <input
+              id="checkbox-1"
+              className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 mt-1
+   checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
+   float-left cursor-pointer appearance-none border border-solid border-2  border-[--light-gray] checked:border-[--light-gray] checked:border-2 bg-[--light-gray] 
+   bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
+   after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-['✔'] 
+   checked:bg-[--dark-green] checked:after:opacity-100"
+              type="checkbox"
+              style={{
+                fontFamily: "FontAwesome",
+              }}
+              checked={isAppointmentChecked ? true : false}
+              onChange={() => {
+                setIsAppointmentChecked(!isAppointmentChecked);
+              }}
+            />
+            <p
+              className="w-fit cursor-pointer"
+              onClick={() => {
+                setIsAppointmentChecked(!isAppointmentChecked);
+              }}
+            >
+              By ticking the box, you hereby acknowledge and consent to the use
+              of your personal information for scheduling appointments with our
+              mental health chatbot.
+            </p>
+          </div>
+          <div className="flex justify-end gap-5">
+            <button
+              className="bg-[--red] border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red]
+                rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+                border border-2 transition-all duration-300"
+              onClick={() => {
+                setIsOpenStandardAppoint(false);
+                setPopUpStandard(true);
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              className={`${
+                isAppointmentChecked
+                  ? "bg-[--dark-green] border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green]"
+                  : "bg-black/20 border-black/20"
+              } rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+border border-2 transition-all duration-300`}
+              onClick={handleSetStandardAppointment}
+              disabled={isAppointmentChecked ? false : true}
+            >
+              Submit
+            </button>
+          </div>
         </div>
       </Modal>
       <div className="flex items-center bg-[--light-brown] justify-center h-screen">

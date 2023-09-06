@@ -136,8 +136,14 @@ io.on("connection", (socket) => {
       //adding SOS appointment to appointment
       //adding to guidance counselors and system admin
       //sending notifs to guidance counselors and system admin
-      const sosDetails = await addSOSAppointment(userDetails);
-      await addNotificationGcSa(sosDetails);
+      let appointmentDetails = {};
+      if (type === "sos") {
+        appointmentDetails = await addSOSAppointment(userDetails);
+      } else if (type === "standard") {
+        console.log("standard wajajaja");
+        return;
+      }
+      await addNotificationGcSa(appointmentDetails);
       if (counselorAdmin.length > 0) {
         counselorAdmin.forEach((user) => {
           io.to(user.socketId).emit("scheduleResponse", {
@@ -146,13 +152,12 @@ io.on("connection", (socket) => {
           });
         });
       }
-
-      await addNotificationStudent(sosDetails, idNo);
+      await addNotificationStudent(appointmentDetails, idNo);
       onlineUsers.forEach((user) => {
         if (idNo === user.idNo) {
           console.log(user.socketId);
           return io.to(user.socketId).emit("studentScheduleResponse", {
-            sosDetails,
+            appointmentDetails,
           });
         }
       });

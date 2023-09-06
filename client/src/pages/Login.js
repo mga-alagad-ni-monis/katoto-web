@@ -34,7 +34,12 @@ function Login({ toast, loading, setLoading }) {
           toast.success(res?.data?.message);
           const roles = [res?.data?.role];
           const user = email;
-          setAuth({ user, roles, accessToken: res?.data?.accessToken });
+          setAuth({
+            user,
+            roles,
+            accessToken: res?.data?.accessToken,
+            userInfo: res?.data?.userInfo,
+          });
           setEmail("");
           setPassword("");
           if (roles[0] === "student") {

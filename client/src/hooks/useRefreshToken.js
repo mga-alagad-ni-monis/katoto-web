@@ -17,6 +17,7 @@ const useRefreshToken = () => {
             ...prev,
             roles,
             accessToken: res?.data?.accessToken,
+            userInfo: res?.data?.userInfo,
           };
         });
         setTimeout(() => {

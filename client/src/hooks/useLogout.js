@@ -9,12 +9,8 @@ const useLogout = () => {
     try {
       await axios
         .get("/api/logout", { withCredentials: true })
-        .then((res) => {
-          console.log("sadasd");
-        })
-        .catch((err) => {
-          console.log("asdadasd");
-        });
+        .then((res) => {})
+        .catch((err) => {});
     } catch (err) {
       console.log(err);
     }

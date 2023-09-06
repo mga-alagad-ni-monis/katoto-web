@@ -67,6 +67,7 @@ function CalendarComponent({
         style={{ height: 500 }}
         // events={events}
         // components={components}
+        views={{ month: true, week: false, day: false, agenda: true }}
         timeslots={8}
         selectable={true}
         onSelectSlot={(data) => {
