@@ -3,7 +3,6 @@ import axios from "../api/axios";
 import axiosDef from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import moment from "moment";
-import jwt_decode from "jwt-decode";
 
 import { IoSend } from "react-icons/io5";
 import { AiOutlineCloseCircle } from "react-icons/ai";
@@ -45,6 +44,7 @@ function Chatbot({ toast, auth, socket }) {
   const [friendlyMessages, setFriendlyMessages] = useState([]);
 
   const [sosDetails, setSosDetails] = useState({});
+  const [standardDetails, setStandardDetails] = useState({});
   const [appointmentDetails, setAppointmentDetails] = useState({});
 
   const bottomRef = useRef(null);
@@ -53,7 +53,12 @@ function Chatbot({ toast, auth, socket }) {
     if (socket) {
       socket.on("studentScheduleResponse", (details) => {
         setPopUpSOS(false);
-        setSosDetails(details);
+        setIsOpenStandardAppoint(false);
+        if (details.appointmentDetails.type === "sos") {
+          setSosDetails(details);
+        } else if (details.appointmentDetails.type === "standard") {
+          setStandardDetails(details);
+        }
       });
     }
   }, [socket]);
@@ -63,6 +68,12 @@ function Chatbot({ toast, auth, socket }) {
       setIsOpenNotificationModal(true);
     }
   }, [sosDetails]);
+
+  useEffect(() => {
+    if (Object.keys(standardDetails).length !== 0) {
+      setIsOpenNotificationModal(true);
+    }
+  }, [standardDetails]);
 
   useEffect(() => {
     handleGetConversation();
@@ -254,7 +265,7 @@ function Chatbot({ toast, auth, socket }) {
   const handleSetStandardAppointment = async () => {
     try {
       if (
-        appointmentDateStart &&
+        isAppointmentChecked &&
         appointmentDateStart !== "" &&
         appointmentDateEnd !== ""
       ) {
@@ -263,6 +274,8 @@ function Chatbot({ toast, auth, socket }) {
             id: socket.id,
             token: auth?.accessToken,
             type: "standard",
+            start: appointmentDateStart,
+            end: appointmentDateEnd,
           });
         } catch (err) {
           toast.error("Error");
@@ -347,6 +360,10 @@ function Chatbot({ toast, auth, socket }) {
             {(() => {
               if (sosDetails?.appointmentDetails?.type === "sos") {
                 return "SOS Emergency Appointment";
+              } else if (
+                standardDetails?.appointmentDetails?.type === "standard"
+              ) {
+                return "Standard Appointment";
               }
             })()}
           </p>
@@ -355,7 +372,7 @@ function Chatbot({ toast, auth, socket }) {
               setIsOpenNotificationModal(false);
               handleSubmitMessage(
                 auth?.accessToken,
-                "Nakapag-iskedyul na ako ng SOS Appointment, Salamat!"
+                "Nakapag-iskedyul na ako ng Appointment, Salamat!"
               );
             }}
             type="button"
@@ -365,7 +382,7 @@ function Chatbot({ toast, auth, socket }) {
         </div>
         <div className="flex flex-col gap-4 mt-5">
           {(() => {
-            if (sosDetails?.appointmentDetails?.type === "sos") {
+            if (standardDetails?.appointmentDetails?.type === "sos") {
               return (
                 <div className="flex flex-col gap-5">
                   <div className="flex gap-5 items-center">
@@ -517,6 +534,178 @@ function Chatbot({ toast, auth, socket }) {
                   </div>
                 </div>
               );
+            } else if (
+              standardDetails?.appointmentDetails?.type === "standard"
+            ) {
+              return (
+                <div className="flex flex-col gap-5">
+                  <div className="flex gap-5 items-center">
+                    <div className="bg-[--dark-green] h-fit rounded-full p-1 text-white border border-2 border-[--dark-green]">
+                      <BsPatchCheck size={48} />
+                    </div>
+                    <div className="flex flex-col gap-5">
+                      <p>
+                        You have successfully booked an{" "}
+                        <span className="font-bold">standard appointment </span>{" "}
+                        on{" "}
+                        {`${
+                          convertDate(
+                            standardDetails?.appointmentDetails?.start
+                          )[0]
+                        } to ${
+                          convertDate(
+                            standardDetails?.appointmentDetails?.end
+                          )[2]
+                        }`}
+                        . This is received and acknowledged by PLV Guidance and
+                        Counselling Center. Thank You!
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-5">
+                      <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                        Appointment Details
+                      </p>
+                      {new Date(standardDetails?.appointmentDetails?.end) >
+                      new Date() ? (
+                        <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3">
+                          Upcoming
+                        </div>
+                      ) : (
+                        <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
+                          Overdue
+                        </div>
+                      )}
+                    </div>
+                    <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
+                      <div className="flex gap-4">
+                        <BsCalendar4Week size={24} />
+                        <p>
+                          {
+                            convertDate(
+                              standardDetails?.appointmentDetails?.start
+                            )[1]
+                          }
+                        </p>
+                        <div className="border-[1px] border-black/20 border-right"></div>
+                        <BsClockHistory size={24} />
+                        <p>
+                          {`${
+                            convertDate(
+                              standardDetails?.appointmentDetails?.start
+                            )[2]
+                          } to ${
+                            convertDate(
+                              standardDetails?.appointmentDetails?.end
+                            )[2]
+                          }`}
+                        </p>
+                        <p>45 mins</p>
+                      </div>
+                    </div>
+                    <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
+                      Your Details
+                    </p>
+                    <table className="mb-5">
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Name</td>
+                        <td>
+                          {
+                            standardDetails?.appointmentDetails?.userDetails
+                              ?.name
+                          }
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Gender</td>
+                        <td>
+                          {
+                            standardDetails?.appointmentDetails?.userDetails
+                              ?.gender
+                          }
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Email</td>
+                        <td>
+                          {
+                            standardDetails?.appointmentDetails?.userDetails
+                              ?.email
+                          }
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">
+                          {" "}
+                          ID Number
+                        </td>
+                        <td>
+                          {" "}
+                          {
+                            standardDetails?.appointmentDetails?.userDetails
+                              ?.idNo
+                          }
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Course</td>
+                        <td>
+                          {
+                            standardDetails?.appointmentDetails?.userDetails
+                              ?.department
+                          }
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">
+                          Year and Section
+                        </td>
+                        <td>
+                          {
+                            standardDetails?.appointmentDetails?.userDetails
+                              ?.yearSection
+                          }
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">
+                          College
+                        </td>
+                        <td>
+                          {
+                            standardDetails?.appointmentDetails?.userDetails
+                              ?.mainDepartment
+                          }
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Phone</td>
+                        <td>
+                          {
+                            standardDetails?.appointmentDetails?.userDetails
+                              ?.contactNo
+                          }
+                        </td>
+                      </tr>
+                    </table>
+                    <div className="flex justify-end">
+                      {/* <button
+                      className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+        border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
+                      onClick={() => {
+                        setIsOpenNotificationModal(false);
+                        // handleDeleteNotification(notificationDetails.id);
+                        // handleDeleteLocal(notificationDetails.id);
+                      }}
+                    >
+                      <BsFillTrash3Fill size={14} />
+                      Delete
+                    </button>  */}
+                    </div>
+                  </div>
+                </div>
+              );
             }
           })()}
         </div>
@@ -587,6 +776,7 @@ function Chatbot({ toast, auth, socket }) {
               setPopUpStandard(true);
               setAppointmentDateStart("");
               setAppointmentDateEnd("");
+              setIsAppointmentChecked(false);
             }}
             type="button"
           >
@@ -625,8 +815,8 @@ function Chatbot({ toast, auth, socket }) {
               ) ? (
                 <button
                   key={k}
-                  className="bg-black/20 rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
-border border-2 border-black/20 transition-all duration-300"
+                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+border border-2 border-[--dark-green] transition-all duration-300 opacity-50"
                   disabled
                 >
                   {i.time}
@@ -737,6 +927,7 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
               onClick={() => {
                 setIsOpenStandardAppoint(false);
                 setPopUpStandard(true);
+                setIsAppointmentChecked(false);
               }}
             >
               Cancel
@@ -744,9 +935,9 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
             <button
               className={`${
                 isAppointmentChecked
-                  ? "bg-[--dark-green] border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green]"
-                  : "bg-black/20 border-black/20"
-              } rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+                  ? "hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green]"
+                  : "opacity-50"
+              } bg-[--dark-green] border-[--dark-green]  rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
 border border-2 transition-all duration-300`}
               onClick={handleSetStandardAppointment}
               disabled={isAppointmentChecked ? false : true}

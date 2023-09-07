@@ -19,7 +19,10 @@ const trainRoutes = require("./routes/trainRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const { createDocument } = require("./controllers/reportControllers");
 const { getUser } = require("./controllers/userAccountControllers");
-const { addSOSAppointment } = require("./controllers/scheduleControllers");
+const {
+  addSOSAppointment,
+  addStandardAppointment,
+} = require("./controllers/scheduleControllers");
 const {
   addNotificationGcSa,
   addNotificationStudent,
@@ -128,7 +131,7 @@ io.on("connection", (socket) => {
     });
   });
 
-  socket.on("scheduleRequest", async ({ id, token, type }) => {
+  socket.on("scheduleRequest", async ({ id, token, type, start, end }) => {
     if (jwt.decode(token)?.role === "student") {
       const counselorAdmin = getGCnSA();
       const idNo = jwt.decode(token)?.idNo;
@@ -140,8 +143,11 @@ io.on("connection", (socket) => {
       if (type === "sos") {
         appointmentDetails = await addSOSAppointment(userDetails);
       } else if (type === "standard") {
-        console.log("standard wajajaja");
-        return;
+        appointmentDetails = await addStandardAppointment(
+          userDetails,
+          start,
+          end
+        );
       }
       await addNotificationGcSa(appointmentDetails);
       if (counselorAdmin.length > 0) {

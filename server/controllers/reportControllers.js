@@ -25,8 +25,8 @@ const createDocument = async () => {
         },
         feedback: [],
         conversationLogs: [],
-        sosSchedules: [],
-        appointmentSchedules: [],
+        sosAppointments: [],
+        standardAppointments: [],
       },
     });
   } catch (err) {

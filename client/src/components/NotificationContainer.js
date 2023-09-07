@@ -1,6 +1,8 @@
 import axios from "../api/axios";
 import { useState } from "react";
 
+import TimeAgo from "react-timeago";
+
 import { motion } from "framer-motion";
 import { MdSos } from "react-icons/md";
 import { FaTimes } from "react-icons/fa";
@@ -8,6 +10,7 @@ import {
   BsCalendar4Week,
   BsClockHistory,
   BsFillTrash3Fill,
+  BsCalendarPlus,
 } from "react-icons/bs";
 
 import Modal from "../components/Modal";
@@ -149,6 +152,8 @@ function NotificationContainer({
             {(() => {
               if (notificationDetails.type === "sos") {
                 return "SOS Emergency Appointment";
+              } else if (notificationDetails.type === "standard") {
+                return "Standard Appointment";
               }
             })()}
           </p>
@@ -301,6 +306,138 @@ function NotificationContainer({
                   </div>
                 </div>
               );
+            } else if (notificationDetails.type === "standard") {
+              return (
+                <div className="flex flex-col gap-5">
+                  <div className="flex gap-5 items-center">
+                    <div className="bg-[--dark-green] h-fit rounded-full p-3 text-white border border-2 border-[--dark-green]">
+                      <BsCalendarPlus size={32} />
+                    </div>
+                    <div className="flex flex-col gap-5">
+                      <p>
+                        {" "}
+                        <span className="font-bold">
+                          {notificationDetails.details.userDetails.name}{" "}
+                        </span>
+                        has booked an{" "}
+                        <span className="font-bold">standard appointment</span>{" "}
+                        on{" "}
+                        {`${
+                          convertDate(notificationDetails.details.start)[0]
+                        } to ${
+                          convertDate(notificationDetails.details.end)[2]
+                        }`}
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-5">
+                      <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                        Appointment Details
+                      </p>
+                      {new Date(notificationDetails.details.end) >
+                      new Date() ? (
+                        <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3">
+                          Upcoming
+                        </div>
+                      ) : (
+                        <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
+                          Overdue
+                        </div>
+                      )}
+                    </div>
+                    <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
+                      <div className="flex gap-4">
+                        <BsCalendar4Week size={24} />
+                        <p>
+                          {convertDate(notificationDetails.details.start)[1]}
+                        </p>
+                        <div className="border-[1px] border-black/20 border-right"></div>
+                        <BsClockHistory size={24} />
+                        <p>
+                          {`${
+                            convertDate(notificationDetails.details.start)[2]
+                          } to ${
+                            convertDate(notificationDetails.details.end)[2]
+                          }`}
+                        </p>
+                        <p>45 mins</p>
+                      </div>
+                    </div>
+                    <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
+                      Student Details
+                    </p>
+                    <table className="mb-5">
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Name</td>
+                        <td>{notificationDetails.details.userDetails.name}</td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Gender</td>
+                        <td>
+                          {notificationDetails.details.userDetails.gender}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Email</td>
+                        <td>{notificationDetails.details.userDetails.email}</td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">
+                          {" "}
+                          ID Number
+                        </td>
+                        <td> {notificationDetails.details.userDetails.idNo}</td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Course</td>
+                        <td>
+                          {notificationDetails.details.userDetails.department}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">
+                          Year and Section
+                        </td>
+                        <td>
+                          {notificationDetails.details.userDetails.yearSection}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">
+                          College
+                        </td>
+                        <td>
+                          {
+                            notificationDetails.details.userDetails
+                              .mainDepartment
+                          }
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Phone</td>
+                        <td>
+                          {notificationDetails.details.userDetails.contactNo}
+                        </td>
+                      </tr>
+                    </table>
+                    <div className="flex justify-end">
+                      <button
+                        className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
+                        onClick={() => {
+                          setIsOpenNotificationModal(false);
+                          handleDeleteNotification(notificationDetails.id);
+                          handleDeleteLocal(notificationDetails.id);
+                        }}
+                      >
+                        <BsFillTrash3Fill size={14} />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
             }
           })()}
         </div>
@@ -363,7 +500,7 @@ function NotificationContainer({
                 }}
               >
                 {(() => {
-                  if (i.type == "sos") {
+                  if (i.type === "sos") {
                     return (
                       <>
                         {k === 0 ? null : (
@@ -391,7 +528,49 @@ function NotificationContainer({
                                   : "text-black/60"
                               }`}
                             >
-                              Now
+                              <TimeAgo date={i.createdDate} />
+                            </motion.div>
+                          </motion.div>
+                          <motion.div className="w-auto flex mt-1">
+                            {!i.isSeen ? (
+                              <motion.div className="w-3 h-3 rounded-full bg-[--dark-green]" />
+                            ) : null}
+                          </motion.div>
+                        </motion.div>
+                      </>
+                    );
+                  } else if (i.type === "standard") {
+                    return (
+                      <>
+                        {k === 0 ? null : (
+                          <motion.hr className="border-[1px] border-black/5 border-top w-full" />
+                        )}
+                        <motion.div className="flex gap-3 px-6 py-6">
+                          <div className="bg-[--dark-green] h-fit rounded-full p-2 text-white border border-2 border-[--dark-green]">
+                            <BsCalendarPlus size={16} />
+                          </div>
+                          <motion.div className="flex flex-col gap-1 text-sm items-start">
+                            <motion.div>
+                              <span className="font-bold">
+                                {i.details.userDetails.name}{" "}
+                              </span>
+                              has booked{" "}
+                              <span className="font-bold">
+                                Standard appointment{" "}
+                              </span>{" "}
+                              on{" "}
+                              {`${convertDate(i.details.start)[0]} to ${
+                                convertDate(i.details.end)[2]
+                              }`}
+                            </motion.div>
+                            <motion.div
+                              className={`text-sm ${
+                                !i.isSeen
+                                  ? "font-bold text-[--dark-green]"
+                                  : "text-black/60"
+                              }`}
+                            >
+                              <TimeAgo date={i.createdDate} />
                             </motion.div>
                           </motion.div>
                           <motion.div className="w-auto flex mt-1">

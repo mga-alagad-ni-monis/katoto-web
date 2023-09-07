@@ -70,11 +70,17 @@ function CalendarComponent({
         views={{ month: true, week: false, day: false, agenda: true }}
         timeslots={8}
         selectable={true}
+        // dayPropGetter={(day) => (day < new Date() ? "" : day)}
         onSelectSlot={(data) => {
+          if (data.start < new Date()) {
+            //notif
+            return console.log("hahhaha");
+          }
+
           setPopUpStandard(false);
           setIsOpenStandardAppoint(true);
           setAppointmentDetails(data);
-          console.log(data);
+          // console.log(data);
         }}
         min={
           new Date(
