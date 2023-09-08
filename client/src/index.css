@@ -221,6 +221,11 @@ button.rbc-input::-moz-focus-inner {
   bottom: 0;
 }
 
+div.rbc-row-bg > :first-child {
+  background-color: #e6e6e6;
+  cursor: auto;
+}
+
 .rbc-ellipsis,
 .rbc-show-more,
 .rbc-row-segment .rbc-event-content,

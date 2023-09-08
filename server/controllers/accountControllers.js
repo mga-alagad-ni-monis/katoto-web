@@ -82,7 +82,7 @@ const handleLogin = async (req, res) => {
                   userInfo,
                 });
               } else {
-                res.status(404).send("Incorrect email and password!");
+                res.status(404).send("Incorrect email or password!");
               }
             }
           );

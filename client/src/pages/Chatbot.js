@@ -764,6 +764,7 @@ function Chatbot({ toast, auth, socket }) {
             setIsOpenStandardAppoint={setIsOpenStandardAppoint}
             setPopUpStandard={setPopUpStandard}
             setAppointmentDetails={setAppointmentDetails}
+            toast={toast}
           ></CalendarComponent>
         </div>
       </Modal>

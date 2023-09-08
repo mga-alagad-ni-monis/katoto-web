@@ -10,6 +10,7 @@
     "@testing-library/user-event": "^13.5.0",
     "@tinymce/tinymce-react": "^4.3.0",
     "axios": "^1.4.0",
+    "date-holidays": "^3.21.5",
     "framer-motion": "^10.12.10",
     "interweave": "^13.1.0",
     "js-yaml": "^4.1.0",

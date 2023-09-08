@@ -1,5 +1,5 @@
 import { Calendar, momentLocalizer } from "react-big-calendar";
-
+import Holidays from "date-holidays";
 import moment from "moment";
 
 const localizer = momentLocalizer(moment);
@@ -8,6 +8,7 @@ function CalendarComponent({
   setIsOpenStandardAppoint,
   setPopUpStandard,
   setAppointmentDetails,
+  toast,
 }) {
   // const events = [
   //   {
@@ -57,6 +58,7 @@ function CalendarComponent({
   //     }
   //   },
   // };
+  const holiday = new Holidays("PH");
 
   return (
     <div>
@@ -67,35 +69,35 @@ function CalendarComponent({
         style={{ height: 500 }}
         // events={events}
         // components={components}
-        views={{ month: true, week: false, day: false, agenda: true }}
-        timeslots={8}
+        views={{
+          month: true,
+          week: false,
+          day: false,
+          agenda: true,
+        }}
         selectable={true}
-        // dayPropGetter={(day) => (day < new Date() ? "" : day)}
         onSelectSlot={(data) => {
           if (data.start < new Date()) {
-            //notif
-            return console.log("hahhaha");
+            return toast.error("Not a valid date!");
           }
 
+          if (holiday.isHoliday(data.start)) {
+            return toast.error("The date is a holiday!");
+          }
+
+          if ([0].includes(data.start.getDay())) {
+            return toast.error("No Appointment on Sundays!");
+          }
           setPopUpStandard(false);
           setIsOpenStandardAppoint(true);
           setAppointmentDetails(data);
-          // console.log(data);
         }}
-        min={
-          new Date(
-            new Date().getFullYear(),
-            new Date().getMonth(),
-            new Date().getDate(),
-            8
-          )
-        }
+        min={new Date().toLocaleDateString}
         max={
           new Date(
             new Date().getFullYear(),
             new Date().getMonth(),
-            new Date().getDate(),
-            16
+            new Date().getDate()
           )
         }
         step={7.5}
