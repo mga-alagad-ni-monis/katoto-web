@@ -12,6 +12,7 @@ import {
   BsPeople,
   BsRobot,
   BsBell,
+  BsCalendar4Week,
 } from "react-icons/bs";
 import { AiOutlineLogout } from "react-icons/ai";
 
@@ -117,6 +118,21 @@ function SideBar({ toast, logout, auth, socket }) {
                       </div>
                     ) : (
                       <BsRobot size={24} />
+                    )}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to={"/appointments"}
+                    className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
+                  >
+                    {isHovered ? (
+                      <div className="flex gap-5 items-center">
+                        <BsCalendar4Week size={20} />
+                        <span className="word-in">Appointmets</span>
+                      </div>
+                    ) : (
+                      <BsCalendar4Week size={24} />
                     )}
                   </Link>
                 </li>

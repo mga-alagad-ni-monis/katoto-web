@@ -17,12 +17,13 @@ const logRoutes = require("./routes/logRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const trainRoutes = require("./routes/trainRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const appointmentRoutes = require("./routes/appointmentRoutes");
 const { createDocument } = require("./controllers/reportControllers");
 const { getUser } = require("./controllers/userAccountControllers");
 const {
   addSOSAppointment,
   addStandardAppointment,
-} = require("./controllers/scheduleControllers");
+} = require("./controllers/appointmentControllers");
 const {
   addNotificationGcSa,
   addNotificationStudent,
@@ -227,6 +228,7 @@ app.use("/api/logs", logRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/train", trainRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/appointments", appointmentRoutes);
 
 cron.schedule("0 0 * * *", () => {
   createDocument();

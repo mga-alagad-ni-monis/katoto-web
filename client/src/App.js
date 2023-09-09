@@ -21,6 +21,7 @@ import Chatbot from "./pages/Chatbot";
 import Campaigns from "./pages/Campaigns";
 import CampaignView from "./pages/CampaignView";
 import Conversations from "./pages/Conversations";
+import Appointments from "./pages/Appointments";
 
 function App() {
   const { auth, setAuth } = useAuth();
@@ -134,6 +135,21 @@ function App() {
               <Route
                 path="/train"
                 element={<Train auth={auth} toast={toast} socket={socket} />}
+              ></Route>
+            </Route>
+            {/* appointments module */}
+            <Route
+              element={
+                <RequiredAuth
+                  allowedRoles={["guidanceCounselor", "systemAdministrator"]}
+                />
+              }
+            >
+              <Route
+                path="/appointments"
+                element={
+                  <Appointments auth={auth} toast={toast} socket={socket} />
+                }
               ></Route>
             </Route>
             {/* user-accounts module */}

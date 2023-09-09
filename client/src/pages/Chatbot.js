@@ -42,6 +42,7 @@ function Chatbot({ toast, auth, socket }) {
   const [guidedButtons, setGuidedButtons] = useState([]);
   const [messages, setMessages] = useState([]);
   const [friendlyMessages, setFriendlyMessages] = useState([]);
+  const [bookedAppointments, setBookedAppointments] = useState([]);
 
   const [sosDetails, setSosDetails] = useState({});
   const [standardDetails, setStandardDetails] = useState({});
@@ -50,8 +51,13 @@ function Chatbot({ toast, auth, socket }) {
   const bottomRef = useRef(null);
 
   useEffect(() => {
+    getBookedAppointments();
+  }, []);
+
+  useEffect(() => {
     if (socket) {
       socket.on("studentScheduleResponse", (details) => {
+        getBookedAppointments();
         setPopUpSOS(false);
         setIsOpenStandardAppoint(false);
         if (details.appointmentDetails.type === "sos") {
@@ -85,6 +91,36 @@ function Chatbot({ toast, auth, socket }) {
   useEffect(() => {
     bottomRef?.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, guidedButtons, friendlyMessages]);
+
+  const getBookedAppointments = async () => {
+    try {
+      await axios
+        .get("/api/appointments/get-booked", {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${auth?.accessToken}`,
+          },
+        })
+        .then((res) => {
+          setBookedAppointments(convertToDateObject(res?.data?.appointments));
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data);
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
+  const convertToDateObject = (appointments) => {
+    const result = appointments.map((i) => {
+      return {
+        start: moment(i.start).toDate(),
+      };
+    });
+
+    return result;
+  };
 
   const convertDate = (date) => {
     const formattedDate = new Date(date);
@@ -295,25 +331,6 @@ function Chatbot({ toast, auth, socket }) {
     { no: "14", time: "2:00:00 PM" },
   ];
 
-  const events = [
-    {
-      start: "9/5/2023, 1:00:00 PM",
-      end: "9/5/2023, 1:00:00 PM",
-      title: "MRI Registration",
-      data: {
-        type: "Reg",
-      },
-    },
-    {
-      start: moment("2023-09-04T14:00:00").toDate(),
-      end: moment("2023-09-04T15:30:00").toDate(),
-      title: "ENT Appointment",
-      data: {
-        type: "App",
-      },
-    },
-  ];
-
   return (
     <>
       {isOpenNotificationModal ||
@@ -370,6 +387,9 @@ function Chatbot({ toast, auth, socket }) {
           <button
             onClick={() => {
               setIsOpenNotificationModal(false);
+              setSosDetails({});
+              setStandardDetails({});
+              setAppointmentDetails({});
               handleSubmitMessage(
                 auth?.accessToken,
                 "Nakapag-iskedyul na ako ng Appointment, Salamat!"
@@ -382,7 +402,7 @@ function Chatbot({ toast, auth, socket }) {
         </div>
         <div className="flex flex-col gap-4 mt-5">
           {(() => {
-            if (standardDetails?.appointmentDetails?.type === "sos") {
+            if (sosDetails?.appointmentDetails?.type === "sos") {
               return (
                 <div className="flex flex-col gap-5">
                   <div className="flex gap-5 items-center">
@@ -764,7 +784,6 @@ function Chatbot({ toast, auth, socket }) {
             setIsOpenStandardAppoint={setIsOpenStandardAppoint}
             setPopUpStandard={setPopUpStandard}
             setAppointmentDetails={setAppointmentDetails}
-            toast={toast}
           ></CalendarComponent>
         </div>
       </Modal>
@@ -811,8 +830,12 @@ function Chatbot({ toast, auth, socket }) {
           </div>
           <div className="flex flex-wrap gap-5 mb-5 gap-y-3">
             {availableTime.map((i, k) => {
-              return events.some(
-                (j) => i.time === new Date(j.start).toLocaleTimeString()
+              return bookedAppointments.some(
+                (j) =>
+                  `${new Date(
+                    appointmentDetails?.start
+                  ).toLocaleDateString()}, ${i.time}` ===
+                  new Date(j.start).toLocaleString()
               ) ? (
                 <button
                   key={k}
