@@ -361,6 +361,7 @@ div.rbc-row-bg > :first-child {
   text-align: center;
   /* added */
   width: 300px;
+  font-weight: 800;
 }
 .rbc-toolbar button {
   color: #000;
@@ -726,7 +727,7 @@ div.rbc-row-bg > :first-child {
   border-top: 2px solid rgba(0, 0, 0, 0.2);
 }
 .rbc-agenda-view table.rbc-agenda-table thead > tr > th {
-  padding: 3px 5px;
+  padding: 10px;
   text-align: left;
   border-bottom: 2px solid rgba(0, 0, 0, 0.2);
 }
@@ -1094,9 +1095,9 @@ div.rbc-row-bg > :first-child {
   border-right: none;
 }
 
-.rbc-toolbar .rbc-btn-group:nth-child(3) button:nth-child(3) {
+/* .rbc-toolbar .rbc-btn-group:nth-child(3) button:nth-child(3) {
   border-right: none;
-}
+} */
 
 .rbc-header .rbc-button-link {
   margin-bottom: 28px;
@@ -1122,4 +1123,10 @@ div.rbc-row-bg > :first-child {
   padding: 0px 3px;
   font-size: 12px;
 }
+
+.second-calendar .rbc-btn-group,
+.second-calendar .rbc-toolbar-label {
+  display: none;
+}
+
 /*# sourceMappingURL=react-big-calendar.css.map */

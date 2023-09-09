@@ -457,7 +457,7 @@ function NotificationContainer({
           },
           hide: {
             opacity: 0,
-            y: 300,
+            y: 550,
             transition: {
               type: "spring",
               stiffness: 500,
@@ -466,7 +466,7 @@ function NotificationContainer({
           },
         }}
         animate={isOpenNotifications ? "show" : "hide"}
-        initial={{ opacity: 0, y: 300 }}
+        initial={{ opacity: 0, y: 550 }}
       >
         <motion.div className="h-1/6 text-2xl font-extrabold py-6 px-6 flex justify-between items-center">
           <motion.p>Notifications</motion.p>
