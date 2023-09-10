@@ -33,6 +33,18 @@ function NavBar({ auth, logout, socket, toast }) {
           await getNotification();
         }, 200);
       });
+
+      socket.on("cancelAppointmentResponse", () => {
+        setTimeout(async () => {
+          await getNotification();
+        }, 200);
+      });
+
+      socket.on("editAppointmentResponse", (appointmentDetails) => {
+        setTimeout(async () => {
+          await getNotification();
+        }, 200);
+      });
     }
   }, [socket]);
 

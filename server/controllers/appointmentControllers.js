@@ -157,8 +157,6 @@ const getBookedAppointments = async (req, res) => {
 const cancelAppointment = async (req, res) => {
   const { id, type } = req.body;
   try {
-    console.log(id);
-
     await db
       .collection("reports")
       .get()
@@ -233,10 +231,102 @@ const cancelAppointment = async (req, res) => {
   }
 };
 
+const editAppointment = async (req, res) => {
+  const {
+    id,
+    type,
+    appointmentDateStart,
+    appointmentDateEnd,
+    appointmentMode,
+  } = req.body;
+
+  try {
+    await db
+      .collection("reports")
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          return res.status(404).send("Error");
+        }
+        let docInfo = {};
+        querySnapshot.forEach((i) => {
+          if (
+            i.data().reports.sosAppointments !== undefined &&
+            type === "sos"
+          ) {
+            appointments = i.data().reports.sosAppointments.map((j) => {
+              if (j.id === id) {
+                docInfo["name"] = i.id;
+                docInfo["appointments"] = i.data().reports.sosAppointments;
+                return;
+              }
+            });
+          }
+
+          if (
+            i.data().reports.standardAppointments !== undefined &&
+            type === "standard"
+          ) {
+            appointments = i.data().reports.standardAppointments.map((j) => {
+              if (j.id === id) {
+                docInfo["name"] = i.id;
+                docInfo["appointments"] = i.data().reports.standardAppointments;
+                return;
+              }
+            });
+          }
+        });
+
+        let appointmentOldNew = {};
+
+        let appointmentsArray = docInfo.appointments.map((j) => {
+          if (j.id === id) {
+            appointmentOldNew["old"] = j;
+            let newAppointment = {
+              createdDate: j.createdDate,
+              end: appointmentDateEnd,
+              id: j.id,
+              start: appointmentDateStart,
+              type: j.type,
+              mode: appointmentMode,
+              userDetails: j.userDetails,
+              status: "upcoming",
+            };
+            appointmentOldNew["new"] = newAppointment;
+            return newAppointment;
+          }
+          return j;
+        });
+
+        const doc = db.collection("reports").doc(docInfo.name);
+
+        if (type === "sos") {
+          doc.update({
+            "reports.sosAppointments": appointmentsArray,
+          });
+        }
+
+        if (type === "standard") {
+          doc.update({
+            "reports.standardAppointments": appointmentsArray,
+          });
+        }
+
+        res.status(200).json({
+          message: "Appointment edited successfully!",
+          appointmentOldNew,
+        });
+      });
+  } catch (err) {
+    res.status(404).send("Error");
+  }
+};
+
 module.exports = {
   addSOSAppointment,
   addStandardAppointment,
   getAppointments,
   getBookedAppointments,
   cancelAppointment,
+  editAppointment,
 };

@@ -6,6 +6,7 @@ const {
   getAppointments,
   getBookedAppointments,
   cancelAppointment,
+  editAppointment,
 } = require("../controllers/appointmentControllers");
 
 const router = express.Router();
@@ -26,6 +27,12 @@ router.post(
   "/cancel",
   verifyRoles(["guidanceCounselor", "systemAdministrator"]),
   cancelAppointment
+);
+
+router.post(
+  "/edit",
+  verifyRoles(["guidanceCounselor", "systemAdministrator"]),
+  editAppointment
 );
 
 module.exports = router;
