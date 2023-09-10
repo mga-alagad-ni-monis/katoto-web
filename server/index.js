@@ -195,8 +195,7 @@ io.on("connection", (socket) => {
       await addNotificationStudent(appointmentDetails, idNo);
       onlineUsers.forEach((user) => {
         if (idNo === user.idNo) {
-          console.log(user.socketId);
-          return io.to(user.socketId).emit("studentScheduleResponse", {
+          io.to(user.socketId).emit("studentScheduleResponse", {
             appointmentDetails,
           });
         }

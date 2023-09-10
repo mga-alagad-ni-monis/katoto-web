@@ -6,6 +6,7 @@
   --light-green: #a9e6c2;
   --dark-green: #2d757c;
   --light-brown: #f5f3eb;
+  --light-light-green: rgba(169, 230, 194, 0.2);
   --light-gray: #00000033;
   --red: #ff6961;
 }
@@ -165,7 +166,6 @@ h6 {
   position: relative;
 } */
 
-@charset "UTF-8";
 .rbc-btn {
   color: inherit;
   font: inherit;
@@ -175,7 +175,7 @@ h6 {
 button.rbc-btn {
   overflow: visible;
   text-transform: none;
-  -webkit-appearance: button;
+  /* -webkit-appearance: button; */
   cursor: pointer;
 }
 

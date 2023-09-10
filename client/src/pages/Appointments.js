@@ -4,13 +4,7 @@ import Holidays from "date-holidays";
 import moment from "moment";
 import { motion } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
-import {
-  BsCalendar4Week,
-  BsClockHistory,
-  BsCalendarPlus,
-  BsPatchCheck,
-} from "react-icons/bs";
-import { HiPlus } from "react-icons/hi";
+import { BsCalendar4Week, BsClockHistory } from "react-icons/bs";
 
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import { useState } from "react";
@@ -49,6 +43,32 @@ function Appointments({ socket, toast, auth }) {
     }
   };
 
+  const handleCancelAppointment = async (id, type) => {
+    try {
+      await axios
+        .post(
+          "/api/appointments/cancel",
+          { id, type },
+          {
+            withCredentials: true,
+
+            headers: {
+              Authorization: `Bearer ${auth?.accessToken}`,
+            },
+          }
+        )
+        .then((res) => {
+          toast.success(res?.data?.message);
+          updateStatus(id);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data);
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
   const convertToDateObject = (appointments) => {
     const result = appointments.map((i) => {
       return {
@@ -62,19 +82,88 @@ function Appointments({ socket, toast, auth }) {
     return result;
   };
 
+  const updateStatus = (id) => {
+    const eventsArray = events.map((i) => {
+      if (i.data.id === id) {
+        return {
+          start: i.start,
+          end: i.end,
+          title: i.title,
+          data: {
+            createdDate: i.data.createdDate,
+            end: i.data.end,
+            id: i.data.id,
+            start: i.data.start,
+            type: i.data.type,
+            userDetails: i.data.userDetails,
+            status: "cancelled",
+          },
+        };
+      }
+      return i;
+    });
+
+    setEvents(eventsArray);
+  };
+
   const components = {
     event: (i) => {
       switch (i.event.data.type) {
         case "sos":
           return (
-            <div className="bg-[--red] text-[--light-brown] p-1 text-[9px] rounded-md">
+            <div
+              className={`text-[--light-brown] p-1 text-[9px] rounded-md ${
+                i.event.data.status === "cancelled"
+                  ? "bg-[--red]"
+                  : "bg-[--dark-green]"
+              }`}
+            >
               {i.event.title}
             </div>
           );
         case "standard":
           return (
-            <div className="bg-[--dark-green] text-[--light-brown] p-1 text-[9px] rounded-md">
+            <div
+              className={`p-1 text-[9px] font-bold rounded-md ${
+                i.event.data.status === "cancelled"
+                  ? "bg-[--red] text-[--light-brown]"
+                  : "bg-[--light-green] text-black"
+              }`}
+            >
+              {`${i.event.title} (${i.event.data.status})`}
+            </div>
+          );
+        default:
+          return null;
+      }
+    },
+  };
+
+  const componentsAgenda = {
+    event: (i) => {
+      switch (i.event.data.type) {
+        case "sos":
+          return (
+            <div
+              className={`text-[--light-brown] p-1 text-xs rounded-md ${
+                i.event.data.status === "cancelled"
+                  ? "bg-[--red]"
+                  : "bg-[--dark-green]"
+              }`}
+            >
               {i.event.title}
+            </div>
+          );
+        case "standard":
+          return (
+            <div
+              className={`p-1 text-xs font-bold rounded-md ${
+                i.event.data.status === "cancelled"
+                  ? "bg-[--red] text-[--light-brown]"
+                  : "bg-[--light-green] text-black"
+              }`}
+            >
+              {`${i.event.title} (${i.event.data.status})`}
             </div>
           );
         default:
@@ -142,6 +231,7 @@ function Appointments({ socket, toast, auth }) {
         animate={isOpenAppointmentSidebar ? "show" : "hide"}
         initial={{ opacity: 1, x: 500 }}
       >
+        {console.log(events)}
         <div className="flex flex-col justify-between h-full">
           <div>
             <div className="flex justify-between mb-10">
@@ -162,9 +252,14 @@ function Appointments({ socket, toast, auth }) {
               <p className="text-[--dark-green] font-bold flex items-center mb-3">
                 Appointment Details
               </p>
-              {new Date(appointmentDetails?.data?.end) > new Date() ? (
+              {new Date(appointmentDetails?.data?.end) > new Date() &&
+              appointmentDetails?.data?.status === "upcoming" ? (
                 <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3">
                   Upcoming
+                </div>
+              ) : appointmentDetails?.data?.status === "cancelled" ? (
+                <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
+                  Cancelled
                 </div>
               ) : (
                 <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
@@ -184,14 +279,62 @@ function Appointments({ socket, toast, auth }) {
                 <p>45 mins</p>
               </div>
             </div>
+            <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
+              Student Details
+            </p>
+            <table className="mb-5">
+              <tr>
+                <td className="w-[150px] flex justify-start">Name</td>
+                <td>{appointmentDetails?.data?.userDetails?.name}</td>
+              </tr>
+              <tr>
+                <td className="w-[150px] flex justify-start">Gender</td>
+                <td>{appointmentDetails?.data?.userDetails?.gender}</td>
+              </tr>
+              <tr>
+                <td className="w-[150px] flex justify-start">Email</td>
+                <td>{appointmentDetails?.data?.userDetails?.email}</td>
+              </tr>
+              <tr>
+                <td className="w-[150px] flex justify-start"> ID Number</td>
+                <td> {appointmentDetails?.data?.userDetails?.idNo}</td>
+              </tr>
+              <tr>
+                <td className="w-[150px] flex justify-start">Course</td>
+                <td>{appointmentDetails?.data?.userDetails?.department}</td>
+              </tr>
+              <tr>
+                <td className="w-[150px] flex justify-start">
+                  Year and Section
+                </td>
+                <td>{appointmentDetails?.data?.userDetails?.yearSection}</td>
+              </tr>
+              <tr>
+                <td className="w-[150px] flex justify-start">College</td>
+                <td>{appointmentDetails?.data?.userDetails?.mainDepartment}</td>
+              </tr>
+              <tr>
+                <td className="w-[150px] flex justify-start">Phone</td>
+                <td>{appointmentDetails?.data?.userDetails?.contactNo}</td>
+              </tr>
+            </table>
           </div>
           <div className="flex justify-between">
-            <button
-              className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+            {appointmentDetails?.data?.status === "upcoming" ? (
+              <button
+                className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
-            >
-              Cancel Appointment
-            </button>
+                onClick={() => {
+                  handleCancelAppointment(
+                    appointmentDetails?.data?.id,
+                    appointmentDetails?.data?.type
+                  );
+                  setIsOpenAppointmentSidebar(false);
+                }}
+              >
+                Cancel Appointment
+              </button>
+            ) : null}
             <button
               className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
@@ -219,7 +362,7 @@ function Appointments({ socket, toast, auth }) {
                 className="w-full second-calendar"
                 style={{ height: 588 }}
                 events={events}
-                components={components}
+                components={componentsAgenda}
                 selectable={true}
                 views={{ month: true, week: false, day: false, agenda: true }}
                 defaultView={"agenda"}

@@ -390,6 +390,7 @@ function Chatbot({ toast, auth, socket }) {
               setSosDetails({});
               setStandardDetails({});
               setAppointmentDetails({});
+              setIsAppointmentChecked(false);
               handleSubmitMessage(
                 auth?.accessToken,
                 "Nakapag-iskedyul na ako ng Appointment, Salamat!"

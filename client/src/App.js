@@ -75,7 +75,14 @@ function App() {
         <Route element={<PersistLogin />}>
           {/* navbar component */}
           <Route
-            element={<NavBar auth={auth} logout={logout} socket={socket} />}
+            element={
+              <NavBar
+                auth={auth}
+                logout={logout}
+                socket={socket}
+                toast={toast}
+              />
+            }
           >
             {/* home/chatbot module*/}
             <Route
