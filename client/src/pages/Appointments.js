@@ -153,6 +153,7 @@ function Appointments({ socket, toast, auth }) {
           editAppointmentRealTime(res?.data?.appointmentOldNew);
           setTimeout(() => {
             getAppointments();
+            getBookedAppointments();
           }, 200);
         })
         .catch((err) => {
@@ -323,7 +324,7 @@ function Appointments({ socket, toast, auth }) {
   return (
     <>
       <motion.div
-        className="fixed right-0 bg-[--light-brown] shadow-2xl h-screen p-10 z-30 w-[555px]"
+        className="fixed right-0 bg-[--light-brown] shadow-2xl h-screen p-10 z-30 w-[635px]"
         variants={{
           show: {
             opacity: 1,
@@ -336,7 +337,7 @@ function Appointments({ socket, toast, auth }) {
           },
           hide: {
             opacity: 1,
-            x: 500,
+            x: 700,
             transition: {
               type: "spring",
               stiffness: 300,
@@ -345,7 +346,7 @@ function Appointments({ socket, toast, auth }) {
           },
         }}
         animate={isOpenAppointmentSidebar ? "show" : "hide"}
-        initial={{ opacity: 1, x: 500 }}
+        initial={{ opacity: 1, x: 700 }}
       >
         <div className="flex flex-col justify-between h-full">
           <div>
@@ -394,8 +395,11 @@ function Appointments({ socket, toast, auth }) {
               )}
             </div>
             {isEditAppointment ? (
-              <div className="mt-3">
-                <div className="flex gap-5 mb-5">
+              <div>
+                <p className="mb-3">{`Date: ${
+                  convertDate(appointmentDateStart)[0]
+                } - ${convertDate(appointmentDateEnd)[2]}`}</p>
+                <div className="flex justify-between mb-5">
                   <div className="flex flex-wrap gap-5 mb-5 gap-y-3 w-[123px]">
                     {availableTime.map((i, k) => {
                       return bookedAppointments.some(
@@ -458,7 +462,7 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                   <select
                     id="mode"
                     className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                    // value={userType}
+                    value={appointmentMode}
                     onChange={(e) => {
                       setAppointmentMode(e.target.value);
                     }}
