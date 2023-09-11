@@ -1,5 +1,6 @@
 const uniqid = require("uniqid");
 const moment = require("moment");
+const jwt = require("jsonwebtoken");
 
 const db = require("../utils/firebase");
 
@@ -322,6 +323,55 @@ const editAppointment = async (req, res) => {
   }
 };
 
+const getMyAppointment = async (req, res) => {
+  const token = req.headers.authorization.slice(7);
+
+  try {
+    const idNo = jwt.decode(token)?.idNo;
+    await db
+      .collection("reports")
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          return res.status(404).send("Error");
+        }
+        let appointment = {};
+        querySnapshot.forEach((i) => {
+          if (i.data().reports.sosAppointments !== undefined) {
+            i.data().reports.sosAppointments.forEach((j) => {
+              if (
+                j.userDetails.idNo === idNo &&
+                new Date(j.end) > new Date() &&
+                j.status === "upcoming"
+              ) {
+                appointment = j;
+                return;
+              }
+            });
+          }
+
+          if (i.data().reports.standardAppointments !== undefined) {
+            i.data().reports.standardAppointments.forEach((j) => {
+              if (
+                j.userDetails.idNo === idNo &&
+                new Date(j.end) > new Date() &&
+                j.status === "upcoming"
+              ) {
+                appointment = j;
+                return;
+              }
+            });
+          }
+        });
+
+        res.status(200).json({ appointment: appointment });
+      });
+  } catch (err) {
+    console.log(err);
+    res.status(404).send("Error");
+  }
+};
+
 module.exports = {
   addSOSAppointment,
   addStandardAppointment,
@@ -329,4 +379,5 @@ module.exports = {
   getBookedAppointments,
   cancelAppointment,
   editAppointment,
+  getMyAppointment,
 };
