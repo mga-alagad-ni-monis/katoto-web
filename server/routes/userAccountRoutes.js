@@ -9,6 +9,7 @@ const {
   handleImport,
   deleteUsers,
   editUser,
+  getGCName,
 } = require("../controllers/userAccountControllers");
 
 const router = express.Router();
@@ -24,5 +25,10 @@ router.post(
 );
 router.post("/edit", verifyRoles(["systemAdministrator"]), editUser);
 router.post("/delete", verifyRoles(["systemAdministrator"]), deleteUsers);
+router.get(
+  "/get-gc",
+  verifyRoles(["systemAdministrator", "guidanceCounselor", "student"]),
+  getGCName
+);
 
 module.exports = router;

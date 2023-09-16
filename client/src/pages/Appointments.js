@@ -118,6 +118,44 @@ function Appointments({ socket, toast, auth }) {
     }
   };
 
+  const handleApproveAppointment = async (id, type) => {
+    try {
+      await axios
+        .post(
+          "/api/appointments/approve",
+          { id },
+          {
+            withCredentials: true,
+
+            headers: {
+              Authorization: `Bearer ${auth?.accessToken}`,
+            },
+          }
+        )
+        .then((res) => {
+          toast.success(res?.data?.message);
+          approveRealTime(res?.data?.appointmentDetails);
+          getAppointments();
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data);
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
+  const approveRealTime = async (appointment) => {
+    try {
+      socket.emit("approveAppointmentRequest", {
+        appointmentDetails: appointment,
+        token: auth?.accessToken,
+      });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
   const cancelRealTime = async (appointment) => {
     try {
       socket.emit("cancelAppointmentRequest", {
@@ -216,61 +254,28 @@ function Appointments({ socket, toast, auth }) {
 
   const components = {
     event: (i) => {
-      switch (i.event.data.type) {
-        case "sos":
+      switch (i.event.data.status) {
+        case "pending":
           return (
-            <div
-              className={`text-[--light-brown] p-1 text-[9px] rounded-md ${
-                i.event.data.status === "cancelled"
-                  ? "bg-[--red]"
-                  : "bg-[--dark-green]"
-              }`}
-            >
-              {i.event.title}
-            </div>
-          );
-        case "standard":
-          return (
-            <div
-              className={`p-1 text-[9px] font-bold rounded-md ${
-                i.event.data.status === "cancelled"
-                  ? "bg-[--red] text-[--light-brown]"
-                  : "bg-[--light-green] text-black"
-              }`}
-            >
+            <div className="text-black font-bold p-1 text-xs rounded-md bg-[--yellow]">
               {`${i.event.title} (${i.event.data.status})`}
             </div>
           );
-        default:
-          return null;
-      }
-    },
-  };
-
-  const componentsAgenda = {
-    event: (i) => {
-      switch (i.event.data.type) {
-        case "sos":
+        case "upcoming":
           return (
-            <div
-              className={`text-[--light-brown] p-1 text-xs rounded-md ${
-                i.event.data.status === "cancelled"
-                  ? "bg-[--red]"
-                  : "bg-[--dark-green]"
-              }`}
-            >
-              {i.event.title}
+            <div className="text-black font-bold p-1 text-xs rounded-md bg-[--light-green]">
+              {`${i.event.title} (${i.event.data.status})`}
             </div>
           );
-        case "standard":
+        case "completed":
           return (
-            <div
-              className={`p-1 text-xs font-bold rounded-md ${
-                i.event.data.status === "cancelled"
-                  ? "bg-[--red] text-[--light-brown]"
-                  : "bg-[--light-green] text-black"
-              }`}
-            >
+            <div className="text-[--light-brown] font-bold p-1 text-xs rounded-md bg-[--dark-green]">
+              {`${i.event.title} (${i.event.data.status})`}
+            </div>
+          );
+        case "cancelled":
+          return (
+            <div className="text-[--light-brown] font-bold p-1 text-xs rounded-md bg-[--red]">
               {`${i.event.title} (${i.event.data.status})`}
             </div>
           );
@@ -377,22 +382,40 @@ function Appointments({ socket, toast, auth }) {
                   ? "Change Appointment Date"
                   : "Appointment Details"}
               </p>
-              {isEditAppointment ? null : new Date(
-                  appointmentDetails?.data?.end
-                ) > new Date() &&
-                appointmentDetails?.data?.status === "upcoming" ? (
-                <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3">
-                  Upcoming
-                </div>
-              ) : appointmentDetails?.data?.status === "cancelled" ? (
-                <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
-                  Cancelled
-                </div>
-              ) : (
-                <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
-                  Overdue
-                </div>
-              )}
+
+              {(() => {
+                if (new Date(appointmentDetails?.data?.end) < new Date()) {
+                  return (
+                    <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3 font-bold">
+                      Ended
+                    </div>
+                  );
+                } else if (appointmentDetails?.data?.status === "pending") {
+                  return (
+                    <div className="w-max p-2 rounded-lg bg-[--yellow] text-black text-xs mb-3 font-bold">
+                      Pending
+                    </div>
+                  );
+                } else if (appointmentDetails?.data?.status === "upcoming") {
+                  return (
+                    <div className="w-max p-2 rounded-lg bg-[--light-green] text-black text-xs mb-3 font-bold">
+                      Upcoming
+                    </div>
+                  );
+                } else if (appointmentDetails?.data?.status === "completed") {
+                  return (
+                    <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3 font-bold">
+                      Completed
+                    </div>
+                  );
+                } else if (appointmentDetails?.data?.status === "cancelled") {
+                  return (
+                    <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3 font-bold">
+                      Cancelled
+                    </div>
+                  );
+                }
+              })()}
             </div>
             {isEditAppointment ? (
               <div>
@@ -493,7 +516,28 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                     <p>45 mins</p>
                   </div>
                 </div>
-
+                <div className="flex gap-5 mb-5">
+                  <div>
+                    <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                      Guidance Counselor
+                    </p>
+                    {appointmentDetails?.data?.gc?.name}
+                  </div>
+                  <div>
+                    <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                      Mode
+                    </p>
+                    {appointmentDetails?.data?.mode === "facetoface"
+                      ? "Face-to-face"
+                      : "Virtual"}
+                  </div>
+                </div>
+                <div className="w-auto break-words mb-5">
+                  <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                    Concern Overview
+                  </p>
+                  {appointmentDetails?.data?.description}
+                </div>
                 <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
                   Student Details
                 </p>
@@ -577,7 +621,9 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
             </div>
           ) : (
             <div className="flex gap-5 justify-end">
-              {appointmentDetails?.data?.status === "upcoming" ? (
+              {auth?.userInfo?.idNo === appointmentDetails?.data?.gc?.idNo &&
+              (appointmentDetails?.data?.status === "pending" ||
+                appointmentDetails?.data?.status === "upcoming") ? (
                 <button
                   className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
@@ -597,19 +643,36 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                   Cancel Appointment
                 </button>
               ) : null}
-              <button
-                className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
-          border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
-                onClick={() => {
-                  setIsEditAppointment(true);
-                  setSelectedTime(appointmentDetails?.data?.start);
-                  setAppointmentDateStart(appointmentDetails?.data?.start);
-                  setAppointmentDateEnd(appointmentDetails?.data?.end);
-                  setAppointmentMode(appointmentDetails?.data?.mode);
-                }}
-              >
-                Edit Appointment
-              </button>
+
+              {appointmentDetails?.data?.creator === auth?.userInfo?.idNo ? (
+                <button
+                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                  onClick={() => {
+                    setIsEditAppointment(true);
+                    setSelectedTime(appointmentDetails?.data?.start);
+                    setAppointmentDateStart(appointmentDetails?.data?.start);
+                    setAppointmentDateEnd(appointmentDetails?.data?.end);
+                    setAppointmentMode(appointmentDetails?.data?.mode);
+                  }}
+                >
+                  Edit Appointment
+                </button>
+              ) : null}
+              {appointmentDetails?.data?.status === "pending" &&
+              auth?.userInfo?.idNo === appointmentDetails?.data?.gc?.idNo ? (
+                <button
+                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                  onClick={() => {
+                    handleApproveAppointment(appointmentDetails?.data?.id);
+                    setIsOpenAppointmentSidebar(false);
+                    setAppointmentDetails({});
+                  }}
+                >
+                  Approve
+                </button>
+              ) : null}
             </div>
           )}
         </div>
@@ -621,22 +684,56 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
             Appointments
           </p>
           <div className="flex gap-5 w-full">
-            <div className="w-3/5">
-              <p className="font-extrabold text-2xl flex items-center pb-1">
-                Upcoming
-              </p>
-              <Calendar
-                localizer={localizer}
-                startAccessor="start"
-                endAccessor="end"
-                className="w-full second-calendar"
-                style={{ height: 588 }}
-                events={events}
-                components={componentsAgenda}
-                selectable={true}
-                views={{ month: true, week: false, day: false, agenda: true }}
-                defaultView={"agenda"}
-              />
+            <div className="w-3/5 flex flex-col h-[624px]">
+              <div>
+                <p className="font-extrabold text-2xl flex items-center">
+                  Regular Appointments
+                </p>
+                <Calendar
+                  localizer={localizer}
+                  startAccessor="start"
+                  endAccessor="end"
+                  className="w-full second-calendar"
+                  style={{ height: 270 }}
+                  events={events}
+                  components={components}
+                  selectable={true}
+                  views={{ month: true, week: false, day: false, agenda: true }}
+                  defaultView={"agenda"}
+                  onSelectEvent={(i) => {
+                    setAppointmentDetails(i);
+                    setIsOpenAppointmentSidebar(true);
+                  }}
+                />
+              </div>
+              <div>
+                <p className="font-extrabold text-2xl flex items-center mt-5">
+                  SOS Appointments
+                </p>
+                {/* <div className="max-h-[226px] min-h-[20px] border-2 border-black/20 rounded-xl shadow-lg mt-5 p-3">
+                  <p>No SOS Appointments</p>
+                  <p>No SOS Appointments</p>
+                  <p>No SOS Appointments</p>
+                  <p>No SOS Appointments</p>
+                </div> */}
+
+                <Calendar
+                  localizer={localizer}
+                  startAccessor="start"
+                  endAccessor="end"
+                  className="w-full second-calendar"
+                  style={{ height: 270 }}
+                  events={events}
+                  components={components}
+                  selectable={true}
+                  views={{ month: true, week: false, day: false, agenda: true }}
+                  defaultView={"agenda"}
+                  onSelectEvent={(i) => {
+                    setAppointmentDetails(i);
+                    setIsOpenAppointmentSidebar(true);
+                  }}
+                />
+              </div>
             </div>
             <div className="flex">
               <Calendar
@@ -662,7 +759,6 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                     return toast.error("No Appointment on Sundays!");
                   }
 
-                  console.log(data);
                   // setPopUpStandard(false);
                   // setIsOpenStandardAppoint(true);
                   // setAppointmentDetails(data);

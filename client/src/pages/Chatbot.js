@@ -38,11 +38,15 @@ function Chatbot({ toast, auth, socket }) {
   const [inputFriendly, setInputFriendly] = useState("");
   const [appointmentDateStart, setAppointmentDateStart] = useState("");
   const [appointmentDateEnd, setAppointmentDateEnd] = useState("");
+  const [description, setDescription] = useState("");
+  const [preferredGC, setPreferredGC] = useState("");
+  const [preferredMode, setPreferredMode] = useState("facetoface");
 
   const [guidedButtons, setGuidedButtons] = useState([]);
   const [messages, setMessages] = useState([]);
   const [friendlyMessages, setFriendlyMessages] = useState([]);
   const [bookedAppointments, setBookedAppointments] = useState([]);
+  const [gcNames, setGcNames] = useState([]);
 
   const [sosDetails, setSosDetails] = useState({});
   const [standardDetails, setStandardDetails] = useState({});
@@ -52,6 +56,7 @@ function Chatbot({ toast, auth, socket }) {
 
   useEffect(() => {
     getBookedAppointments();
+    getGCName();
   }, []);
 
   useEffect(() => {
@@ -91,6 +96,26 @@ function Chatbot({ toast, auth, socket }) {
   useEffect(() => {
     bottomRef?.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, guidedButtons, friendlyMessages]);
+
+  const getGCName = async () => {
+    try {
+      await axios
+        .get("/api/accounts/get-gc", {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${auth?.accessToken}`,
+          },
+        })
+        .then((res) => {
+          setGcNames(res?.data?.names);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data);
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
 
   const getBookedAppointments = async () => {
     try {
@@ -303,7 +328,9 @@ function Chatbot({ toast, auth, socket }) {
       if (
         isAppointmentChecked &&
         appointmentDateStart !== "" &&
-        appointmentDateEnd !== ""
+        appointmentDateEnd !== "" &&
+        preferredGC !== "" &&
+        preferredMode !== ""
       ) {
         try {
           socket.emit("scheduleRequest", {
@@ -312,12 +339,16 @@ function Chatbot({ toast, auth, socket }) {
             type: "standard",
             start: appointmentDateStart,
             end: appointmentDateEnd,
+            gc: gcNames.filter((i) => i.idNo === preferredGC)[0],
+            mode: preferredMode,
+            creator: auth?.userInfo?.idNo,
+            description: description,
           });
         } catch (err) {
           toast.error("Error");
         }
       } else {
-        toast.error("Please select a time");
+        toast.error("Please check the details");
       }
     } catch (err) {}
   };
@@ -380,7 +411,7 @@ function Chatbot({ toast, auth, socket }) {
               } else if (
                 standardDetails?.appointmentDetails?.type === "standard"
               ) {
-                return "Standard Appointment";
+                return "Regular Appointment";
               }
             })()}
           </p>
@@ -391,6 +422,9 @@ function Chatbot({ toast, auth, socket }) {
               setStandardDetails({});
               setAppointmentDetails({});
               setIsAppointmentChecked(false);
+              setAppointmentDateEnd("");
+              setAppointmentDateStart("");
+              setDescription("");
               handleSubmitMessage(
                 auth?.accessToken,
                 "Nakapag-iskedyul na ako ng Appointment, Salamat!"
@@ -567,7 +601,7 @@ function Chatbot({ toast, auth, socket }) {
                     <div className="flex flex-col gap-5">
                       <p>
                         You have successfully booked an{" "}
-                        <span className="font-bold">standard appointment </span>{" "}
+                        <span className="font-bold">regular appointment </span>{" "}
                         on{" "}
                         {`${
                           convertDate(
@@ -588,16 +622,54 @@ function Chatbot({ toast, auth, socket }) {
                       <p className="text-[--dark-green] font-bold flex items-center mb-3">
                         Appointment Details
                       </p>
-                      {new Date(standardDetails?.appointmentDetails?.end) >
-                      new Date() ? (
-                        <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3">
-                          Upcoming
-                        </div>
-                      ) : (
-                        <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
-                          Overdue
-                        </div>
-                      )}
+                      {(() => {
+                        if (
+                          new Date(standardDetails?.appointmentDetails?.end) <
+                          new Date()
+                        ) {
+                          return (
+                            <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3 font-bold">
+                              Ended
+                            </div>
+                          );
+                        } else if (
+                          standardDetails?.appointmentDetails?.status ===
+                          "pending"
+                        ) {
+                          return (
+                            <div className="w-max p-2 rounded-lg bg-[--yellow] text-black text-xs mb-3 font-bold">
+                              Pending
+                            </div>
+                          );
+                        } else if (
+                          standardDetails?.appointmentDetails?.status ===
+                          "upcoming"
+                        ) {
+                          return (
+                            <div className="w-max p-2 rounded-lg bg-[--light-green] text-black text-xs mb-3 font-bold">
+                              Upcoming
+                            </div>
+                          );
+                        } else if (
+                          standardDetails?.appointmentDetails?.status ===
+                          "completed"
+                        ) {
+                          return (
+                            <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3 font-bold">
+                              Completed
+                            </div>
+                          );
+                        } else if (
+                          standardDetails?.appointmentDetails?.status ===
+                          "cancelled"
+                        ) {
+                          return (
+                            <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3 font-bold">
+                              Cancelled
+                            </div>
+                          );
+                        }
+                      })()}
                     </div>
                     <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
                       <div className="flex gap-4">
@@ -624,6 +696,30 @@ function Chatbot({ toast, auth, socket }) {
                         </p>
                         <p>45 mins</p>
                       </div>
+                    </div>
+
+                    <div className="flex gap-5 mb-5">
+                      <div>
+                        <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                          Guidance Counselor
+                        </p>
+                        {standardDetails?.appointmentDetails?.gc?.name}
+                      </div>
+                      <div>
+                        <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                          Mode
+                        </p>
+                        {standardDetails?.appointmentDetails?.mode ===
+                        "facetoface"
+                          ? "Face-to-face"
+                          : "Virtual"}
+                      </div>
+                    </div>
+                    <div className="w-auto break-words mb-5">
+                      <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                        Concern Overview
+                      </p>
+                      {standardDetails?.appointmentDetails?.description}
                     </div>
                     <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
                       Your Details
@@ -770,7 +866,7 @@ function Chatbot({ toast, auth, socket }) {
       </Modal>
       <Modal isOpen={popUpStandard} isCalendar={true}>
         <div className="w-full justify-between flex">
-          <p className="text-2xl font-extrabold">Standard Appointment</p>
+          <p className="text-2xl font-extrabold">Pick a date</p>
           <button
             onClick={() => {
               setPopUpStandard(false);
@@ -790,7 +886,7 @@ function Chatbot({ toast, auth, socket }) {
       </Modal>
       <Modal isOpen={isOpenStandardAppoint}>
         <div className="w-full justify-between flex">
-          <p className="text-2xl font-extrabold">Standard Appointment</p>
+          <p className="text-2xl font-extrabold">Regular Appointment</p>
           <button
             onClick={() => {
               setIsOpenStandardAppoint(false);
@@ -877,11 +973,77 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
               );
             })}
           </div>
+          <div className="flex gap-5 mb-5">
+            <div>
+              <p className="text-[--dark-green] font-bold flex items-center mb-3 justify-between  ">
+                Concern{" "}
+                <span className="text-[8px] text-[--red]">
+                  {200 - description.length} character(s) left
+                </span>
+              </p>
+              <textarea
+                className="w-auto h-[46px] bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
+              p-3 font-semibold resize-none"
+                placeholder="Describe your concern..."
+                value={description}
+                maxLength={200}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                }}
+              ></textarea>
+            </div>
+            <div>
+              <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
+                Guidance Counselor
+              </p>
+              <select
+                id="guidanceCounselors"
+                className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                value={preferredGC}
+                onChange={(e) => {
+                  setPreferredGC(e.target.value);
+                }}
+                required
+              >
+                {gcNames.map((i, k) => {
+                  return (
+                    <option
+                      defaultValue={i?.assignedCollege?.includes(
+                        auth?.userInfo?.mainDepartment
+                      )}
+                      value={i.idNo}
+                      key={k}
+                    >
+                      {i.name}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+            <div>
+              <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                Mode
+              </p>
+              <select
+                id="mode"
+                className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                value={preferredMode}
+                onChange={(e) => {
+                  setPreferredMode(e.target.value);
+                }}
+                required
+              >
+                <option value="facetoface" defaultValue>
+                  Face-to-face
+                </option>
+                <option value="virtual">Virtual</option>
+              </select>
+            </div>
+          </div>
           <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
             Your Details
           </p>
-
-          <table className="mb-5">
+          <table className="mb-5 text-xs">
             <tr>
               <td className="w-[150px] flex justify-start">Name</td>
               <td>{auth?.userInfo?.name}</td>
@@ -1008,6 +1170,13 @@ border border-2 transition-all duration-300`}
                     onClick={() => {
                       setPopUpStandard(true);
                       setIsOpenNotificationModal(false);
+                      setPreferredGC(
+                        gcNames?.filter((i) =>
+                          i?.assignedCollege?.includes(
+                            auth?.userInfo?.mainDepartment
+                          )
+                        )[0]?.idNo
+                      );
                     }}
                   >
                     <BsCalendarPlus size={24} />

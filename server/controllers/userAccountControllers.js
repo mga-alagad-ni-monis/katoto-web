@@ -19,11 +19,20 @@ const addUser = async (req, res) => {
     department,
     userType,
     yearSection,
+    assignedCollege,
   } = req.body;
   try {
     if (userType.trim() === "student") {
       if (!yearSection.trim()) {
         return res.status(404).send("Please add a year and section!");
+      }
+    }
+
+    if (userType.trim() === "guidanceCounselor") {
+      if (assignedCollege.length < 1) {
+        return res.status(404).send("Please add at least 1 assigned college!");
+      } else if (assignedCollege.length > 2) {
+        return res.status(404).send("Limit of assigned college reached!");
       }
     }
 
@@ -124,6 +133,7 @@ const addUser = async (req, res) => {
                     department,
                     yearSection,
                     mainDepartment,
+                    assignedCollege,
                   })
                   .then(async (querySnapshot) => {
                     if (querySnapshot.empty) {
@@ -403,11 +413,20 @@ const editUser = async (req, res) => {
     department,
     userType,
     yearSection,
+    assignedCollege,
   } = req.body;
   try {
     if (userType.trim() === "student") {
       if (!yearSection.trim()) {
         return res.status(404).send("Please add a year and section!");
+      }
+    }
+
+    if (userType.trim() === "guidanceCounselor") {
+      if (assignedCollege.length < 1) {
+        return res.status(404).send("Please add at least 1 assigned college!");
+      } else if (assignedCollege.length > 2) {
+        return res.status(404).send("Limit of assigned college reached!");
       }
     }
 
@@ -448,12 +467,12 @@ const editUser = async (req, res) => {
         department: department,
         idNo: idNo,
         contactNo: contactNo,
+        assignedCollege: assignedCollege,
       });
     });
 
     res.status(200).json({ message: "Edit successfully!" });
   } catch (err) {
-    console.log("asd");
     res.status(404).send("Error");
   }
 };
@@ -487,6 +506,32 @@ const getUser = async (idNo) => {
   return userDetails;
 };
 
+const getGCName = async (req, res) => {
+  await db
+    .collection("accounts")
+    .where("credentials.privilegeType", "in", [
+      "guidanceCounselor",
+      "systemAdministrator",
+    ])
+    .get()
+    .then(async (querySnapshot) => {
+      if (querySnapshot.empty) {
+        return res.status(404).send("Error");
+      }
+
+      let names = [];
+
+      querySnapshot.forEach((i) => {
+        names.push({
+          name: i.data().name,
+          idNo: i.data().idNo,
+          assignedCollege: i.data().assignedCollege,
+        });
+      });
+      res.status(200).json({ names });
+    });
+};
+
 module.exports = {
   addUser,
   getUsers,
@@ -495,4 +540,5 @@ module.exports = {
   deleteUsers,
   editUser,
   getUser,
+  getGCName,
 };

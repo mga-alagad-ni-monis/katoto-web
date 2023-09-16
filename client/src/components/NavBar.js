@@ -50,7 +50,13 @@ function NavBar({ auth, logout, socket, toast }) {
         }, 200);
       });
 
-      socket.on("editAppointmentResponse", (appointmentDetails) => {
+      socket.on("editAppointmentResponse", () => {
+        setTimeout(async () => {
+          await getNotification();
+        }, 200);
+      });
+
+      socket.on("approveAppointmentResponse", () => {
         setTimeout(async () => {
           await getNotification();
         }, 200);

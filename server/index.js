@@ -165,43 +165,50 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("scheduleRequest", async ({ id, token, type, start, end }) => {
-    if (jwt.decode(token)?.role === "student") {
-      const counselorAdmin = getGCnSA();
-      const idNo = jwt.decode(token)?.idNo;
-      const userDetails = await getUser(idNo);
-      //adding SOS appointment to appointment
-      //adding to guidance counselors and system admin
-      //sending notifs to guidance counselors and system admin
-      let appointmentDetails = {};
-      if (type === "sos") {
-        appointmentDetails = await addSOSAppointment(userDetails);
-      } else if (type === "standard") {
-        appointmentDetails = await addStandardAppointment(
-          userDetails,
-          start,
-          end
-        );
-      }
-      await addNotificationGcSa(appointmentDetails);
-      if (counselorAdmin.length > 0) {
-        counselorAdmin.forEach((user) => {
-          io.to(user.socketId).emit("scheduleResponse", {
-            id: id,
-            type: type,
-          });
-        });
-      }
-      await addNotificationStudent(appointmentDetails, idNo);
-      onlineUsers.forEach((user) => {
-        if (idNo === user.idNo) {
-          io.to(user.socketId).emit("studentScheduleResponse", {
-            appointmentDetails,
+  socket.on(
+    "scheduleRequest",
+    async ({ id, token, type, start, end, gc, mode, creator, description }) => {
+      if (jwt.decode(token)?.role === "student") {
+        const counselorAdmin = getGCnSA();
+        const idNo = jwt.decode(token)?.idNo;
+        const userDetails = await getUser(idNo);
+        //adding SOS appointment to appointment
+        //adding to guidance counselors and system admin
+        //sending notifs to guidance counselors and system admin
+        let appointmentDetails = {};
+        if (type === "sos") {
+          appointmentDetails = await addSOSAppointment(userDetails);
+        } else if (type === "standard") {
+          appointmentDetails = await addStandardAppointment(
+            userDetails,
+            start,
+            end,
+            gc,
+            mode,
+            creator,
+            description
+          );
+        }
+        await addNotificationGcSa(appointmentDetails);
+        if (counselorAdmin.length > 0) {
+          counselorAdmin.forEach((user) => {
+            io.to(user.socketId).emit("scheduleResponse", {
+              id: id,
+              type: type,
+            });
           });
         }
-      });
+        await addNotificationStudent(appointmentDetails, idNo);
+        onlineUsers.forEach((user) => {
+          if (idNo === user.idNo) {
+            io.to(user.socketId).emit("studentScheduleResponse", {
+              appointmentDetails,
+            });
+          }
+        });
+      }
     }
-  });
+  );
 
   socket.on(
     "cancelAppointmentRequest",
@@ -215,6 +222,26 @@ io.on("connection", (socket) => {
         onlineUsers.forEach((user) => {
           if (idNo === user.idNo) {
             io.to(user.socketId).emit("cancelAppointmentResponse", {
+              appointmentDetails,
+            });
+          }
+        });
+      }
+    }
+  );
+
+  socket.on(
+    "approveAppointmentRequest",
+    async ({ appointmentDetails, token }) => {
+      if (
+        jwt.decode(token)?.role === "guidanceCounselor" ||
+        jwt.decode(token)?.role === "systemAdministrator"
+      ) {
+        let idNo = appointmentDetails.userDetails.idNo;
+        await addNotificationStudent(appointmentDetails, idNo);
+        onlineUsers.forEach((user) => {
+          if (idNo === user.idNo) {
+            io.to(user.socketId).emit("approveAppointmentResponse", {
               appointmentDetails,
             });
           }

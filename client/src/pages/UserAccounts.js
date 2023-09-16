@@ -23,6 +23,8 @@ function UserAccounts({ toast, auth }) {
   const [errorMessages, setErrorMessages] = useState([]);
   const [deleteUsers, setDeleteUsers] = useState([]);
   const [editUser, setEditUser] = useState([]);
+  const [assignedCollegeLen, setAssignedCollegeLen] = useState([""]);
+  const [assignedCollege, setAssignedCollege] = useState([]);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -67,6 +69,13 @@ function UserAccounts({ toast, auth }) {
     "Bachelor of Science in Public Administration (BSPA)",
   ];
 
+  const colleges = [
+    "College of Education",
+    "College of Arts and Sciences",
+    "College of Engineering and Information Technology",
+    "College of Business Administration, Public Administration and Accountancy",
+  ];
+
   const categories = ["Email", "Department/Course", "User Type"];
 
   useEffect(() => {
@@ -86,7 +95,8 @@ function UserAccounts({ toast, auth }) {
     yrSec,
     contactNo,
     birthday,
-    department
+    department,
+    assignedCollege
   ) => {
     setUsers(
       users.map((i, k) => {
@@ -108,6 +118,7 @@ function UserAccounts({ toast, auth }) {
           contactNo,
           birthday,
           department,
+          assignedCollege,
         },
       ]);
     } else {
@@ -178,6 +189,7 @@ function UserAccounts({ toast, auth }) {
 
   const handleSubmitAddUser = async (e) => {
     e.preventDefault();
+
     try {
       await axios
         .post(
@@ -193,6 +205,7 @@ function UserAccounts({ toast, auth }) {
             department,
             userType,
             yearSection,
+            assignedCollege,
           },
           {
             withCredentials: true,
@@ -215,6 +228,7 @@ function UserAccounts({ toast, auth }) {
           setYearSection("");
           setIsOpenAddModal(false);
           setReload(!reload);
+          setAssignedCollege([]);
         })
         .catch((err) => {
           toast.error(err?.response?.data);
@@ -284,6 +298,7 @@ function UserAccounts({ toast, auth }) {
             department,
             userType,
             yearSection,
+            assignedCollege,
           },
           {
             withCredentials: true,
@@ -568,7 +583,7 @@ function UserAccounts({ toast, auth }) {
             <div className="flex gap-5 w-full">
               <div className="w-full flex flex-col gap-2">
                 <label htmlFor="department" className="font-semibold">
-                  Department/Courses *
+                  Department/Course *
                 </label>
                 <select
                   id="department"
@@ -595,6 +610,62 @@ function UserAccounts({ toast, auth }) {
                 </select>
               </div>
             </div>
+            {userType === "guidanceCounselor" ? (
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between">
+                  <label htmlFor="department" className="font-semibold">
+                    Assigned College
+                  </label>
+                  <div
+                    className="flex gap-1 items-center w-auto p-1 text-sm rounded-lg text-[--dark-green]
+          hover:underline transition-all duration-300 font-semibold cursor-pointer"
+                    onClick={() => {
+                      if (assignedCollegeLen < 3) {
+                        setAssignedCollegeLen([...assignedCollegeLen, ""]);
+                      } else {
+                        toast.error("Limit of assigned college reached!");
+                      }
+                    }}
+                  >
+                    <HiPlus size={12} />
+                    Add
+                  </div>
+                </div>
+                {assignedCollegeLen.map((i, k) => {
+                  return (
+                    <div className="flex gap-5 w-full" key={k}>
+                      <div className="w-full flex flex-col gap-2">
+                        <select
+                          id="department"
+                          className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                          value={assignedCollege[k]}
+                          onChange={(e) => {
+                            let array = [...assignedCollege];
+                            array[k] = e.target.value;
+                            setAssignedCollege(array);
+                          }}
+                          required
+                        >
+                          <option
+                            hidden
+                            defaultValue
+                            value=""
+                            className="text-black/30"
+                          ></option>
+                          {colleges?.map((i, k) => {
+                            return (
+                              <option value={i} key={k}>
+                                {i}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
             <button
               className="bg-[--dark-green] w-full p-3 text-[--light-brown] text-sm rounded-lg border border-2 border-[--dark-green] 
           hover:bg-transparent hover:text-[--dark-green] transition-all duration-300 font-semibold"
@@ -808,6 +879,62 @@ function UserAccounts({ toast, auth }) {
                 </select>
               </div>
             </div>
+            {userType === "guidanceCounselor" ? (
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between">
+                  <label htmlFor="department" className="font-semibold">
+                    Assigned College
+                  </label>
+                  <div
+                    className="flex gap-1 items-center w-auto p-1 text-sm rounded-lg text-[--dark-green]
+          hover:underline transition-all duration-300 font-semibold cursor-pointer"
+                    onClick={() => {
+                      if (assignedCollegeLen < 3) {
+                        setAssignedCollegeLen([...assignedCollegeLen, ""]);
+                      } else {
+                        toast.error("Limit of assigned college reached!");
+                      }
+                    }}
+                  >
+                    <HiPlus size={12} />
+                    Add
+                  </div>
+                </div>
+                {assignedCollege.map((i, k) => {
+                  return (
+                    <div className="flex gap-5 w-full" key={k}>
+                      <div className="w-full flex flex-col gap-2">
+                        <select
+                          id="department"
+                          className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                          value={assignedCollege[k]}
+                          onChange={(e) => {
+                            let array = [...assignedCollege];
+                            array[k] = e.target.value;
+                            setAssignedCollege(array);
+                          }}
+                          required
+                        >
+                          <option
+                            hidden
+                            defaultValue
+                            value=""
+                            className="text-black/30"
+                          ></option>
+                          {colleges?.map((i, k) => {
+                            return (
+                              <option value={i} key={k}>
+                                {i}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
             <button
               className="bg-[--dark-green] w-full p-3 text-[--light-brown] text-sm rounded-lg border border-2 border-[--dark-green] 
           hover:bg-transparent hover:text-[--dark-green] transition-all duration-300 font-semibold"
@@ -1014,6 +1141,8 @@ function UserAccounts({ toast, auth }) {
                     setContactNo(editUser[0].contactNo);
                     setBirthday(editUser[0].birthday);
                     setDepartment(editUser[0].department);
+
+                    setAssignedCollege(editUser[0]?.assignedCollege);
                   }
                   setIsOpenEditModal(true);
                 }}
@@ -1184,7 +1313,8 @@ function UserAccounts({ toast, auth }) {
                             i?.yearSection,
                             i?.contactNo,
                             i?.birthday,
-                            i?.department
+                            i?.department,
+                            i?.assignedCollege
                           );
                         }}
                       >
@@ -1216,7 +1346,8 @@ function UserAccounts({ toast, auth }) {
                                 i?.yearSection,
                                 i?.contactNo,
                                 i?.birthday,
-                                i?.department
+                                i?.department,
+                                i?.assignedCollege
                               );
                             }}
                             checked={i.isChecked ? true : false}

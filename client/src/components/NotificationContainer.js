@@ -13,7 +13,12 @@ import {
   BsCalendarPlus,
 } from "react-icons/bs";
 
-import { MdOutlineCancel, MdSchedule, MdEdit } from "react-icons/md";
+import {
+  MdOutlineCancel,
+  MdSchedule,
+  MdEdit,
+  MdOutlineCheckCircleOutline,
+} from "react-icons/md";
 
 import Modal from "../components/Modal";
 
@@ -158,7 +163,7 @@ function NotificationContainer({
                   if (notificationDetails.type === "sos") {
                     return "SOS Emergency Appointment";
                   } else if (notificationDetails.type === "standard") {
-                    return "Standard Appointment";
+                    return "Regular Appointment";
                   }
                 } else if (
                   notificationDetails.details?.status === "cancelled"
@@ -347,16 +352,18 @@ function NotificationContainer({
                   return (
                     <div className="flex flex-col gap-5">
                       <div className="flex gap-5 items-center">
-                        <div className="bg-[--dark-green] h-fit rounded-full p-3 text-white border border-2 border-[--dark-green]">
-                          <BsCalendarPlus size={32} />
+                        <div className="bg-[--dark-green] h-fit rounded-full p-2 text-white border border-2 border-[--dark-green]">
+                          <MdOutlineCheckCircleOutline size={40} />
                         </div>
                         <div className="flex flex-col gap-5">
                           <p>
                             {" "}
-                            <span className="font-bold">You </span>
-                            have booked an{" "}
                             <span className="font-bold">
-                              standard appointment
+                              {notificationDetails.details.gc.name}{" "}
+                            </span>
+                            approved your{" "}
+                            <span className="font-bold">
+                              regular appointment
                             </span>{" "}
                             on{" "}
                             {`${
@@ -372,16 +379,50 @@ function NotificationContainer({
                           <p className="text-[--dark-green] font-bold flex items-center mb-3">
                             Appointment Details
                           </p>
-                          {new Date(notificationDetails.details.end) >
-                          new Date() ? (
-                            <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3">
-                              Upcoming
-                            </div>
-                          ) : (
-                            <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
-                              Overdue
-                            </div>
-                          )}
+                          {(() => {
+                            if (
+                              new Date(notificationDetails.details.data?.end) <
+                              new Date()
+                            ) {
+                              return (
+                                <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3 font-bold">
+                                  Ended
+                                </div>
+                              );
+                            } else if (
+                              notificationDetails.details.status === "pending"
+                            ) {
+                              return (
+                                <div className="w-max p-2 rounded-lg bg-[--yellow] text-black text-xs mb-3 font-bold">
+                                  Pending
+                                </div>
+                              );
+                            } else if (
+                              notificationDetails.details.status === "upcoming"
+                            ) {
+                              return (
+                                <div className="w-max p-2 rounded-lg bg-[--light-green] text-black text-xs mb-3 font-bold">
+                                  Upcoming
+                                </div>
+                              );
+                            } else if (
+                              notificationDetails.details.status === "completed"
+                            ) {
+                              return (
+                                <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3 font-bold">
+                                  Completed
+                                </div>
+                              );
+                            } else if (
+                              notificationDetails.details.status === "cancelled"
+                            ) {
+                              return (
+                                <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3 font-bold">
+                                  Cancelled
+                                </div>
+                              );
+                            }
+                          })()}
                         </div>
                         <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
                           <div className="flex gap-4">
@@ -405,6 +446,22 @@ function NotificationContainer({
                               }`}
                             </p>
                             <p>45 mins</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-5 mb-5">
+                          <div>
+                            <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                              Guidance Counselor
+                            </p>
+                            {notificationDetails.details.gc?.name}
+                          </div>
+                          <div>
+                            <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                              Mode
+                            </p>
+                            {notificationDetails.details.mode === "facetoface"
+                              ? "Face-to-face"
+                              : "Virtual"}
                           </div>
                         </div>
                         <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
@@ -899,7 +956,7 @@ function NotificationContainer({
                 if (notificationDetails.type === "sos") {
                   return "SOS Emergency Appointment";
                 } else if (notificationDetails.type === "standard") {
-                  return "Standard Appointment";
+                  return "Regular Appointment";
                 }
               })()}
             </p>
@@ -1084,9 +1141,7 @@ function NotificationContainer({
                             {notificationDetails.details.userDetails.name}{" "}
                           </span>
                           has booked an{" "}
-                          <span className="font-bold">
-                            standard appointment
-                          </span>{" "}
+                          <span className="font-bold">regular appointment</span>{" "}
                           on{" "}
                           {`${
                             convertDate(notificationDetails.details.start)[0]
@@ -1324,15 +1379,17 @@ function NotificationContainer({
                               <motion.hr className="border-[1px] border-black/5 border-top w-full" />
                             )}
                             <motion.div className="flex gap-3 px-6 py-6">
-                              <div className="bg-[--dark-green] h-fit rounded-full p-2 text-white border border-2 border-[--dark-green]">
-                                <BsCalendarPlus size={16} />
+                              <div className="bg-[--dark-green] h-fit rounded-full p-1 text-white border border-2 border-[--dark-green]">
+                                <MdOutlineCheckCircleOutline size={24} />
                               </div>
                               <motion.div className="flex flex-col gap-1 text-sm items-start">
                                 <motion.div>
-                                  <span className="font-bold">You </span>
-                                  have booked{" "}
                                   <span className="font-bold">
-                                    Standard appointment{" "}
+                                    {i.details?.gc?.name}{" "}
+                                  </span>
+                                  approved your{" "}
+                                  <span className="font-bold">
+                                    regular appointment{" "}
                                   </span>{" "}
                                   on{" "}
                                   {`${convertDate(i.details.start)[0]} to ${
@@ -1682,7 +1739,7 @@ function NotificationContainer({
                                 </span>
                                 has booked{" "}
                                 <span className="font-bold">
-                                  Standard appointment{" "}
+                                  regular appointment{" "}
                                 </span>{" "}
                                 on{" "}
                                 {`${convertDate(i.details.start)[0]} to ${

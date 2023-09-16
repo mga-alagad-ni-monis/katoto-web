@@ -40,7 +40,15 @@ const addSOSAppointment = async (userDetails) => {
   return sosDetails;
 };
 
-const addStandardAppointment = async (userDetails, start, end) => {
+const addStandardAppointment = async (
+  userDetails,
+  start,
+  end,
+  gc,
+  mode,
+  creator,
+  description
+) => {
   const currentDate = new Date()
     .toLocaleDateString("en-US", {
       month: "2-digit",
@@ -62,10 +70,14 @@ const addStandardAppointment = async (userDetails, start, end) => {
     userDetails,
     createdDate: date.toLocaleString(),
     type: "standard",
-    status: "upcoming",
+    status: "pending",
     // subject for date changes
     start: start,
     end: end,
+    gc: gc,
+    mode: mode,
+    creator: creator,
+    description,
   };
 
   standardAppointments.push(standardDetails);
@@ -88,22 +100,10 @@ const getAppointments = async (req, res) => {
         }
         let appointmentsArray = [];
         querySnapshot.forEach((i) => {
-          // console.log(i.data().reports.sosAppointments);
-          if (i.data().reports.sosAppointments !== undefined) {
-            i.data().reports.sosAppointments.forEach((j) => {
-              appointmentsArray.push({
-                title: `SOS - ${j.userDetails.name}`,
-                // subject for changes
-                start: j.scheduledDate,
-                end: j.scheduledDate,
-                data: j,
-              });
-            });
-          }
           if (i.data().reports.standardAppointments !== undefined) {
             i.data().reports.standardAppointments.forEach((j) => {
               appointmentsArray.push({
-                title: `Standard - ${j.userDetails.name}`,
+                title: `Regular - ${j.userDetails.name}`,
                 start: j.start,
                 end: j.end,
                 data: j,
@@ -130,15 +130,6 @@ const getBookedAppointments = async (req, res) => {
         }
         let appointmentsArray = [];
         querySnapshot.forEach((i) => {
-          // console.log(i.data().reports.sosAppointments);
-          if (i.data().reports.sosAppointments !== undefined) {
-            i.data().reports.sosAppointments.forEach((j) => {
-              appointmentsArray.push({
-                // subject for changes
-                start: j.scheduledDate,
-              });
-            });
-          }
           if (i.data().reports.standardAppointments !== undefined) {
             i.data().reports.standardAppointments.forEach((j) => {
               appointmentsArray.push({
@@ -323,6 +314,70 @@ const editAppointment = async (req, res) => {
   }
 };
 
+const approveAppointment = async (req, res) => {
+  const { id } = req.body;
+
+  try {
+    await db
+      .collection("reports")
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          return res.status(404).send("Error");
+        }
+
+        let docInfo = {};
+
+        querySnapshot.forEach((i) => {
+          if (i.data().reports.standardAppointments !== undefined) {
+            appointments = i.data().reports.standardAppointments.map((j) => {
+              if (j.id === id) {
+                docInfo["name"] = i.id;
+                docInfo["appointments"] = i.data().reports.standardAppointments;
+                return;
+              }
+            });
+          }
+        });
+
+        let appointmentsArray = docInfo.appointments.map((j) => {
+          if (j.id === id) {
+            let newAppointment = {
+              creator: j.creator,
+              mode: j.mode,
+              gc: j.gc,
+              createdDate: j.createdDate,
+              end: j.end,
+              id: j.id,
+              start: j.start,
+              type: j.type,
+              userDetails: j.userDetails,
+              description: j.description,
+              status: "upcoming",
+            };
+            docInfo["appointment"] = newAppointment;
+            return newAppointment;
+          }
+          return j;
+        });
+
+        const doc = db.collection("reports").doc(docInfo.name);
+
+        doc.update({
+          "reports.standardAppointments": appointmentsArray,
+        });
+
+        res.status(200).json({
+          message: "Appointment approved!",
+          appointmentDetails: docInfo["appointment"],
+        });
+      });
+  } catch (err) {
+    console.log(err);
+    res.status(404).send("Error");
+  }
+};
+
 const getMyAppointment = async (req, res) => {
   const token = req.headers.authorization.slice(7);
 
@@ -380,4 +435,5 @@ module.exports = {
   cancelAppointment,
   editAppointment,
   getMyAppointment,
+  approveAppointment,
 };
