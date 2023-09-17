@@ -167,11 +167,39 @@ io.on("connection", (socket) => {
 
   socket.on(
     "scheduleRequest",
-    async ({ id, token, type, start, end, gc, mode, creator, description }) => {
-      if (jwt.decode(token)?.role === "student") {
+    async ({
+      id,
+      token,
+      type,
+      start,
+      end,
+      gc,
+      mode,
+      creator,
+      description,
+      studentId,
+    }) => {
+      if (
+        jwt.decode(token)?.role === "student" ||
+        jwt.decode(token)?.role === "guidanceCounselor" ||
+        jwt.decode(token)?.role === "systemAdministrator"
+      ) {
         const counselorAdmin = getGCnSA();
-        const idNo = jwt.decode(token)?.idNo;
-        const userDetails = await getUser(idNo);
+        let idNo = "";
+        let userDetails = {};
+
+        if (jwt.decode(token)?.role === "student") {
+          idNo = jwt.decode(token)?.idNo;
+          userDetails = await getUser(idNo);
+        }
+
+        if (
+          jwt.decode(token)?.role === "guidanceCounselor" ||
+          jwt.decode(token)?.role === "systemAdministrator"
+        ) {
+          idNo = studentId;
+          userDetails = await getUser(idNo);
+        }
         //adding SOS appointment to appointment
         //adding to guidance counselors and system admin
         //sending notifs to guidance counselors and system admin

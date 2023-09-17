@@ -69,7 +69,7 @@ const addStandardAppointment = async (
     userDetails,
     createdDate: date.toLocaleString(),
     type: "standard",
-    status: "pending",
+    status: userDetails.idNo !== creator ? "upcoming" : "pending",
     // subject for date changes
     start: start,
     end: end,

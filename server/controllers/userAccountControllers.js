@@ -501,7 +501,7 @@ const getUser = async (idNo) => {
     userDetails["mainDepartment"] = i.data().mainDepartment;
     userDetails["birthday"] = i.data().birthday;
     userDetails["contactNo"] = i.data().contactNo;
-    userDetails["assignedCollege"] = i.data().assignedCollege;
+    // userDetails["assignedCollege"] = i.data().assignedCollege;
   });
 
   return userDetails;
@@ -533,6 +533,40 @@ const getGCName = async (req, res) => {
     });
 };
 
+const getStudents = async (req, res) => {
+  const { college } = req.body;
+  try {
+    await db
+      .collection("accounts")
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          return res.status(404).send("Error");
+        }
+        let students = [];
+        querySnapshot.forEach((i) => {
+          if (
+            college.includes(i.data().mainDepartment) &&
+            i.data().credentials.privilegeType === "student"
+          ) {
+            students.push({
+              name: i.data().name,
+              gender: i.data().gender,
+              email: i.data().credentials.email,
+              idNo: i.data().idNo,
+              department: i.data().department,
+              yearSection: i.data().yearSection,
+              mainDepartment: i.data().mainDepartment,
+              contactNo: i.data().contactNo,
+            });
+          }
+        });
+        return res.status(200).json({ students });
+      });
+  } catch (err) {
+    res.status(404).send("Error");
+  }
+};
 module.exports = {
   addUser,
   getUsers,
@@ -542,4 +576,5 @@ module.exports = {
   editUser,
   getUser,
   getGCName,
+  getStudents,
 };

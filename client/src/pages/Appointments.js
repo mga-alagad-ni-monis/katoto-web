@@ -13,26 +13,39 @@ import { HiPlus } from "react-icons/hi";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import { useState } from "react";
 
+import Modal from "../components/Modal";
+import CalendarComponent from "../components/Calendar/CalendarComponent";
+
 const localizer = momentLocalizer(moment);
 
 function Appointments({ socket, toast, auth }) {
   const [events, setEvents] = useState([]);
   const [bookedAppointments, setBookedAppointments] = useState([]);
+  const [gcNames, setGcNames] = useState([]);
+  const [students, setStudents] = useState([]);
 
   const [appointmentDetails, setAppointmentDetails] = useState({});
 
   const [isOpenAppointmentSidebar, setIsOpenAppointmentSidebar] =
     useState(false);
   const [isEditAppointment, setIsEditAppointment] = useState(false);
+  const [isOpenAddAppointment, setIsOpenAddAppointment] = useState(false);
+  const [isOpenCalendar, setIsOpenCalendar] = useState(false);
 
   const [appointmentDateStart, setAppointmentDateStart] = useState("");
   const [appointmentDateEnd, setAppointmentDateEnd] = useState("");
   const [appointmentMode, setAppointmentMode] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
+  const [studentDetails, setStudentDetails] = useState({});
+  const [preferredGC, setPreferredGC] = useState(auth?.userInfo?.idNo);
+  const [description, setDescription] = useState("");
+  const [preferredMode, setPreferredMode] = useState("facetoface");
 
   useEffect(() => {
     getAppointments();
     getBookedAppointments();
+    getGCName();
+    getStudents();
   }, []);
 
   useEffect(() => {
@@ -42,6 +55,26 @@ function Appointments({ socket, toast, auth }) {
       });
     }
   }, [socket]);
+
+  const getGCName = async () => {
+    try {
+      await axios
+        .get("/api/accounts/get-gc", {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${auth?.accessToken}`,
+          },
+        })
+        .then((res) => {
+          setGcNames(res?.data?.names);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data);
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
 
   const getBookedAppointments = async () => {
     try {
@@ -84,6 +117,31 @@ function Appointments({ socket, toast, auth }) {
         })
         .then((res) => {
           setEvents(convertToDateObject(res?.data?.appointments));
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data);
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
+  const getStudents = async () => {
+    try {
+      let college = auth?.userInfo?.assignedCollege;
+      await axios
+        .post(
+          "/api/accounts/get-students",
+          { college },
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${auth?.accessToken}`,
+            },
+          }
+        )
+        .then((res) => {
+          setStudents(res?.data?.students);
         })
         .catch((err) => {
           toast.error(err?.response?.data);
@@ -298,6 +356,43 @@ function Appointments({ socket, toast, auth }) {
     cancelRealTime(eventsArray.filter((i) => i.data.id === id)[0].data);
   };
 
+  const handleSetStandardAppointment = async () => {
+    try {
+      if (
+        appointmentDateStart !== "" &&
+        appointmentDateEnd !== "" &&
+        preferredGC !== "" &&
+        preferredMode !== "" &&
+        studentDetails["name"]
+      ) {
+        try {
+          setAppointmentDateStart("");
+          setAppointmentDateEnd("");
+          setStudentDetails({});
+          setDescription("");
+          socket.emit("scheduleRequest", {
+            id: socket.id,
+            token: auth?.accessToken,
+            type: "standard",
+            start: appointmentDateStart,
+            end: appointmentDateEnd,
+            gc: gcNames.filter((i) => i.idNo === preferredGC)[0],
+            mode: preferredMode,
+            creator: auth?.userInfo?.idNo,
+            description: description,
+            studentId: studentDetails?.idNo,
+          });
+          setIsOpenAddAppointment(false);
+          setIsOpenCalendar(false);
+        } catch (err) {
+          toast.error("Error");
+        }
+      } else {
+        toast.error("Please check the details");
+      }
+    } catch (err) {}
+  };
+
   const components = {
     event: (i) => {
       switch (i.event.data.status) {
@@ -383,6 +478,33 @@ function Appointments({ socket, toast, auth }) {
 
   return (
     <>
+      {isOpenCalendar || isOpenAddAppointment ? (
+        <motion.div
+          className="bg-black/50 absolute w-screen h-screen z-50 overflow-hidden"
+          variants={{
+            show: {
+              opacity: 1,
+              transition: {
+                type: "spring",
+                stiffness: 500,
+                damping: 40,
+              },
+            },
+            hide: {
+              opacity: 0,
+              transition: {
+                type: "spring",
+                stiffness: 500,
+                damping: 40,
+              },
+            },
+          }}
+          animate={isOpenCalendar || isOpenAddAppointment ? "show" : "hide"}
+          initial={{
+            opacity: 0,
+          }}
+        ></motion.div>
+      ) : null}
       <motion.div
         className="fixed right-0 bg-[--light-brown] shadow-2xl h-screen p-10 z-30 w-[635px]"
         variants={{
@@ -749,6 +871,312 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
           )}
         </div>
       </motion.div>
+      <Modal isOpen={isOpenCalendar} isCalendar={true}>
+        <div className="w-full justify-between flex">
+          <p className="text-2xl font-extrabold">Pick a date</p>
+          <button
+            onClick={() => {
+              setIsOpenCalendar(false);
+            }}
+            type="button"
+          >
+            <FaTimes size={20} />
+          </button>
+        </div>
+        <div className="flex flex-col gap-4 mt-5 items-center text-center text-md">
+          <CalendarComponent
+            setIsOpenStandardAppoint={setIsOpenAddAppointment}
+            setPopUpStandard={setIsOpenCalendar}
+            setAppointmentDetails={setAppointmentDetails}
+          ></CalendarComponent>
+        </div>
+      </Modal>
+      <Modal isOpen={isOpenAddAppointment}>
+        <div className="w-full justify-between flex">
+          <p className="text-2xl font-extrabold">Regular Appointment</p>
+          <button
+            onClick={() => {
+              setIsOpenAddAppointment(false);
+              setIsOpenCalendar(true);
+              setAppointmentDateStart("");
+              setAppointmentDateEnd("");
+              setStudentDetails({});
+              setDescription("");
+              // setIsAppointmentChecked(false);
+            }}
+            type="button"
+          >
+            <FaTimes size={20} />
+          </button>
+        </div>
+
+        <div className="mt-4">
+          <div className="flex items-center gap-5">
+            <p className="text-[--dark-green] font-bold flex items-center mb-3">
+              Appointment Details
+            </p>
+          </div>
+          <div className="bg-black/10 w-full h-auto p-3 rounded-lg mb-5">
+            <div className="flex gap-4">
+              <BsCalendar4Week size={24} />
+              <p>{convertDate(appointmentDetails?.start)[1]}</p>
+              <div className="border-[1px] border-black/20 border-right"></div>
+              <BsClockHistory size={24} />
+              <p>
+                {appointmentDateStart
+                  ? `${new Date(
+                      appointmentDateStart
+                    ).toLocaleTimeString()} - ${new Date(
+                      appointmentDateEnd
+                    ).toLocaleTimeString()}`
+                  : "00:00:00"}
+              </p>
+              <p>45 mins</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-5 mb-5 gap-y-3">
+            {availableTime.map((i, k) => {
+              return bookedAppointments.some(
+                (j) =>
+                  `${new Date(
+                    appointmentDetails?.start
+                  ).toLocaleDateString()}, ${i.time}` ===
+                  new Date(j.start).toLocaleString()
+              ) ? (
+                <button
+                  key={k}
+                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+border border-2 border-[--dark-green] transition-all duration-300 opacity-50"
+                  disabled
+                >
+                  {i.time}
+                </button>
+              ) : (
+                <button
+                  key={k}
+                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                  onClick={() => {
+                    setAppointmentDateStart(
+                      convertDateAppointment(
+                        new Date(
+                          convertDate(appointmentDetails?.start)[1]
+                        ).toLocaleString(),
+                        i.no,
+                        0
+                      )
+                    );
+                    setAppointmentDateEnd(
+                      convertDateAppointment(
+                        new Date(
+                          convertDate(appointmentDetails?.start)[1]
+                        ).toLocaleString(),
+                        i.no,
+                        45
+                      )
+                    );
+                  }}
+                >
+                  {i.time}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex gap-5 mb-5">
+            <div>
+              <p className="text-[--dark-green] font-bold flex items-center mb-3 justify-between  ">
+                Concern{" "}
+                <span className="text-[8px] text-[--red]">
+                  {200 - description.length} character(s) left
+                </span>
+              </p>
+              <textarea
+                className="w-auto h-[46px] bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
+              p-3 font-semibold resize-none"
+                placeholder="Describe your concern..."
+                value={description}
+                maxLength={200}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                }}
+              ></textarea>
+            </div>
+            <div>
+              <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
+                Guidance Counselor
+              </p>
+              <select
+                id="guidanceCounselors"
+                className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                value={preferredGC}
+                onChange={(e) => {
+                  setPreferredGC(e.target.value);
+                }}
+                required
+              >
+                {gcNames.map((i, k) => {
+                  return (
+                    <option
+                      defaultValue={i?.assignedCollege?.includes(
+                        auth?.userInfo?.mainDepartment
+                      )}
+                      value={i.idNo}
+                      key={k}
+                    >
+                      {i.name}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+            <div>
+              <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                Mode
+              </p>
+              <select
+                id="mode"
+                className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                value={preferredMode}
+                onChange={(e) => {
+                  setPreferredMode(e.target.value);
+                }}
+                required
+              >
+                <option value="facetoface" defaultValue>
+                  Face-to-face
+                </option>
+                <option value="virtual">Virtual</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
+              Student
+            </p>
+            <select
+              id="students"
+              className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+              // value={studentId}
+              defaultValue=""
+              onChange={(e) => {
+                setStudentDetails(
+                  students.filter((i) => i?.idNo === e.target.value)[0]
+                );
+              }}
+              required
+            >
+              {students?.map((i, k) => {
+                return (
+                  <option value={i?.idNo} key={k}>
+                    {i?.name}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+          {studentDetails["name"] ? (
+            <>
+              {" "}
+              <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
+                Student Details
+              </p>
+              <table className="mb-5 text-xs">
+                <tr>
+                  <td className="w-[150px] flex justify-start">Name</td>
+                  <td>{studentDetails?.name}</td>
+                </tr>
+                <tr>
+                  <td className="w-[150px] flex justify-start">Gender</td>
+                  <td>{studentDetails?.gender}</td>
+                </tr>
+                <tr>
+                  <td className="w-[150px] flex justify-start">Email</td>
+                  <td>{studentDetails?.email}</td>
+                </tr>
+                <tr>
+                  <td className="w-[150px] flex justify-start"> ID Number</td>
+                  <td> {studentDetails?.idNo}</td>
+                </tr>
+                <tr>
+                  <td className="w-[150px] flex justify-start">Course</td>
+                  <td>{studentDetails?.department}</td>
+                </tr>
+                <tr>
+                  <td className="w-[150px] flex justify-start">
+                    Year and Section
+                  </td>
+                  <td>{studentDetails?.yearSection}</td>
+                </tr>
+                <tr>
+                  <td className="w-[150px] flex justify-start">College</td>
+                  <td>{studentDetails?.mainDepartment}</td>
+                </tr>
+                <tr>
+                  <td className="w-[150px] flex justify-start">Phone</td>
+                  <td>{studentDetails?.contactNo}</td>
+                </tr>
+              </table>
+            </>
+          ) : null}
+
+          {/* <div className="flex gap-5 mb-5">
+            <input
+              id="checkbox-1"
+              className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 mt-1
+   checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
+   float-left cursor-pointer appearance-none border border-solid border-2  border-[--light-gray] checked:border-[--light-gray] checked:border-2 bg-[--light-gray] 
+   bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
+   after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-['✔'] 
+   checked:bg-[--dark-green] checked:after:opacity-100"
+              type="checkbox"
+              style={{
+                fontFamily: "FontAwesome",
+              }}
+              checked={isAppointmentChecked ? true : false}
+              onChange={() => {
+                setIsAppointmentChecked(!isAppointmentChecked);
+              }}
+            />
+            <p
+              className="w-fit cursor-pointer"
+              onClick={() => {
+                setIsAppointmentChecked(!isAppointmentChecked);
+              }}
+            >
+              By ticking the box, you hereby acknowledge and consent to the use
+              of your personal information for scheduling appointments with our
+              mental health chatbot.
+            </p>
+          </div> */}
+          <div className="flex justify-end gap-5">
+            <button
+              className="bg-[--red] border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red]
+                rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+                border border-2 transition-all duration-300"
+              onClick={() => {
+                setIsOpenAddAppointment(false);
+                setIsOpenCalendar(true);
+                setAppointmentDateStart("");
+                setAppointmentDateEnd("");
+                setStudentDetails({});
+                setDescription("");
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              className="
+               hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green]
+               bg-[--dark-green] border-[--dark-green]  rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+border border-2 transition-all duration-300"
+              onClick={handleSetStandardAppointment}
+              // disabled={isAppointmentChecked ? false : true}
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       <div className="bg-[--light-brown] h-screen">
         <div className="flex flex-col px-52">
@@ -765,7 +1193,9 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                   <button
                     className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
-                    onClick={() => {}}
+                    onClick={() => {
+                      setIsOpenCalendar(true);
+                    }}
                   >
                     <HiPlus size={16} />
                     Add

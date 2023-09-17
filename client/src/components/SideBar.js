@@ -34,7 +34,10 @@ function SideBar({ toast, logout, auth, socket }) {
   useEffect(() => {
     if (socket) {
       socket.on("scheduleResponse", async () => {
-        await getNotification();
+        setTimeout(async () => {
+          await getNotification();
+        }, 200);
+        toast.success("Appointment Added!");
       });
     }
   }, [socket]);

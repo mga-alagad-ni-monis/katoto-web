@@ -10,6 +10,7 @@ const {
   deleteUsers,
   editUser,
   getGCName,
+  getStudents,
 } = require("../controllers/userAccountControllers");
 
 const router = express.Router();
@@ -29,6 +30,12 @@ router.get(
   "/get-gc",
   verifyRoles(["systemAdministrator", "guidanceCounselor", "student"]),
   getGCName
+);
+
+router.post(
+  "/get-students",
+  verifyRoles(["systemAdministrator", "guidanceCounselor"]),
+  getStudents
 );
 
 module.exports = router;
