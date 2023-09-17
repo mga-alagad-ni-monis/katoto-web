@@ -177,6 +177,31 @@ function Appointments({ socket, toast, auth }) {
     }
   };
 
+  const handleDeleteAppointment = async (id, type) => {
+    try {
+      await axios
+        .post(
+          "/api/appointments/delete",
+          { id, type },
+          {
+            withCredentials: true,
+
+            headers: {
+              Authorization: `Bearer ${auth?.accessToken}`,
+            },
+          }
+        )
+        .then((res) => {
+          updateDeleted(id);
+          toast.success(res?.data?.message);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data);
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
   const handleApproveAppointment = async (id, type) => {
     try {
       await axios
@@ -325,6 +350,11 @@ function Appointments({ socket, toast, auth }) {
     });
 
     return result;
+  };
+
+  const updateDeleted = (id) => {
+    const eventsArray = events.filter((i) => i.data.id !== id);
+    setEvents(eventsArray);
   };
 
   const updateStatus = (id) => {
@@ -801,6 +831,26 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
             </div>
           ) : (
             <div className="flex gap-5 justify-end">
+              {appointmentDetails?.data?.creator === auth?.userInfo?.idNo ? (
+                <button
+                  className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
+                  onClick={() => {
+                    handleDeleteAppointment(
+                      appointmentDetails?.data?.id,
+                      appointmentDetails?.data?.type
+                    );
+                    setIsOpenAppointmentSidebar(false);
+                    setAppointmentDetails({});
+                    setSelectedTime("");
+                    setAppointmentMode("");
+                    setAppointmentDateStart("");
+                    setAppointmentDateEnd("");
+                  }}
+                >
+                  Delete
+                </button>
+              ) : null}
               {auth?.userInfo?.idNo === appointmentDetails?.data?.gc?.idNo &&
               (appointmentDetails?.data?.status === "pending" ||
                 appointmentDetails?.data?.status === "upcoming") &&
@@ -824,6 +874,7 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                   Cancel Appointment
                 </button>
               ) : null}
+
               {new Date(appointmentDetails?.data?.end) < new Date() &&
               appointmentDetails?.data?.status === "upcoming" ? (
                 <button

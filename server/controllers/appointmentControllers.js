@@ -493,6 +493,57 @@ const getMyAppointment = async (req, res) => {
   }
 };
 
+const deleteAppointment = async (req, res) => {
+  const { id, type } = req.body;
+  try {
+    await db
+      .collection("reports")
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          return res.status(404).send("Error");
+        }
+        let docInfo = {};
+        querySnapshot.forEach((i) => {
+          if (
+            i.data().reports.standardAppointments !== undefined &&
+            type === "standard"
+          ) {
+            i.data().reports.standardAppointments.map((j) => {
+              if (j.id === id) {
+                console.log("asdasdads");
+                docInfo["name"] = i.id;
+                docInfo["appointments"] = i.data().reports.standardAppointments;
+                return;
+              }
+            });
+          }
+        });
+
+        let appointmentsArray = docInfo.appointments.filter((j) => j.id !== id);
+
+        const doc = db.collection("reports").doc(docInfo.name);
+
+        if (type === "sos") {
+          doc.update({
+            "reports.sosAppointments": appointmentsArray,
+          });
+        }
+
+        if (type === "standard") {
+          doc.update({
+            "reports.standardAppointments": appointmentsArray,
+          });
+        }
+
+        res.status(200).json({ message: "Appointment deleted successfully!" });
+      });
+  } catch (err) {
+    console.log(err);
+    res.status(404).send("Error");
+  }
+};
+
 module.exports = {
   addSOSAppointment,
   addStandardAppointment,
@@ -503,4 +554,5 @@ module.exports = {
   getMyAppointment,
   approveAppointment,
   completeAppointment,
+  deleteAppointment,
 };
