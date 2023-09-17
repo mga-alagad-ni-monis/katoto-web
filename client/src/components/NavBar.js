@@ -61,6 +61,12 @@ function NavBar({ auth, logout, socket, toast }) {
           await getNotification();
         }, 200);
       });
+
+      socket.on("completeAppointmentResponse", () => {
+        setTimeout(async () => {
+          await getNotification();
+        }, 200);
+      });
     }
   }, [socket]);
 

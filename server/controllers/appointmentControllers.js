@@ -1,5 +1,4 @@
 const uniqid = require("uniqid");
-const moment = require("moment");
 const jwt = require("jsonwebtoken");
 
 const db = require("../utils/firebase");
@@ -188,6 +187,9 @@ const cancelAppointment = async (req, res) => {
         let appointmentsArray = docInfo.appointments.map((j) => {
           if (j.id === id) {
             return {
+              creator: j.creator,
+              mode: j.mode,
+              gc: j.gc,
               createdDate: j.createdDate,
               end: j.end,
               id: j.id,
@@ -378,6 +380,70 @@ const approveAppointment = async (req, res) => {
   }
 };
 
+const completeAppointment = async (req, res) => {
+  const { id } = req.body;
+
+  try {
+    await db
+      .collection("reports")
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          return res.status(404).send("Error");
+        }
+
+        let docInfo = {};
+
+        querySnapshot.forEach((i) => {
+          if (i.data().reports.standardAppointments !== undefined) {
+            appointments = i.data().reports.standardAppointments.map((j) => {
+              if (j.id === id) {
+                docInfo["name"] = i.id;
+                docInfo["appointments"] = i.data().reports.standardAppointments;
+                return;
+              }
+            });
+          }
+        });
+
+        let appointmentsArray = docInfo.appointments.map((j) => {
+          if (j.id === id) {
+            let newAppointment = {
+              creator: j.creator,
+              mode: j.mode,
+              gc: j.gc,
+              createdDate: j.createdDate,
+              end: j.end,
+              id: j.id,
+              start: j.start,
+              type: j.type,
+              userDetails: j.userDetails,
+              description: j.description,
+              status: "completed",
+            };
+            docInfo["appointment"] = newAppointment;
+            return newAppointment;
+          }
+          return j;
+        });
+
+        const doc = db.collection("reports").doc(docInfo.name);
+
+        doc.update({
+          "reports.standardAppointments": appointmentsArray,
+        });
+
+        res.status(200).json({
+          message: "Appointment completed!",
+          appointmentDetails: docInfo["appointment"],
+        });
+      });
+  } catch (err) {
+    console.log(err);
+    res.status(404).send("Error");
+  }
+};
+
 const getMyAppointment = async (req, res) => {
   const token = req.headers.authorization.slice(7);
 
@@ -436,4 +502,5 @@ module.exports = {
   editAppointment,
   getMyAppointment,
   approveAppointment,
+  completeAppointment,
 };

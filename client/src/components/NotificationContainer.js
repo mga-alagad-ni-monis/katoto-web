@@ -4,7 +4,6 @@ import { useState } from "react";
 import TimeAgo from "react-timeago";
 
 import { motion } from "framer-motion";
-import { MdSos } from "react-icons/md";
 import { FaTimes } from "react-icons/fa";
 import {
   BsCalendar4Week,
@@ -13,11 +12,15 @@ import {
   BsCalendarPlus,
 } from "react-icons/bs";
 
+import { AiOutlineLike } from "react-icons/ai";
+
 import {
   MdOutlineCancel,
   MdSchedule,
   MdEdit,
   MdOutlineCheckCircleOutline,
+  MdOutlinePending,
+  MdSos,
 } from "react-icons/md";
 
 import Modal from "../components/Modal";
@@ -165,6 +168,10 @@ function NotificationContainer({
                   } else if (notificationDetails.type === "standard") {
                     return "Regular Appointment";
                   }
+                } else if (
+                  notificationDetails.details?.status === "completed"
+                ) {
+                  return "Completed Appointment";
                 } else if (
                   notificationDetails.details?.status === "cancelled"
                 ) {
@@ -565,6 +572,166 @@ function NotificationContainer({
                     </div>
                   );
                 }
+              } else if (notificationDetails.details?.status === "pending") {
+                return (
+                  <div className="flex flex-col gap-5">
+                    <div className="flex gap-5 items-center">
+                      <div className="bg-[--red] h-fit rounded-full p-2 text-white border border-2 border-[--red]">
+                        <MdOutlineCancel size={40} />
+                      </div>
+                      <div className="flex flex-col gap-5">
+                        <p>
+                          <span className="font-bold">
+                            {notificationDetails.details?.gc?.name}{" "}
+                          </span>
+                          <span className="font-bold">marked </span>
+                          your appointment on{" "}
+                          {`${
+                            convertDate(notificationDetails.details.start)[0]
+                          } to ${
+                            convertDate(notificationDetails.details.end)[2]
+                          }`}
+                          <span className="font-bold">as completed </span>
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-5">
+                        <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                          Appointment Details
+                        </p>
+                        {new Date(notificationDetails.details.end) >
+                          new Date() &&
+                        notificationDetails.details.status === "upcoming" ? (
+                          <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3">
+                            Upcoming
+                          </div>
+                        ) : notificationDetails.details.status ===
+                          "cancelled" ? (
+                          <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
+                            Cancelled
+                          </div>
+                        ) : (
+                          <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
+                            Overdue
+                          </div>
+                        )}
+                      </div>
+                      <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
+                        <div className="flex gap-4">
+                          <BsCalendar4Week size={24} />
+                          <p>
+                            {convertDate(notificationDetails.details.start)[1]}
+                          </p>
+                          <div className="border-[1px] border-black/20 border-right"></div>
+                          <BsClockHistory size={24} />
+                          <p>
+                            {`${
+                              convertDate(notificationDetails.details.start)[2]
+                            } to ${
+                              convertDate(notificationDetails.details.end)[2]
+                            }`}
+                          </p>
+                          <p>45 mins</p>
+                        </div>
+                      </div>
+                      <div className="flex justify-end">
+                        <button
+                          className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+        border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
+                          onClick={() => {
+                            setIsOpenNotificationModal(false);
+                            handleDeleteNotification(notificationDetails.id);
+                            handleDeleteLocal(notificationDetails.id);
+                          }}
+                        >
+                          <BsFillTrash3Fill size={14} />
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              } else if (notificationDetails.details?.status === "completed") {
+                return (
+                  <div className="flex flex-col gap-5">
+                    <div className="flex gap-5 items-center">
+                      <div className="bg-[--red] h-fit rounded-full p-2 text-white border border-2 border-[--red]">
+                        <MdOutlineCancel size={40} />
+                      </div>
+                      <div className="flex flex-col gap-5">
+                        <p>
+                          <span className="font-bold">
+                            {notificationDetails.details?.gc?.name}{" "}
+                          </span>
+                          <span className="font-bold">marked </span>
+                          your appointment on{" "}
+                          {`${
+                            convertDate(notificationDetails.details.start)[0]
+                          } to ${
+                            convertDate(notificationDetails.details.end)[2]
+                          }`}
+                          <span className="font-bold">as completed </span>
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-5">
+                        <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                          Appointment Details
+                        </p>
+                        {new Date(notificationDetails.details.end) >
+                          new Date() &&
+                        notificationDetails.details.status === "upcoming" ? (
+                          <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3">
+                            Upcoming
+                          </div>
+                        ) : notificationDetails.details.status ===
+                          "cancelled" ? (
+                          <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
+                            Cancelled
+                          </div>
+                        ) : (
+                          <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
+                            Overdue
+                          </div>
+                        )}
+                      </div>
+                      <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
+                        <div className="flex gap-4">
+                          <BsCalendar4Week size={24} />
+                          <p>
+                            {convertDate(notificationDetails.details.start)[1]}
+                          </p>
+                          <div className="border-[1px] border-black/20 border-right"></div>
+                          <BsClockHistory size={24} />
+                          <p>
+                            {`${
+                              convertDate(notificationDetails.details.start)[2]
+                            } to ${
+                              convertDate(notificationDetails.details.end)[2]
+                            }`}
+                          </p>
+                          <p>45 mins</p>
+                        </div>
+                      </div>
+                      <div className="flex justify-end">
+                        <button
+                          className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+        border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
+                          onClick={() => {
+                            setIsOpenNotificationModal(false);
+                            handleDeleteNotification(notificationDetails.id);
+                            handleDeleteLocal(notificationDetails.id);
+                          }}
+                        >
+                          <BsFillTrash3Fill size={14} />
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
               } else if (notificationDetails.details?.status === "cancelled") {
                 return (
                   <div className="flex flex-col gap-5">
@@ -1379,8 +1546,8 @@ function NotificationContainer({
                               <motion.hr className="border-[1px] border-black/5 border-top w-full" />
                             )}
                             <motion.div className="flex gap-3 px-6 py-6">
-                              <div className="bg-[--dark-green] h-fit rounded-full p-1 text-white border border-2 border-[--dark-green]">
-                                <MdOutlineCheckCircleOutline size={24} />
+                              <div className="bg-[--light-green] h-fit rounded-full p-1 text-black border border-2 border-[--light-green]">
+                                <AiOutlineLike size={24} />
                               </div>
                               <motion.div className="flex flex-col gap-1 text-sm items-start">
                                 <motion.div>
@@ -1415,6 +1582,48 @@ function NotificationContainer({
                           </>
                         );
                       }
+                    } else if (i.details?.status === "completed") {
+                      return (
+                        <>
+                          {k === 0 ? null : (
+                            <motion.hr className="border-[1px] border-black/5 border-top w-full" />
+                          )}
+                          <motion.div className="flex gap-3 px-6 py-6">
+                            <div className="bg-[--dark-green] h-fit rounded-full p-1 text-white border border-2 border-[--dark-green]">
+                              <MdOutlineCheckCircleOutline size={24} />
+                            </div>
+                            <motion.div className="flex flex-col gap-1 text-sm items-start">
+                              <motion.div>
+                                <span className="font-bold">
+                                  {i.details?.gc?.name}{" "}
+                                </span>
+                                marked your{" "}
+                                <span className="font-bold">
+                                  regular appointment{" "}
+                                </span>{" "}
+                                as completed last{" "}
+                                {`${convertDate(i.details.start)[0]} to ${
+                                  convertDate(i.details.end)[2]
+                                }`}
+                              </motion.div>
+                              <motion.div
+                                className={`text-sm ${
+                                  !i.isSeen
+                                    ? "font-bold text-[--dark-green]"
+                                    : "text-black/60"
+                                }`}
+                              >
+                                <TimeAgo date={i.createdDate} />
+                              </motion.div>
+                            </motion.div>
+                            <motion.div className="w-auto flex mt-1">
+                              {!i.isSeen ? (
+                                <motion.div className="w-3 h-3 rounded-full bg-[--dark-green]" />
+                              ) : null}
+                            </motion.div>
+                          </motion.div>
+                        </>
+                      );
                     } else if (i.details?.status === "cancelled") {
                       return (
                         <>
@@ -1428,10 +1637,51 @@ function NotificationContainer({
                             <motion.div className="flex flex-col gap-1 text-sm items-start">
                               <motion.div>
                                 <span className="font-bold">
-                                  PLV Guidance Counselling Center{" "}
+                                  {i.details?.gc?.name}{" "}
                                 </span>
+                                has{" "}
                                 <span className="font-bold">cancelled </span>
                                 your appointment{" "}
+                              </motion.div>
+                              <motion.div
+                                className={`text-sm ${
+                                  !i.isSeen
+                                    ? "font-bold text-[--dark-green]"
+                                    : "text-black/60"
+                                }`}
+                              >
+                                <TimeAgo date={i.createdDate} />
+                              </motion.div>
+                            </motion.div>
+                            <motion.div className="w-auto flex mt-1">
+                              {!i.isSeen ? (
+                                <motion.div className="w-3 h-3 rounded-full bg-[--dark-green]" />
+                              ) : null}
+                            </motion.div>
+                          </motion.div>
+                        </>
+                      );
+                    } else if (i.details?.status === "pending") {
+                      return (
+                        <>
+                          {k === 0 ? null : (
+                            <motion.hr className="border-[1px] border-black/5 border-top w-full" />
+                          )}
+                          <motion.div className="flex gap-3 px-6 py-6">
+                            <div className="bg-[--yellow] h-fit rounded-full p-1 text-black border border-2 border-[--yellow]">
+                              <MdOutlinePending size={24} />
+                            </div>
+                            <motion.div className="flex flex-col gap-1 text-sm items-start">
+                              <motion.div>
+                                <span className="font-bold">You </span>
+                                have{" "}
+                                <span className="font-bold">
+                                  pending appointment{" "}
+                                </span>
+                                on{" "}
+                                {`${convertDate(i.details.start)[0]} to ${
+                                  convertDate(i.details.end)[2]
+                                }`}
                               </motion.div>
                               <motion.div
                                 className={`text-sm ${

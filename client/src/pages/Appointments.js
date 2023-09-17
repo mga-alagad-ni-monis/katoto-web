@@ -8,6 +8,7 @@ import moment from "moment";
 import { motion } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
 import { BsCalendar4Week, BsClockHistory } from "react-icons/bs";
+import { HiPlus } from "react-icons/hi";
 
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import { useState } from "react";
@@ -135,7 +136,38 @@ function Appointments({ socket, toast, auth }) {
         .then((res) => {
           toast.success(res?.data?.message);
           approveRealTime(res?.data?.appointmentDetails);
-          getAppointments();
+          setTimeout(() => {
+            getAppointments();
+          }, 200);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data);
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
+  const handleCompleteAppointment = async (id, type) => {
+    try {
+      await axios
+        .post(
+          "/api/appointments/complete",
+          { id },
+          {
+            withCredentials: true,
+
+            headers: {
+              Authorization: `Bearer ${auth?.accessToken}`,
+            },
+          }
+        )
+        .then((res) => {
+          toast.success(res?.data?.message);
+          completeRealTime(res?.data?.appointmentDetails);
+          setTimeout(() => {
+            getAppointments();
+          }, 200);
         })
         .catch((err) => {
           toast.error(err?.response?.data);
@@ -148,6 +180,17 @@ function Appointments({ socket, toast, auth }) {
   const approveRealTime = async (appointment) => {
     try {
       socket.emit("approveAppointmentRequest", {
+        appointmentDetails: appointment,
+        token: auth?.accessToken,
+      });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
+  const completeRealTime = async (appointment) => {
+    try {
+      socket.emit("completeAppointmentRequest", {
         appointmentDetails: appointment,
         token: auth?.accessToken,
       });
@@ -234,6 +277,9 @@ function Appointments({ socket, toast, auth }) {
           end: i.end,
           title: i.title,
           data: {
+            creator: i.data.creator,
+            gc: i.data.gc,
+            mode: i.data.mode,
             createdDate: i.data.createdDate,
             end: i.data.end,
             id: i.data.id,
@@ -262,11 +308,20 @@ function Appointments({ socket, toast, auth }) {
             </div>
           );
         case "upcoming":
+          if (new Date(i.event.end) < new Date()) {
+            console.log("hahahaa tapos na");
+            return (
+              <div className="text-black font-bold p-1 text-xs rounded-md bg-black/20">
+                {`${i.event.title} (ended)`}
+              </div>
+            );
+          }
           return (
             <div className="text-black font-bold p-1 text-xs rounded-md bg-[--light-green]">
               {`${i.event.title} (${i.event.data.status})`}
             </div>
           );
+
         case "completed":
           return (
             <div className="text-[--light-brown] font-bold p-1 text-xs rounded-md bg-[--dark-green]">
@@ -384,9 +439,12 @@ function Appointments({ socket, toast, auth }) {
               </p>
 
               {(() => {
-                if (new Date(appointmentDetails?.data?.end) < new Date()) {
+                if (
+                  new Date(appointmentDetails?.data?.end) < new Date() &&
+                  appointmentDetails?.data?.status === "upcoming"
+                ) {
                   return (
-                    <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3 font-bold">
+                    <div className="w-max p-2 rounded-lg bg-black/20 text-black text-xs mb-3 font-bold">
                       Ended
                     </div>
                   );
@@ -623,7 +681,8 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
             <div className="flex gap-5 justify-end">
               {auth?.userInfo?.idNo === appointmentDetails?.data?.gc?.idNo &&
               (appointmentDetails?.data?.status === "pending" ||
-                appointmentDetails?.data?.status === "upcoming") ? (
+                appointmentDetails?.data?.status === "upcoming") &&
+              !(new Date(appointmentDetails?.data?.end) < new Date()) ? (
                 <button
                   className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
@@ -641,6 +700,19 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                   }}
                 >
                   Cancel Appointment
+                </button>
+              ) : null}
+              {new Date(appointmentDetails?.data?.end) < new Date() &&
+              appointmentDetails?.data?.status === "upcoming" ? (
+                <button
+                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                  onClick={() => {
+                    handleCompleteAppointment(appointmentDetails?.data?.id);
+                    setIsOpenAppointmentSidebar(false);
+                  }}
+                >
+                  Mark as Complete
                 </button>
               ) : null}
 
@@ -686,9 +758,19 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
           <div className="flex gap-5 w-full">
             <div className="w-3/5 flex flex-col h-[624px]">
               <div>
-                <p className="font-extrabold text-2xl flex items-center">
-                  Regular Appointments
-                </p>
+                <div className="flex justify-between">
+                  <p className="font-extrabold text-2xl flex items-center">
+                    Regular Appointments
+                  </p>
+                  <button
+                    className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
+                    onClick={() => {}}
+                  >
+                    <HiPlus size={16} />
+                    Add
+                  </button>
+                </div>
                 <Calendar
                   localizer={localizer}
                   startAccessor="start"

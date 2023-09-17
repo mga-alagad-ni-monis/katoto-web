@@ -501,6 +501,7 @@ const getUser = async (idNo) => {
     userDetails["mainDepartment"] = i.data().mainDepartment;
     userDetails["birthday"] = i.data().birthday;
     userDetails["contactNo"] = i.data().contactNo;
+    userDetails["assignedCollege"] = i.data().assignedCollege;
   });
 
   return userDetails;

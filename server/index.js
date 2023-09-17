@@ -250,6 +250,26 @@ io.on("connection", (socket) => {
     }
   );
 
+  socket.on(
+    "completeAppointmentRequest",
+    async ({ appointmentDetails, token }) => {
+      if (
+        jwt.decode(token)?.role === "guidanceCounselor" ||
+        jwt.decode(token)?.role === "systemAdministrator"
+      ) {
+        let idNo = appointmentDetails.userDetails.idNo;
+        await addNotificationStudent(appointmentDetails, idNo);
+        onlineUsers.forEach((user) => {
+          if (idNo === user.idNo) {
+            io.to(user.socketId).emit("completeAppointmentResponse", {
+              appointmentDetails,
+            });
+          }
+        });
+      }
+    }
+  );
+
   socket.on("editAppointmentRequest", async ({ appointmentDetails, token }) => {
     if (
       jwt.decode(token)?.role === "guidanceCounselor" ||
