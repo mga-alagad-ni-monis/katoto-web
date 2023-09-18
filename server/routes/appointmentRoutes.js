@@ -11,6 +11,7 @@ const {
   approveAppointment,
   completeAppointment,
   deleteAppointment,
+  saveNotes,
 } = require("../controllers/appointmentControllers");
 
 const router = express.Router();
@@ -61,6 +62,12 @@ router.post(
   "/delete",
   verifyRoles(["guidanceCounselor", "systemAdministrator"]),
   deleteAppointment
+);
+
+router.post(
+  "/save-notes",
+  verifyRoles(["guidanceCounselor", "systemAdministrator"]),
+  saveNotes
 );
 
 module.exports = router;

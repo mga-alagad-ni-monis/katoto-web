@@ -77,6 +77,7 @@ const addStandardAppointment = async (
     mode: mode,
     creator: creator,
     description,
+    notes: "",
   };
 
   standardAppointments.push(standardDetails);
@@ -197,6 +198,7 @@ const cancelAppointment = async (req, res) => {
               type: j.type,
               userDetails: j.userDetails,
               status: "cancelled",
+              notes: j.notes,
             };
           }
           return j;
@@ -285,6 +287,8 @@ const editAppointment = async (req, res) => {
               mode: appointmentMode,
               userDetails: j.userDetails,
               status: "upcoming",
+              notes: j.notes,
+              gc: j.gc,
             };
             appointmentOldNew["new"] = newAppointment;
             return newAppointment;
@@ -356,6 +360,7 @@ const approveAppointment = async (req, res) => {
               userDetails: j.userDetails,
               description: j.description,
               status: "upcoming",
+              notes: j.notes,
             };
             docInfo["appointment"] = newAppointment;
             return newAppointment;
@@ -420,6 +425,7 @@ const completeAppointment = async (req, res) => {
               userDetails: j.userDetails,
               description: j.description,
               status: "completed",
+              notes: j.notes,
             };
             docInfo["appointment"] = newAppointment;
             return newAppointment;
@@ -544,6 +550,90 @@ const deleteAppointment = async (req, res) => {
   }
 };
 
+const saveNotes = async (req, res) => {
+  const { id, notes, type } = req.body;
+
+  try {
+    await db
+      .collection("reports")
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          return res.status(404).send("Error");
+        }
+        let docInfo = {};
+        querySnapshot.forEach((i) => {
+          if (
+            i.data().reports.sosAppointments !== undefined &&
+            type === "sos"
+          ) {
+            appointments = i.data().reports.sosAppointments.map((j) => {
+              if (j.id === id) {
+                docInfo["name"] = i.id;
+                docInfo["appointments"] = i.data().reports.sosAppointments;
+                return;
+              }
+            });
+          }
+
+          if (
+            i.data().reports.standardAppointments !== undefined &&
+            type === "standard"
+          ) {
+            appointments = i.data().reports.standardAppointments.map((j) => {
+              if (j.id === id) {
+                docInfo["name"] = i.id;
+                docInfo["appointments"] = i.data().reports.standardAppointments;
+                return;
+              }
+            });
+          }
+        });
+
+        let appointmentsArray = docInfo.appointments.map((j) => {
+          if (j.id === id) {
+            let newAppointment = {
+              createdDate: j.createdDate,
+              end: j.end,
+              id: j.id,
+              start: j.start,
+              type: j.type,
+              mode: j.mode,
+              userDetails: j.userDetails,
+              status: j.status,
+              notes: notes,
+              gc: j.gc,
+            };
+
+            return newAppointment;
+          }
+          return j;
+        });
+
+        const doc = db.collection("reports").doc(docInfo.name);
+
+        if (type === "sos") {
+          doc.update({
+            "reports.sosAppointments": appointmentsArray,
+          });
+        }
+
+        if (type === "standard") {
+          doc.update({
+            "reports.standardAppointments": appointmentsArray,
+          });
+        }
+
+        res.status(200).json({
+          message: "Notes added successfully!",
+        });
+      });
+  } catch (err) {
+    console.log(err);
+    res.status(404).send("Error");
+  }
+};
+
 module.exports = {
   addSOSAppointment,
   addStandardAppointment,
@@ -555,4 +645,5 @@ module.exports = {
   approveAppointment,
   completeAppointment,
   deleteAppointment,
+  saveNotes,
 };

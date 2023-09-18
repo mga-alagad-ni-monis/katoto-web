@@ -1,5 +1,6 @@
 import axios from "../api/axios";
 import { useEffect } from "react";
+import React from "react";
 
 import CalendarSmall from "react-calendar";
 import "react-calendar/dist/Calendar.css";
@@ -18,6 +19,18 @@ import CalendarComponent from "../components/Calendar/CalendarComponent";
 
 const localizer = momentLocalizer(moment);
 
+const MemoizedTextarea = React.memo(({ value, onChange }) => {
+  return (
+    <textarea
+      className="w-full h-full bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
+        p-3 font-semibold resize-none"
+      placeholder="Aa..."
+      value={value}
+      onChange={onChange}
+    ></textarea>
+  );
+});
+
 function Appointments({ socket, toast, auth }) {
   const [events, setEvents] = useState([]);
   const [bookedAppointments, setBookedAppointments] = useState([]);
@@ -31,6 +44,8 @@ function Appointments({ socket, toast, auth }) {
   const [isEditAppointment, setIsEditAppointment] = useState(false);
   const [isOpenAddAppointment, setIsOpenAddAppointment] = useState(false);
   const [isOpenCalendar, setIsOpenCalendar] = useState(false);
+  const [isOpenNotesModal, setIsOpenNotesModal] = useState(false);
+  const [isViewNotes, setIsViewNotes] = useState(false);
 
   const [appointmentDateStart, setAppointmentDateStart] = useState("");
   const [appointmentDateEnd, setAppointmentDateEnd] = useState("");
@@ -40,6 +55,7 @@ function Appointments({ socket, toast, auth }) {
   const [preferredGC, setPreferredGC] = useState(auth?.userInfo?.idNo);
   const [description, setDescription] = useState("");
   const [preferredMode, setPreferredMode] = useState("facetoface");
+  const [notes, setNotes] = useState("");
 
   useEffect(() => {
     getAppointments();
@@ -423,6 +439,43 @@ function Appointments({ socket, toast, auth }) {
     } catch (err) {}
   };
 
+  const handleSaveNotes = async () => {
+    try {
+      if (notes !== "") {
+        await axios
+          .post(
+            "/api/appointments/save-notes",
+            {
+              id: appointmentDetails?.data?.id,
+              notes,
+              type: appointmentDetails?.data?.type,
+            },
+            {
+              withCredentials: true,
+              headers: {
+                Authorization: `Bearer ${auth?.accessToken}`,
+              },
+            }
+          )
+          .then((res) => {
+            toast.success(res?.data?.message);
+            // editAppointmentRealTime(res?.data?.appointmentOldNew);
+            // setTimeout(() => {
+            //   getAppointments();
+            //   getBookedAppointments();
+            // }, 200);
+          })
+          .catch((err) => {
+            toast.error(err?.response?.data);
+          });
+      } else {
+        toast.error("Please check the details!");
+      }
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
   const components = {
     event: (i) => {
       switch (i.event.data.status) {
@@ -508,7 +561,7 @@ function Appointments({ socket, toast, auth }) {
 
   return (
     <>
-      {isOpenCalendar || isOpenAddAppointment ? (
+      {isOpenCalendar || isOpenAddAppointment || isOpenNotesModal ? (
         <motion.div
           className="bg-black/50 absolute w-screen h-screen z-50 overflow-hidden"
           variants={{
@@ -529,7 +582,11 @@ function Appointments({ socket, toast, auth }) {
               },
             },
           }}
-          animate={isOpenCalendar || isOpenAddAppointment ? "show" : "hide"}
+          animate={
+            isOpenCalendar || isOpenAddAppointment || isOpenNotesModal
+              ? "show"
+              : "hide"
+          }
           initial={{
             opacity: 0,
           }}
@@ -791,6 +848,37 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                     <td>{appointmentDetails?.data?.userDetails?.contactNo}</td>
                   </tr>
                 </table>
+                <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
+                  Notes
+                </p>
+                {appointmentDetails?.data?.notes ? (
+                  <>
+                    <p className="max-h-[96px] text-ellipsis overflow-hidden">
+                      {appointmentDetails?.data?.notes}
+                    </p>
+                    <button
+                      className="font-bold text-[--dark-green] hover:underline transition-all duration-300 mt-1"
+                      onClick={() => {
+                        setNotes(appointmentDetails?.data?.notes);
+                        setIsOpenNotesModal(true);
+                        setIsViewNotes(true);
+                      }}
+                    >
+                      See more...
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
+                    onClick={() => {
+                      setIsOpenNotesModal(true);
+                    }}
+                  >
+                    <HiPlus size={16} />
+                    Add Notes
+                  </button>
+                )}
               </>
             )}
           </div>
@@ -940,6 +1028,62 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
             setPopUpStandard={setIsOpenCalendar}
             setAppointmentDetails={setAppointmentDetails}
           ></CalendarComponent>
+        </div>
+      </Modal>
+      <Modal isOpen={isOpenNotesModal} isCalendar={true}>
+        <div className="w-full justify-between flex">
+          <p className="text-2xl font-extrabold">Notes</p>
+          <button
+            onClick={() => {
+              setIsOpenNotesModal(false);
+              setIsViewNotes(false);
+              setNotes("");
+            }}
+            type="button"
+          >
+            <FaTimes size={20} />
+          </button>
+        </div>
+        <div className="flex flex-col gap-4 mt-5 items-center text-center text-md w-[600px] max-h-[300px]">
+          {isViewNotes && notes ? (
+            <>
+              <div className="flex text-left w-full">{notes}</div>
+              <div className="w-full flex justify-end mt-4">
+                <button
+                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+border border-2 border-[--dark-green] transition-all duration-300"
+                  onClick={() => {
+                    setIsViewNotes(false);
+                  }}
+                >
+                  Edit
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <MemoizedTextarea
+                value={notes}
+                onChange={(e) => {
+                  setNotes(e.target.value);
+                }}
+              />
+              <div className="w-full flex justify-end mt-4">
+                <button
+                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+border border-2 border-[--dark-green] transition-all duration-300"
+                  onClick={() => {
+                    handleSaveNotes();
+                    setIsViewNotes(true);
+                    setNotes("");
+                    setIsOpenNotesModal(false);
+                  }}
+                >
+                  Save
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
       <Modal isOpen={isOpenAddAppointment}>
