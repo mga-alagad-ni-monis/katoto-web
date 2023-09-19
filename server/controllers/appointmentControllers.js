@@ -3,7 +3,13 @@ const jwt = require("jsonwebtoken");
 
 const db = require("../utils/firebase");
 
-const addSOSAppointment = async (userDetails) => {
+const addSOSAppointment = async (
+  userDetails,
+  gc,
+  mode,
+  creator,
+  description
+) => {
   const currentDate = new Date()
     .toLocaleDateString("en-US", {
       month: "2-digit",
@@ -20,6 +26,8 @@ const addSOSAppointment = async (userDetails) => {
 
   let date = new Date();
 
+  date.setHours(15, 0, 0);
+
   const sosDetails = {
     id: uniqid.time(),
     userDetails,
@@ -27,7 +35,15 @@ const addSOSAppointment = async (userDetails) => {
     type: "sos",
     status: "upcoming",
     // subject for date changes
-    scheduledDate: new Date(date.setDate(date.getDate() + 1)).toLocaleString(),
+    // scheduledDate: new Date(
+    //   date.setFullYear(date.getFullYear() + 1)
+    // ).toLocaleString(),
+    scheduledDate: new Date(date.setDate(date.getDate() + 30)).toLocaleString(),
+    gc,
+    mode,
+    creator,
+    description,
+    notes: "",
   };
 
   sosAppointments.push(sosDetails);
@@ -100,6 +116,15 @@ const getAppointments = async (req, res) => {
         }
         let appointmentsArray = [];
         querySnapshot.forEach((i) => {
+          if (i.data().reports.sosAppointments !== undefined) {
+            i.data().reports.sosAppointments.forEach((j) => {
+              appointmentsArray.push({
+                title: `SOS - ${j.userDetails.name}`,
+                scheduledDate: j.scheduledDate,
+                data: j,
+              });
+            });
+          }
           if (i.data().reports.standardAppointments !== undefined) {
             i.data().reports.standardAppointments.forEach((j) => {
               appointmentsArray.push({
@@ -187,14 +212,29 @@ const cancelAppointment = async (req, res) => {
 
         let appointmentsArray = docInfo.appointments.map((j) => {
           if (j.id === id) {
+            if (j.type === "standard") {
+              return {
+                creator: j.creator,
+                mode: j.mode,
+                gc: j.gc,
+                createdDate: j.createdDate,
+                end: j.end,
+                id: j.id,
+                start: j.start,
+                type: j.type,
+                userDetails: j.userDetails,
+                status: "cancelled",
+                notes: j.notes,
+              };
+            }
+
             return {
               creator: j.creator,
               mode: j.mode,
               gc: j.gc,
               createdDate: j.createdDate,
-              end: j.end,
               id: j.id,
-              start: j.start,
+              scheduledDate: j.scheduledDate,
               type: j.type,
               userDetails: j.userDetails,
               status: "cancelled",
@@ -223,6 +263,7 @@ const cancelAppointment = async (req, res) => {
           .json({ message: "Appointment cancelled successfully!" });
       });
   } catch (err) {
+    console.log(err);
     res.status(404).send("Error");
   }
 };
@@ -386,8 +427,8 @@ const approveAppointment = async (req, res) => {
 };
 
 const completeAppointment = async (req, res) => {
-  const { id } = req.body;
-
+  const { id, type } = req.body;
+  console.log(type);
   try {
     await db
       .collection("reports")
@@ -400,7 +441,24 @@ const completeAppointment = async (req, res) => {
         let docInfo = {};
 
         querySnapshot.forEach((i) => {
-          if (i.data().reports.standardAppointments !== undefined) {
+          if (
+            i.data().reports.sosAppointments !== undefined &&
+            type === "sos"
+          ) {
+            appointments = i.data().reports.sosAppointments.map((j) => {
+              if (j.id === id) {
+                docInfo["name"] = i.id;
+                docInfo["appointments"] = i.data().reports.sosAppointments;
+                console.log(i.data().reports.sosAppointments);
+                return;
+              }
+            });
+          }
+
+          if (
+            i.data().reports.standardAppointments !== undefined &&
+            type === "standard"
+          ) {
             appointments = i.data().reports.standardAppointments.map((j) => {
               if (j.id === id) {
                 docInfo["name"] = i.id;
@@ -413,20 +471,38 @@ const completeAppointment = async (req, res) => {
 
         let appointmentsArray = docInfo.appointments.map((j) => {
           if (j.id === id) {
-            let newAppointment = {
-              creator: j.creator,
-              mode: j.mode,
-              gc: j.gc,
-              createdDate: j.createdDate,
-              end: j.end,
-              id: j.id,
-              start: j.start,
-              type: j.type,
-              userDetails: j.userDetails,
-              description: j.description,
-              status: "completed",
-              notes: j.notes,
-            };
+            let newAppointment = {};
+
+            if (type === "standard") {
+              newAppointment = {
+                creator: j.creator,
+                mode: j.mode,
+                gc: j.gc,
+                createdDate: j.createdDate,
+                end: j.end,
+                id: j.id,
+                start: j.start,
+                type: j.type,
+                userDetails: j.userDetails,
+                description: j.description,
+                status: "completed",
+                notes: j.notes,
+              };
+            } else if (type === "sos") {
+              newAppointment = {
+                creator: j.creator,
+                mode: j.mode,
+                gc: j.gc,
+                createdDate: j.createdDate,
+                id: j.id,
+                scheduledDate: j.scheduledDate,
+                type: j.type,
+                userDetails: j.userDetails,
+                description: j.description,
+                status: "completed",
+                notes: j.notes,
+              };
+            }
             docInfo["appointment"] = newAppointment;
             return newAppointment;
           }
@@ -434,10 +510,15 @@ const completeAppointment = async (req, res) => {
         });
 
         const doc = db.collection("reports").doc(docInfo.name);
-
-        doc.update({
-          "reports.standardAppointments": appointmentsArray,
-        });
+        if (type === "standard") {
+          doc.update({
+            "reports.standardAppointments": appointmentsArray,
+          });
+        } else {
+          doc.update({
+            "reports.sosAppointments": appointmentsArray,
+          });
+        }
 
         res.status(200).json({
           message: "Appointment completed!",
@@ -494,7 +575,6 @@ const getMyAppointment = async (req, res) => {
         res.status(200).json({ appointment: appointment });
       });
   } catch (err) {
-    console.log(err);
     res.status(404).send("Error");
   }
 };
@@ -512,12 +592,24 @@ const deleteAppointment = async (req, res) => {
         let docInfo = {};
         querySnapshot.forEach((i) => {
           if (
+            i.data().reports.sosAppointments !== undefined &&
+            type === "sos"
+          ) {
+            i.data().reports.sosAppointments.map((j) => {
+              if (j.id === id) {
+                docInfo["name"] = i.id;
+                docInfo["appointments"] = i.data().reports.sosAppointments;
+                return;
+              }
+            });
+          }
+
+          if (
             i.data().reports.standardAppointments !== undefined &&
             type === "standard"
           ) {
             i.data().reports.standardAppointments.map((j) => {
               if (j.id === id) {
-                console.log("asdasdads");
                 docInfo["name"] = i.id;
                 docInfo["appointments"] = i.data().reports.standardAppointments;
                 return;
@@ -629,7 +721,6 @@ const saveNotes = async (req, res) => {
         });
       });
   } catch (err) {
-    console.log(err);
     res.status(404).send("Error");
   }
 };

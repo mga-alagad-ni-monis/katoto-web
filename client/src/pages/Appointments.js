@@ -218,6 +218,7 @@ function Appointments({ socket, toast, auth }) {
       toast.error("Error");
     }
   };
+
   const handleApproveAppointment = async (id, type) => {
     try {
       await axios
@@ -252,7 +253,7 @@ function Appointments({ socket, toast, auth }) {
       await axios
         .post(
           "/api/appointments/complete",
-          { id },
+          { id, type },
           {
             withCredentials: true,
 
@@ -357,10 +358,18 @@ function Appointments({ socket, toast, auth }) {
 
   const convertToDateObject = (appointments) => {
     const result = appointments.map((i) => {
+      if (i.data.type === "standard") {
+        return {
+          title: i.title,
+          start: moment(i.start).toDate(),
+          end: moment(i.end).toDate(),
+          data: i.data,
+        };
+      }
       return {
         title: i.title,
-        start: moment(i.start).toDate(),
-        end: moment(i.end).toDate(),
+        start: moment(i.scheduledDate).toDate(),
+        end: moment(i.scheduledDate).toDate(),
         data: i.data,
       };
     });
@@ -487,7 +496,6 @@ function Appointments({ socket, toast, auth }) {
           );
         case "upcoming":
           if (new Date(i.event.end) < new Date()) {
-            console.log("hahahaa tapos na");
             return (
               <div className="text-black font-bold p-1 text-xs rounded-md bg-black/20">
                 {`${i.event.title} (ended)`}
@@ -771,18 +779,24 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
               </div>
             ) : (
               <>
-                <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
-                  <div className="flex gap-4">
-                    <BsCalendar4Week size={24} />
-                    <p>{convertDate(appointmentDetails?.data?.start)[1]}</p>
-                    {/* <div className="border-[1px] border-black/20 border-right"></div> */}
-                    <BsClockHistory size={24} />
-                    <p>{`${convertDate(appointmentDetails?.data?.start)[2]} - ${
-                      convertDate(appointmentDetails?.data?.end)[2]
-                    }`}</p>
-                    <p>45 mins</p>
+                {appointmentDetails?.data?.type === "sos" ? (
+                  <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
+                    Anytime
                   </div>
-                </div>
+                ) : (
+                  <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
+                    <div className="flex gap-4">
+                      <BsCalendar4Week size={24} />
+                      <p>{convertDate(appointmentDetails?.data?.start)[1]}</p>
+                      {/* <div className="border-[1px] border-black/20 border-right"></div> */}
+                      <BsClockHistory size={24} />
+                      <p>{`${
+                        convertDate(appointmentDetails?.data?.start)[2]
+                      } - ${convertDate(appointmentDetails?.data?.end)[2]}`}</p>
+                      <p>45 mins</p>
+                    </div>
+                  </div>
+                )}
                 <div className="flex gap-5 mb-5">
                   <div>
                     <p className="text-[--dark-green] font-bold flex items-center mb-3">
@@ -919,7 +933,7 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
             </div>
           ) : (
             <div className="flex gap-5 justify-end">
-              {appointmentDetails?.data?.creator === auth?.userInfo?.idNo ? (
+              {auth?.userInfo?.idNo === appointmentDetails?.data?.gc?.idNo ? (
                 <button
                   className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
@@ -963,13 +977,19 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                 </button>
               ) : null}
 
-              {new Date(appointmentDetails?.data?.end) < new Date() &&
-              appointmentDetails?.data?.status === "upcoming" ? (
+              {(new Date(appointmentDetails?.data?.end) < new Date() &&
+                appointmentDetails?.data?.status === "upcoming") ||
+              (auth?.userInfo?.idNo === appointmentDetails?.data?.gc?.idNo &&
+                appointmentDetails?.data?.type === "sos" &&
+                appointmentDetails?.data?.status === "upcoming") ? (
                 <button
                   className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                   onClick={() => {
-                    handleCompleteAppointment(appointmentDetails?.data?.id);
+                    handleCompleteAppointment(
+                      appointmentDetails?.data?.id,
+                      appointmentDetails?.data?.type
+                    );
                     setIsOpenAppointmentSidebar(false);
                   }}
                 >
@@ -1044,10 +1064,12 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
             <FaTimes size={20} />
           </button>
         </div>
-        <div className="flex flex-col gap-4 mt-5 items-center text-center text-md w-[600px] max-h-[300px]">
+        <div className="flex flex-col gap-4 mt-5 items-center text-center text-md w-[600px] max-h-[600px]">
           {isViewNotes && notes ? (
             <>
-              <div className="flex text-left w-full">{notes}</div>
+              <div className="flex text-left w-full">
+                <p className="w-full">{notes}</p>
+              </div>
               <div className="w-full flex justify-end mt-4">
                 <button
                   className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
@@ -1062,12 +1084,14 @@ border border-2 border-[--dark-green] transition-all duration-300"
             </>
           ) : (
             <>
-              <MemoizedTextarea
-                value={notes}
-                onChange={(e) => {
-                  setNotes(e.target.value);
-                }}
-              />
+              <div className="h-[600px] w-full">
+                <MemoizedTextarea
+                  value={notes}
+                  onChange={(e) => {
+                    setNotes(e.target.value);
+                  }}
+                />
+              </div>
               <div className="w-full flex justify-end mt-4">
                 <button
                   className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
@@ -1402,7 +1426,7 @@ border border-2 transition-all duration-300"
                   endAccessor="end"
                   className="w-full second-calendar"
                   style={{ height: 270 }}
-                  events={events}
+                  events={events.filter((i) => i.data.type === "standard")}
                   components={components}
                   selectable={true}
                   views={{ month: true, week: false, day: false, agenda: true }}
@@ -1430,7 +1454,7 @@ border border-2 transition-all duration-300"
                   endAccessor="end"
                   className="w-full second-calendar"
                   style={{ height: 270 }}
-                  events={events}
+                  events={events.filter((i) => i.data.type === "sos")}
                   components={components}
                   selectable={true}
                   views={{ month: true, week: false, day: false, agenda: true }}
@@ -1442,13 +1466,14 @@ border border-2 transition-all duration-300"
                 />
               </div>
             </div>
+
             <div className="flex">
               <Calendar
                 localizer={localizer}
                 startAccessor="start"
                 endAccessor="end"
                 style={{ height: 624, width: 873 }}
-                events={events}
+                events={events.filter((i) => i.data.type === "standard")}
                 components={components}
                 selectable={true}
                 views={{ month: true, week: true, day: true, agenda: false }}

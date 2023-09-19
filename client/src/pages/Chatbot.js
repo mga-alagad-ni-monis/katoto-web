@@ -307,6 +307,10 @@ function Chatbot({ toast, auth, socket }) {
         id: socket.id,
         token: auth?.accessToken,
         type: "sos",
+        mode: preferredMode,
+        gc: gcNames.filter((i) => i.idNo === preferredGC)[0],
+        creator: auth?.userInfo?.idNo,
+        description: "sos",
       });
     } catch (err) {
       toast.error("Error");
@@ -450,12 +454,6 @@ function Chatbot({ toast, auth, socket }) {
                         <span className="font-bold">
                           SOS Emergency appointment{" "}
                         </span>{" "}
-                        on{" "}
-                        {
-                          convertDate(
-                            sosDetails?.appointmentDetails?.scheduledDate
-                          )[0]
-                        }
                         . This is received and acknowledged by PLV Guidance and
                         Counselling Center. Thank You!
                       </p>
@@ -477,27 +475,11 @@ function Chatbot({ toast, auth, socket }) {
                         </div>
                       )}
                     </div>
-                    <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
-                      <div className="flex gap-4">
-                        <BsCalendar4Week size={24} />
-                        <p>
-                          {
-                            convertDate(
-                              sosDetails?.appointmentDetails?.scheduledDate
-                            )[1]
-                          }
-                        </p>
-                        <div className="border-[1px] border-black/20 border-right"></div>
-                        <BsClockHistory size={24} />
-                        <p>
-                          {
-                            convertDate(
-                              sosDetails?.appointmentDetails?.scheduledDate
-                            )[2]
-                          }
-                        </p>
-                        <p>45 mins</p>
-                      </div>
+                    <div className="bg-black/10 w-full h-auto p-3 rounded-lg mb-5">
+                      <p>
+                        You can come anytime at PLV Guidance Counseling Center,
+                        and you will be entertained first.
+                      </p>
                     </div>
                     <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
                       Your Details
@@ -853,11 +835,81 @@ function Chatbot({ toast, auth, socket }) {
             </span>
             .
           </p>
+          {/* <div className="flex justify-between gap-4">
+            <div>
+              <p className="text-[--dark-green] font-bold flex items-center mb-3 justify-between  ">
+                Concern{" "}
+                <span className="text-[8px] text-[--red]">
+                  {200 - description.length} character(s) left
+                </span>
+              </p>
+              <textarea
+                className="w-auto h-[46px] bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
+              p-3 font-semibold resize-none"
+                placeholder="Describe your concern..."
+                value={description}
+                maxLength={200}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                }}
+              ></textarea>
+            </div>
+            <div>
+              <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
+                Guidance Counselor
+              </p>
+              <select
+                id="guidanceCounselors"
+                className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                value={preferredGC}
+                onChange={(e) => {
+                  setPreferredGC(e.target.value);
+                }}
+                required
+              >
+                {gcNames.map((i, k) => {
+                  return (
+                    <option
+                      defaultValue={i?.assignedCollege?.includes(
+                        auth?.userInfo?.mainDepartment
+                      )}
+                      value={i.idNo}
+                      key={k}
+                    >
+                      {i.name}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+            <div>
+              <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                Mode
+              </p>
+              <select
+                id="mode"
+                className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                value={preferredMode}
+                onChange={(e) => {
+                  setPreferredMode(e.target.value);
+                }}
+                required
+              >
+                <option value="facetoface" defaultValue>
+                  Face-to-face
+                </option>
+                <option value="virtual">Virtual</option>
+              </select>
+            </div>
+          </div> */}
+
           <div className="w-auto">
             <button
               className="bg-[--red] rounded-full p-1 text-white border border-2 border-[--red] hover:bg-transparent hover:text-[--red] 
               transition-all duration-300"
-              onClick={handleClickSOS}
+              onClick={() => {
+                handleClickSOS();
+              }}
             >
               <MdSos size={160} />
             </button>
@@ -1185,6 +1237,13 @@ border border-2 transition-all duration-300`}
                     className="bg-[--red] rounded-full p-1 text-white border border-2 border-[--red] hover:bg-transparent 
                   hover:text-[--red] transition-all duration-300"
                     onClick={() => {
+                      setPreferredGC(
+                        gcNames?.filter((i) =>
+                          i?.assignedCollege?.includes(
+                            auth?.userInfo?.mainDepartment
+                          )
+                        )[0]?.idNo
+                      );
                       setPopUpSOS(true);
                     }}
                   >

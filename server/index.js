@@ -205,7 +205,13 @@ io.on("connection", (socket) => {
         //sending notifs to guidance counselors and system admin
         let appointmentDetails = {};
         if (type === "sos") {
-          appointmentDetails = await addSOSAppointment(userDetails);
+          appointmentDetails = await addSOSAppointment(
+            userDetails,
+            gc,
+            mode,
+            creator,
+            description
+          );
         } else if (type === "standard") {
           appointmentDetails = await addStandardAppointment(
             userDetails,
