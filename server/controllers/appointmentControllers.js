@@ -10,6 +10,29 @@ const addSOSAppointment = async (
   creator,
   description
 ) => {
+  // let result = await db
+  //   .collection("reports")
+  //   .get()
+  //   .then((querySnapshot) => {
+  //     if (querySnapshot.empty) {
+  //       return res.status(404).send("Error");
+  //     }
+
+  //     let message = "";
+  //     querySnapshot.forEach((i) => {
+  //       if (i.data().reports.sosAppointments !== undefined) {
+  //         i.data().reports.sosAppointments.forEach((j) => {
+  //           if (userDetails.idNo === j.userDetails.idNo) {
+  //             message = "The student has a pending appointment";
+  //           }
+  //         });
+  //       }
+  //     });
+  //     return message;
+  //   });
+
+  // if (result !== "") return result;
+
   const currentDate = new Date()
     .toLocaleDateString("en-US", {
       month: "2-digit",
@@ -64,6 +87,33 @@ const addStandardAppointment = async (
   creator,
   description
 ) => {
+  let result = await db
+    .collection("reports")
+    .get()
+    .then((querySnapshot) => {
+      if (querySnapshot.empty) {
+        return res.status(404).send("Error");
+      }
+
+      let message = "";
+      querySnapshot.forEach((i) => {
+        if (i.data().reports.standardAppointments !== undefined) {
+          i.data().reports.standardAppointments.forEach((j) => {
+            if (userDetails.idNo === j.userDetails.idNo) {
+              if (creator !== userDetails.idNo) {
+                message = "The student has a pending appointment";
+              } else {
+                message = "You have pending appointment";
+              }
+            }
+          });
+        }
+      });
+      return message;
+    });
+
+  if (result !== "") return result;
+
   const currentDate = new Date()
     .toLocaleDateString("en-US", {
       month: "2-digit",

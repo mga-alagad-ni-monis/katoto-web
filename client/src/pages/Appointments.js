@@ -70,6 +70,12 @@ function Appointments({ socket, toast, auth }) {
         await getAppointments();
       });
     }
+
+    if (socket) {
+      socket.on("hasPendingGC", async (message) => {
+        toast.error(message?.appointmentDetails);
+      });
+    }
   }, [socket]);
 
   const getGCName = async () => {
@@ -1221,7 +1227,7 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                 }}
               ></textarea>
             </div>
-            <div>
+            {/* <div>
               <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
                 Guidance Counselor
               </p>
@@ -1248,7 +1254,7 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                   );
                 })}
               </select>
-            </div>
+            </div> */}
             <div>
               <p className="text-[--dark-green] font-bold flex items-center mb-3">
                 Mode
@@ -1268,32 +1274,35 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                 <option value="virtual">Virtual</option>
               </select>
             </div>
+            <div>
+              <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
+                Student
+              </p>
+              <select
+                id="students"
+                className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                value={studentDetails.idNo ? studentDetails.idNo : ""}
+                onChange={(e) => {
+                  setStudentDetails(
+                    students.filter((i) => i?.idNo === e.target.value)[0]
+                  );
+                }}
+                required
+              >
+                <option defaultValue hidden value="">
+                  --Select a student--
+                </option>
+                {students?.map((i, k) => {
+                  return (
+                    <option value={i?.idNo} key={k}>
+                      {i?.name}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
           </div>
-          <div>
-            <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
-              Student
-            </p>
-            <select
-              id="students"
-              className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-              // value={studentId}
-              defaultValue=""
-              onChange={(e) => {
-                setStudentDetails(
-                  students.filter((i) => i?.idNo === e.target.value)[0]
-                );
-              }}
-              required
-            >
-              {students?.map((i, k) => {
-                return (
-                  <option value={i?.idNo} key={k}>
-                    {i?.name}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
+
           {studentDetails["name"] ? (
             <>
               {" "}

@@ -223,6 +223,28 @@ io.on("connection", (socket) => {
             description
           );
         }
+
+        if (typeof appointmentDetails === "string") {
+          if (creator === userDetails.idNo) {
+            onlineUsers.forEach((user) => {
+              if (user.idNo === creator) {
+                io.to(user.socketId).emit("hasPending", {
+                  appointmentDetails,
+                });
+              }
+            });
+          } else {
+            counselorAdmin.forEach((user) => {
+              if (user.idNo === creator)
+                io.to(user.socketId).emit("hasPendingGC", {
+                  appointmentDetails,
+                });
+            });
+          }
+
+          return;
+        }
+
         await addNotificationGcSa(appointmentDetails);
         if (counselorAdmin.length > 0) {
           counselorAdmin.forEach((user) => {

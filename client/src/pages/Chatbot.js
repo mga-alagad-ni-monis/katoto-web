@@ -71,6 +71,11 @@ function Chatbot({ toast, auth, socket }) {
           setStandardDetails(details);
         }
       });
+
+      socket.on("hasPending", (message) => {
+        toast.error(message.appointmentDetails);
+        
+      });
     }
   }, [socket]);
 
@@ -1044,11 +1049,33 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                 }}
               ></textarea>
             </div>
+
+            <div>
+              <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                Mode
+              </p>
+              <select
+                id="mode"
+                className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                value={preferredMode}
+                onChange={(e) => {
+                  setPreferredMode(e.target.value);
+                }}
+                required
+              >
+                <option value="facetoface" defaultValue>
+                  Face-to-face
+                </option>
+                <option value="virtual">Virtual</option>
+              </select>
+            </div>
             <div>
               <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
                 Guidance Counselor
               </p>
-              <select
+              {console.log(gcNames)}
+              <p>{gcNames.filter((i) => i.idNo === preferredGC)[0]?.name}</p>
+              {/* <select
                 id="guidanceCounselors"
                 className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
                 value={preferredGC}
@@ -1070,26 +1097,7 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                     </option>
                   );
                 })}
-              </select>
-            </div>
-            <div>
-              <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                Mode
-              </p>
-              <select
-                id="mode"
-                className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                value={preferredMode}
-                onChange={(e) => {
-                  setPreferredMode(e.target.value);
-                }}
-                required
-              >
-                <option value="facetoface" defaultValue>
-                  Face-to-face
-                </option>
-                <option value="virtual">Virtual</option>
-              </select>
+              </select> */}
             </div>
           </div>
           <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
