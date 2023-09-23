@@ -246,7 +246,6 @@ io.on("connection", (socket) => {
         }
 
         await addNotificationGcSa(appointmentDetails);
-        
         if (counselorAdmin.length > 0) {
           counselorAdmin.forEach((user) => {
             io.to(user.socketId).emit("scheduleResponse", {
@@ -255,14 +254,17 @@ io.on("connection", (socket) => {
             });
           });
         }
+
         await addNotificationStudent(appointmentDetails, idNo);
-        onlineUsers.forEach((user) => {
-          if (idNo === user.idNo) {
-            io.to(user.socketId).emit("studentScheduleResponse", {
-              appointmentDetails,
-            });
-          }
-        });
+        if (creator === userDetails.idNo) {
+          onlineUsers.forEach((user) => {
+            if (idNo === user.idNo) {
+              io.to(user.socketId).emit("studentScheduleResponse", {
+                appointmentDetails,
+              });
+            }
+          });
+        }
       }
     }
   );

@@ -104,7 +104,7 @@ const addStandardAppointment = async (
           i.data().reports.standardAppointments.forEach((j) => {
             if (
               userDetails.idNo === j.userDetails.idNo &&
-              j.status === "upcoming"
+              (j.status === "upcoming" || j.status === "pending")
             ) {
               if (creator !== userDetails.idNo) {
                 message = "The student has a pending appointment";
@@ -622,7 +622,7 @@ const getMyAppointment = async (req, res) => {
               if (
                 j.userDetails.idNo === idNo &&
                 new Date(j.end) > new Date() &&
-                j.status === "upcoming"
+                (j.status === "upcoming" || j.status === "pending")
               ) {
                 appointment["standard"] = j;
                 return;

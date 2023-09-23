@@ -497,33 +497,33 @@ function Appointments({ socket, toast, auth }) {
       switch (i.event.data.status) {
         case "pending":
           return (
-            <div className="text-black font-bold p-1 text-xs rounded-md bg-[--yellow]">
+            <div className="sos-pending text-black font-bold p-1 text-xs rounded-md bg-[--yellow]">
               {`${i.event.title} (${i.event.data.status})`}
             </div>
           );
         case "upcoming":
           if (new Date(i.event.end) < new Date()) {
             return (
-              <div className="text-black font-bold p-1 text-xs rounded-md bg-black/20">
+              <div className="sos-upcoming-1 text-black font-bold p-1 text-xs rounded-md bg-black/20">
                 {`${i.event.title} (ended)`}
               </div>
             );
           }
           return (
-            <div className="text-black font-bold p-1 text-xs rounded-md bg-[--light-green]">
+            <div className="sos-upcoming-2 text-black font-bold p-1 text-xs rounded-md bg-[--light-green]">
               {`${i.event.title} (${i.event.data.status})`}
             </div>
           );
 
         case "completed":
           return (
-            <div className="text-[--light-brown] font-bold p-1 text-xs rounded-md bg-[--dark-green]">
+            <div className="sos-complete text-[--light-brown] font-bold p-1 text-xs rounded-md bg-[--dark-green]">
               {`${i.event.title} (${i.event.data.status})`}
             </div>
           );
         case "cancelled":
           return (
-            <div className="text-[--light-brown] font-bold p-1 text-xs rounded-md bg-[--red]">
+            <div className="sos-cancel text-[--light-brown] font-bold p-1 text-xs rounded-md bg-[--red]">
               {`${i.event.title} (${i.event.data.status})`}
             </div>
           );
@@ -1415,7 +1415,7 @@ border border-2 transition-all duration-300"
           <div className="flex gap-5 w-full">
             <div className="w-3/5 flex flex-col h-[624px]">
               <div>
-                <div className="flex justify-between">
+                <div className="flex justify-between regular-calendar">
                   <p className="font-extrabold text-2xl flex items-center">
                     Regular Appointments
                   </p>
@@ -1436,7 +1436,12 @@ border border-2 transition-all duration-300"
                   endAccessor="end"
                   className="w-full second-calendar"
                   style={{ height: 270 }}
-                  events={events.filter((i) => i.data.type === "standard")}
+                  events={events.filter(
+                    (i) =>
+                      i.data.type === "standard" &&
+                      (i.data.status === "upcoming" ||
+                        i.data.status === "pending")
+                  )}
                   components={components}
                   selectable={true}
                   views={{ month: true, week: false, day: false, agenda: true }}
@@ -1447,17 +1452,10 @@ border border-2 transition-all duration-300"
                   }}
                 />
               </div>
-              <div>
+              <div className="sos-calendar">
                 <p className="font-extrabold text-2xl flex items-center mt-5">
                   SOS Appointments
                 </p>
-                {/* <div className="max-h-[226px] min-h-[20px] border-2 border-black/20 rounded-xl shadow-lg mt-5 p-3">
-                  <p>No SOS Appointments</p>
-                  <p>No SOS Appointments</p>
-                  <p>No SOS Appointments</p>
-                  <p>No SOS Appointments</p>
-                </div> */}
-
                 <Calendar
                   localizer={localizer}
                   startAccessor="start"

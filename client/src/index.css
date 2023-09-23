@@ -1131,4 +1131,91 @@ div.rbc-row-bg > :first-child {
   display: none;
 }
 
+.sos-calendar tr th:nth-child(1),
+.sos-calendar tr th:nth-child(2),
+.sos-calendar .rbc-agenda-table tr td:nth-child(1),
+.sos-calendar .rbc-agenda-table tr td:nth-child(2) {
+  display: none;
+}
+
+.sos-calendar .rbc-header,
+.sos-calendar .rbc-agenda-view table.rbc-agenda-table tbody > tr > td + td {
+  border-left: 0;
+}
+
+.sos-calendar .sos-cancel,
+.regular-calendar .sos-cancel {
+  border-color: var(--red);
+  border-width: 2px;
+  cursor: pointer;
+}
+
+.sos-calendar .sos-cancel:hover,
+.regular-calendar .sos-cancel:hover {
+  background-color: transparent;
+  color: var(--red);
+  transition-duration: 300ms;
+  transition-property: all;
+}
+
+.sos-calendar .sos-complete,
+.regular-calendar .sos-complete {
+  border-color: var(--dark-green);
+  border-width: 2px;
+  cursor: pointer;
+}
+
+.sos-calendar .sos-complete:hover,
+.regular-calendar .sos-complete:hover {
+  background-color: transparent;
+  color: var(--dark-green);
+  transition-duration: 300ms;
+  transition-property: all;
+}
+
+.sos-calendar .sos-upcoming-2,
+.regular-calendar .sos-upcoming-2 {
+  border-color: var(--light-green);
+  border-width: 2px;
+  cursor: pointer;
+}
+
+.sos-calendar .sos-upcoming-2:hover,
+.regular-calendar .sos-upcoming-2:hover {
+  background-color: transparent;
+  color: var(--light-green);
+  transition-duration: 300ms;
+  transition-property: all;
+}
+
+.sos-calendar .sos-upcoming-1,
+.regular-calendar .sos-upcoming-1 {
+  border-color: rgba(0, 0, 0, 0.2);
+  border-width: 2px;
+  cursor: pointer;
+}
+
+.sos-calendar .sos-upcoming-1:hover,
+.regular-calendar .sos-upcoming-1:hover {
+  background-color: transparent;
+  color: rgba(0, 0, 0, 0.2);
+  transition-duration: 300ms;
+  transition-property: all;
+}
+
+.sos-calendar .sos-pending,
+.regular-calendar .sos-pending {
+  border-color: var(--yellow);
+  border-width: 2px;
+  cursor: pointer;
+}
+
+.sos-calendar .sos-pending:hover,
+.regular-calendar .sos-pending:hover {
+  background-color: transparent;
+  color: var(--yellow);
+  transition-duration: 300ms;
+  transition-property: all;
+}
+
 /*# sourceMappingURL=react-big-calendar.css.map */

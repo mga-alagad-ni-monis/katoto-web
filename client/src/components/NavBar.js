@@ -539,8 +539,16 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
               {yourAppointment?.standard ? (
                 <>
                   <div className="flex justify-start gap-5">
-                    <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] h-max text-xs mb-3">
-                      Upcoming
+                    <div
+                      className={`w-max p-2 rounded-lg ${
+                        yourAppointment?.standard?.status === "upcoming"
+                          ? "bg-[--light-green]"
+                          : "bg-[--yellow] "
+                      }  text-black h-max text-xs mb-3`}
+                    >
+                      {yourAppointment?.standard?.status === "upcoming"
+                        ? "Upcoming"
+                        : "Pending"}
                     </div>
                     <div className="w-max p-2 rounded-lg bg-black text-[--light-brown] h-max  text-xs mb-3">
                       {yourAppointment?.standard?.mode === "facetoface"
@@ -621,7 +629,7 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
               {yourAppointment?.sos ? (
                 <>
                   <div className="flex justify-start gap-5">
-                    <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] h-max text-xs mb-3">
+                    <div className="w-max p-2 rounded-lg bg-[--light-green] text-black h-max text-xs mb-3">
                       Upcoming
                     </div>
                     <div className="w-max p-2 rounded-lg bg-black text-[--light-brown] h-max  text-xs mb-3">
