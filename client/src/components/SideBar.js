@@ -132,7 +132,7 @@ function SideBar({ toast, logout, auth, socket }) {
                     {isHovered ? (
                       <div className="flex gap-5 items-center">
                         <BsCalendar4Week size={20} />
-                        <span className="word-in">Appointmets</span>
+                        <span className="word-in">Appointments</span>
                       </div>
                     ) : (
                       <BsCalendar4Week size={24} />

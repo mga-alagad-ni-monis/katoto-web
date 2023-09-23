@@ -158,7 +158,10 @@ const getBookedAppointments = async (req, res) => {
           if (i.data().reports.standardAppointments !== undefined) {
             i.data().reports.standardAppointments.forEach((j) => {
               appointmentsArray.push({
+                title: `Regular - ${j.userDetails.name}`,
                 start: j.start,
+                end: j.end,
+                data: j,
               });
             });
           }
@@ -320,6 +323,7 @@ const editAppointment = async (req, res) => {
           if (j.id === id) {
             appointmentOldNew["old"] = j;
             let newAppointment = {
+              creator: j.creator,
               createdDate: j.createdDate,
               end: appointmentDateEnd,
               id: j.id,

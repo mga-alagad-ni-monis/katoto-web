@@ -103,11 +103,12 @@ function Appointments({ socket, toast, auth }) {
         })
         .then((res) => {
           setBookedAppointments(convertToDateObject(res?.data?.appointments));
-        })
-        .catch((err) => {
-          toast.error(err?.response?.data);
         });
+      // .catch((err) => {
+      //   toast.error(err?.response?.data);
+      // });
     } catch (err) {
+      toast.error(err);
       toast.error("Error");
     }
   };
