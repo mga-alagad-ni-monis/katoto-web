@@ -286,6 +286,7 @@ const cancelAppointment = async (req, res) => {
                 userDetails: j.userDetails,
                 status: "cancelled",
                 notes: j.notes,
+                description: j.description,
               };
             }
 
@@ -300,6 +301,7 @@ const cancelAppointment = async (req, res) => {
               userDetails: j.userDetails,
               status: "cancelled",
               notes: j.notes,
+              description: j.description,
             };
           }
           return j;
@@ -389,9 +391,10 @@ const editAppointment = async (req, res) => {
               type: j.type,
               mode: appointmentMode,
               userDetails: j.userDetails,
-              status: "upcoming",
+              status: j.status,
               notes: j.notes,
               gc: j.gc,
+              description: j.description,
             };
             appointmentOldNew["new"] = newAppointment;
             return newAppointment;

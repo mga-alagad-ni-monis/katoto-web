@@ -285,6 +285,16 @@ io.on("connection", (socket) => {
             });
           }
         });
+      } else if (jwt.decode(token)?.role === "student") {
+        let idNo = appointmentDetails.gc.idNo;
+        await addNotificationGcSa(appointmentDetails, idNo);
+        onlineUsers.forEach((user) => {
+          if (idNo === user.idNo) {
+            io.to(user.socketId).emit("cancelAppointmentResponse", {
+              appointmentDetails,
+            });
+          }
+        });
       }
     }
   );
@@ -337,6 +347,17 @@ io.on("connection", (socket) => {
       let idNo = appointmentDetails.old.userDetails.idNo;
       appointmentDetails["type"] = "edited";
       await addNotificationStudent(appointmentDetails, idNo);
+      onlineUsers.forEach((user) => {
+        if (idNo === user.idNo) {
+          io.to(user.socketId).emit("editAppointmentResponse", {
+            appointmentDetails,
+          });
+        }
+      });
+    } else if (jwt.decode(token)?.role === "student") {
+      let idNo = appointmentDetails.old.gc.idNo;
+      appointmentDetails["type"] = "edited";
+      await addNotificationGcSa(appointmentDetails, idNo);
       onlineUsers.forEach((user) => {
         if (idNo === user.idNo) {
           io.to(user.socketId).emit("editAppointmentResponse", {

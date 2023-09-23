@@ -39,6 +39,18 @@ function SideBar({ toast, logout, auth, socket }) {
         }, 200);
         toast.success("Appointment Added!");
       });
+
+      socket.on("cancelAppointmentResponse", () => {
+        setTimeout(async () => {
+          await getNotification();
+        }, 200);
+      });
+
+      socket.on("editAppointmentResponse", () => {
+        setTimeout(async () => {
+          await getNotification();
+        }, 200);
+      });
     }
   }, [socket]);
 

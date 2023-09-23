@@ -217,6 +217,17 @@ function NavBar({ auth, logout, socket, toast }) {
     return [convertedDateTime, convertedDate, convertedTime];
   };
 
+  const cancelRealTime = async (appointment) => {
+    try {
+      socket.emit("cancelAppointmentRequest", {
+        appointmentDetails: appointment,
+        token: auth?.accessToken,
+      });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
   const handleCancelAppointment = async (id, type) => {
     try {
       await axios
@@ -237,10 +248,26 @@ function NavBar({ auth, logout, socket, toast }) {
             yourAppointment[`${type === "standard" ? "sos" : "standard"}`];
           setYourAppointment(newAppointment);
           toast.success(res?.data?.message);
+          setTimeout(() => {
+            let appointment = yourAppointment[`${type}`];
+            appointment["status"] = "cancelled";
+            cancelRealTime(appointment);
+          }, 200);
         })
         .catch((err) => {
           toast.error(err?.response?.data);
         });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
+  const editAppointmentRealTime = async (appointment) => {
+    try {
+      socket.emit("editAppointmentRequest", {
+        appointmentDetails: appointment,
+        token: auth?.accessToken,
+      });
     } catch (err) {
       toast.error("Error");
     }
@@ -267,7 +294,7 @@ function NavBar({ auth, logout, socket, toast }) {
         )
         .then((res) => {
           toast.success(res?.data?.message);
-          // editAppointmentRealTime(res?.data?.appointmentOldNew);
+          editAppointmentRealTime(res?.data?.appointmentOldNew);
           // setTimeout(() => {
           //   getAppointments();
           //   getBookedAppointments();

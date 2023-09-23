@@ -12,7 +12,7 @@ import {
   BsCalendarPlus,
 } from "react-icons/bs";
 
-import { AiOutlineLike } from "react-icons/ai";
+import { AiOutlineLike, AiOutlineSchedule } from "react-icons/ai";
 
 import {
   MdOutlineCancel,
@@ -24,6 +24,7 @@ import {
 } from "react-icons/md";
 
 import Modal from "../components/Modal";
+import NotificationItems from "./Notifications/NotificationItems";
 
 function NotificationContainer({
   toast,
@@ -1505,369 +1506,127 @@ function NotificationContainer({
                       if (i.details?.status === "upcoming") {
                         if (i.type === "sos") {
                           return (
-                            <>
-                              {k === 0 ? null : (
-                                <motion.hr className="border-[1px] border-black/5 border-top w-full" />
-                              )}
-                              <motion.div className="flex gap-3 px-6 py-6">
-                                <div className="bg-[--red] h-fit rounded-full p-1 text-white border border-2 border-[--red]">
-                                  <MdSos size={24} />
-                                </div>
-                                <motion.div className="flex flex-col gap-1 text-sm items-start">
-                                  <motion.div>
-                                    <span className="font-bold">You </span>
-                                    have booked an{" "}
-                                    <span className="font-bold">
-                                      SOS Emergency appointment{" "}
-                                    </span>{" "}
-                                    on {convertDate(i.details.scheduledDate)[0]}
-                                  </motion.div>
-                                  <motion.div
-                                    className={`text-sm ${
-                                      !i.isSeen
-                                        ? "font-bold text-[--dark-green]"
-                                        : "text-black/60"
-                                    }`}
-                                  >
-                                    <TimeAgo date={i.createdDate} />
-                                  </motion.div>
-                                </motion.div>
-                                <motion.div className="w-auto flex mt-1">
-                                  {!i.isSeen ? (
-                                    <motion.div className="w-3 h-3 rounded-full bg-[--dark-green]" />
-                                  ) : null}
-                                </motion.div>
-                              </motion.div>
-                            </>
+                            <NotificationItems
+                              status={i.details?.status}
+                              k={k}
+                              icon={<MdSos size={24} />}
+                              description={`<span style="font-weight: bold;">You </span>have successfully <span style="font-weight: bold;">booked </span>an <span style="font-weight: bold;">SOS appointment</span>`}
+                              isSeen={i.isSeen}
+                              createdDate={i.createdDate}
+                            />
+                          );
+                        } else if (i.type === "standard") {
+                          if (
+                            i?.details?.creator ===
+                            i?.details?.userDetails?.idNo
+                          ) {
+                            return (
+                              <NotificationItems
+                                status={i.details?.status}
+                                k={k}
+                                icon={<AiOutlineLike size={24} />}
+                                description={`<span style="font-weight: bold;">PLV Guidance Counselling Center </span><span style="font-weight: bold;">approved </span>your regular appointment on <span style="font-weight: bold;">${
+                                  convertDate(i.details.start)[0]
+                                } to ${convertDate(i.details.end)[2]}</span>`}
+                                isSeen={i.isSeen}
+                                createdDate={i.createdDate}
+                              />
+                            );
+                          } else {
+                            return (
+                              <NotificationItems
+                                status={i.details?.status}
+                                k={k}
+                                icon={<AiOutlineSchedule size={24} />}
+                                description={`<span style="font-weight: bold;">PLV Guidance Counselling Center </span><span style="font-weight: bold;">scheduled </span>your regular appointment on <span style="font-weight: bold;">${
+                                  convertDate(i.details.start)[0]
+                                } to ${convertDate(i.details.end)[2]}</span>`}
+                                isSeen={i.isSeen}
+                                createdDate={i.createdDate}
+                              />
+                            );
+                          }
+                        }
+                      } else if (i.details?.status === "completed") {
+                        if (i.type === "sos") {
+                          return (
+                            <NotificationItems
+                              status={i.details?.status}
+                              k={k}
+                              icon={<MdOutlineCheckCircleOutline size={24} />}
+                              description={
+                                '<span style="font-weight: bold;">PLV Guidance Counselling Center </span><span style="font-weight: bold;">marked</span> your <span style="font-weight: bold;">SOS appointment</span> as completed'
+                              }
+                              isSeen={i.isSeen}
+                              createdDate={i.createdDate}
+                            />
                           );
                         } else if (i.type === "standard") {
                           return (
-                            <>
-                              {k === 0 ? null : (
-                                <motion.hr className="border-[1px] border-black/5 border-top w-full" />
-                              )}
-                              <motion.div className="flex gap-3 px-6 py-6">
-                                <div className="bg-[--light-green] h-fit rounded-full p-1 text-black border border-2 border-[--light-green]">
-                                  <AiOutlineLike size={24} />
-                                </div>
-                                <motion.div className="flex flex-col gap-1 text-sm items-start">
-                                  <motion.div>
-                                    <span className="font-bold">
-                                      {i.details?.gc?.name}{" "}
-                                    </span>
-                                    approved your{" "}
-                                    <span className="font-bold">
-                                      regular appointment{" "}
-                                    </span>{" "}
-                                    on{" "}
-                                    {`${convertDate(i.details.start)[0]} to ${
-                                      convertDate(i.details.end)[2]
-                                    }`}
-                                  </motion.div>
-                                  <motion.div
-                                    className={`text-sm ${
-                                      !i.isSeen
-                                        ? "font-bold text-[--dark-green]"
-                                        : "text-black/60"
-                                    }`}
-                                  >
-                                    <TimeAgo date={i.createdDate} />
-                                  </motion.div>
-                                </motion.div>
-                                <motion.div className="w-auto flex mt-1">
-                                  {!i.isSeen ? (
-                                    <motion.div className="w-3 h-3 rounded-full bg-[--dark-green]" />
-                                  ) : null}
-                                </motion.div>
-                              </motion.div>
-                            </>
+                            <NotificationItems
+                              status={i.details?.status}
+                              k={k}
+                              icon={<MdOutlineCheckCircleOutline size={24} />}
+                              description={
+                                '<span style="font-weight: bold;">PLV Guidance Counselling Center </span><span style="font-weight: bold;">marked</span> your <span style="font-weight: bold;">Regular appointment</span> as completed'
+                              }
+                              isSeen={i.isSeen}
+                              createdDate={i.createdDate}
+                            />
                           );
                         }
-                      } else if (i.details?.status === "completed") {
-                        return (
-                          <>
-                            {k === 0 ? null : (
-                              <motion.hr className="border-[1px] border-black/5 border-top w-full" />
-                            )}
-                            <motion.div className="flex gap-3 px-6 py-6">
-                              <div className="bg-[--dark-green] h-fit rounded-full p-1 text-white border border-2 border-[--dark-green]">
-                                <MdOutlineCheckCircleOutline size={24} />
-                              </div>
-                              <motion.div className="flex flex-col gap-1 text-sm items-start">
-                                <motion.div>
-                                  <span className="font-bold">
-                                    {i.details?.gc?.name}{" "}
-                                  </span>
-                                  marked your{" "}
-                                  <span className="font-bold">
-                                    regular appointment{" "}
-                                  </span>{" "}
-                                  as completed last{" "}
-                                  {`${convertDate(i.details.start)[0]} to ${
-                                    convertDate(i.details.end)[2]
-                                  }`}
-                                </motion.div>
-                                <motion.div
-                                  className={`text-sm ${
-                                    !i.isSeen
-                                      ? "font-bold text-[--dark-green]"
-                                      : "text-black/60"
-                                  }`}
-                                >
-                                  <TimeAgo date={i.createdDate} />
-                                </motion.div>
-                              </motion.div>
-                              <motion.div className="w-auto flex mt-1">
-                                {!i.isSeen ? (
-                                  <motion.div className="w-3 h-3 rounded-full bg-[--dark-green]" />
-                                ) : null}
-                              </motion.div>
-                            </motion.div>
-                          </>
-                        );
                       } else if (i.details?.status === "cancelled") {
-                        return (
-                          <>
-                            {k === 0 ? null : (
-                              <motion.hr className="border-[1px] border-black/5 border-top w-full" />
-                            )}
-                            <motion.div className="flex gap-3 px-6 py-6">
-                              <div className="bg-[--red] h-fit rounded-full p-1 text-white border border-2 border-[--red]">
-                                <MdOutlineCancel size={24} />
-                              </div>
-                              <motion.div className="flex flex-col gap-1 text-sm items-start">
-                                <motion.div>
-                                  <span className="font-bold">
-                                    {i.details?.gc?.name}{" "}
-                                  </span>
-                                  has{" "}
-                                  <span className="font-bold">cancelled </span>
-                                  your appointment{" "}
-                                </motion.div>
-                                <motion.div
-                                  className={`text-sm ${
-                                    !i.isSeen
-                                      ? "font-bold text-[--dark-green]"
-                                      : "text-black/60"
-                                  }`}
-                                >
-                                  <TimeAgo date={i.createdDate} />
-                                </motion.div>
-                              </motion.div>
-                              <motion.div className="w-auto flex mt-1">
-                                {!i.isSeen ? (
-                                  <motion.div className="w-3 h-3 rounded-full bg-[--dark-green]" />
-                                ) : null}
-                              </motion.div>
-                            </motion.div>
-                          </>
-                        );
+                        if (i.type === "sos") {
+                          return (
+                            <NotificationItems
+                              status={i.details?.status}
+                              k={k}
+                              icon={<MdOutlineCancel size={24} />}
+                              description={
+                                '<span style="font-weight: bold;">PLV Guidance Counselling Center </span> has <span style="font-weight: bold;">cancelled </span> your <span style="font-weight: bold;">SOS appointment</span>'
+                              }
+                              isSeen={i.isSeen}
+                              createdDate={i.createdDate}
+                            />
+                          );
+                        } else if (i.type === "standard") {
+                          return (
+                            <NotificationItems
+                              status={i.details?.status}
+                              k={k}
+                              icon={<MdOutlineCancel size={24} />}
+                              description={
+                                '<span style="font-weight: bold;">PLV Guidance Counselling Center </span> has <span style="font-weight: bold;">cancelled </span> your <span style="font-weight: bold;">regular appointment</span>'
+                              }
+                              isSeen={i.isSeen}
+                              createdDate={i.createdDate}
+                            />
+                          );
+                        }
                       } else if (i.details?.status === "pending") {
                         return (
-                          <>
-                            {k === 0 ? null : (
-                              <motion.hr className="border-[1px] border-black/5 border-top w-full" />
-                            )}
-                            <motion.div className="flex gap-3 px-6 py-6">
-                              <div className="bg-[--yellow] h-fit rounded-full p-1 text-black border border-2 border-[--yellow]">
-                                <MdOutlinePending size={24} />
-                              </div>
-                              <motion.div className="flex flex-col gap-1 text-sm items-start">
-                                <motion.div>
-                                  <span className="font-bold">You </span>
-                                  have{" "}
-                                  <span className="font-bold">
-                                    pending appointment{" "}
-                                  </span>
-                                  on{" "}
-                                  {`${convertDate(i.details.start)[0]} to ${
-                                    convertDate(i.details.end)[2]
-                                  }`}
-                                </motion.div>
-                                <motion.div
-                                  className={`text-sm ${
-                                    !i.isSeen
-                                      ? "font-bold text-[--dark-green]"
-                                      : "text-black/60"
-                                  }`}
-                                >
-                                  <TimeAgo date={i.createdDate} />
-                                </motion.div>
-                              </motion.div>
-                              <motion.div className="w-auto flex mt-1">
-                                {!i.isSeen ? (
-                                  <motion.div className="w-3 h-3 rounded-full bg-[--dark-green]" />
-                                ) : null}
-                              </motion.div>
-                            </motion.div>
-                          </>
+                          <NotificationItems
+                            status={i.details?.status}
+                            k={k}
+                            icon={<MdOutlinePending size={24} />}
+                            description={`<span style="font-weight: bold;">You </span> have <span style="font-weight: bold;">pending </span> appointment on <span style="font-weight: bold;">${
+                              convertDate(i.details.start)[0]
+                            } to ${convertDate(i.details.end)[2]}</span>`}
+                            isSeen={i.isSeen}
+                            createdDate={i.createdDate}
+                          />
                         );
                       } else if (i.type === "edited") {
-                        if (
-                          i?.details?.old?.start !== i?.details?.new?.start &&
-                          i?.details?.old?.mode === i?.details?.new?.mode
-                        ) {
-                          return (
-                            <>
-                              {k === 0 ? null : (
-                                <motion.hr className="border-[1px] border-black/5 border-top w-full" />
-                              )}
-                              <motion.div className="flex gap-3 px-6 py-6">
-                                <div className="bg-[--dark-green] h-fit rounded-full p-1 text-white border border-2 border-[--dark-green]">
-                                  <MdSchedule size={24} />
-                                </div>
-                                <motion.div className="flex flex-col gap-1 text-sm items-start">
-                                  <motion.div>
-                                    <span className="font-bold">
-                                      PLV Guidance Counselling Center{" "}
-                                    </span>
-                                    <span className="font-bold">
-                                      rescheduled{" "}
-                                    </span>
-                                    your appointment from{" "}
-                                    <span className="font-bold">
-                                      {convertDate(i?.details?.old?.start)[0]} -{" "}
-                                      {convertDate(i?.details?.old?.end)[2]}
-                                    </span>{" "}
-                                    to{" "}
-                                    <span className="font-bold">
-                                      {convertDate(i?.details?.new?.start)[0]} -{" "}
-                                      {convertDate(i?.details?.new?.end)[2]}
-                                    </span>
-                                  </motion.div>
-                                  <motion.div
-                                    className={`text-sm ${
-                                      !i.isSeen
-                                        ? "font-bold text-[--dark-green]"
-                                        : "text-black/60"
-                                    }`}
-                                  >
-                                    <TimeAgo date={i.createdDate} />
-                                  </motion.div>
-                                </motion.div>
-                                <motion.div className="w-auto flex mt-1">
-                                  {!i.isSeen ? (
-                                    <motion.div className="w-3 h-3 rounded-full bg-[--dark-green]" />
-                                  ) : null}
-                                </motion.div>
-                              </motion.div>
-                            </>
-                          );
-                        } else if (
-                          i?.details?.old?.start === i?.details?.new?.start &&
-                          i?.details?.old?.mode !== i?.details?.new?.mode
-                        ) {
-                          return (
-                            <>
-                              {k === 0 ? null : (
-                                <motion.hr className="border-[1px] border-black/5 border-top w-full" />
-                              )}
-                              <motion.div className="flex gap-3 px-6 py-6">
-                                <div className="bg-[--dark-green] h-fit rounded-full p-1 text-white border border-2 border-[--dark-green]">
-                                  <MdEdit size={24} />
-                                </div>
-                                <motion.div className="flex flex-col gap-1 text-sm items-start">
-                                  <motion.div>
-                                    <span className="font-bold">
-                                      PLV Guidance Counselling Center{" "}
-                                    </span>
-                                    <span className="font-bold">changed </span>
-                                    mode of the your appointment from{" "}
-                                    <span className="font-bold">
-                                      {i?.details?.old?.mode === "facetoface"
-                                        ? "face-to-face"
-                                        : "virtual"}
-                                    </span>{" "}
-                                    to{" "}
-                                    <span className="font-bold">
-                                      {i?.details?.new?.mode === "facetoface"
-                                        ? "face-to-face"
-                                        : "virtual"}
-                                    </span>
-                                  </motion.div>
-                                  <motion.div
-                                    className={`text-sm ${
-                                      !i.isSeen
-                                        ? "font-bold text-[--dark-green]"
-                                        : "text-black/60"
-                                    }`}
-                                  >
-                                    <TimeAgo date={i.createdDate} />
-                                  </motion.div>
-                                </motion.div>
-                                <motion.div className="w-auto flex mt-1">
-                                  {!i.isSeen ? (
-                                    <motion.div className="w-3 h-3 rounded-full bg-[--dark-green]" />
-                                  ) : null}
-                                </motion.div>
-                              </motion.div>
-                            </>
-                          );
-                        } else if (
-                          i?.details?.old?.start !== i?.details?.new?.start &&
-                          i?.details?.old?.mode !== i?.details?.new?.mode
-                        ) {
-                          return (
-                            <>
-                              {k === 0 ? null : (
-                                <motion.hr className="border-[1px] border-black/5 border-top w-full" />
-                              )}
-                              <motion.div className="flex gap-3 px-6 py-6">
-                                <div className="bg-[--dark-green] h-fit rounded-full p-1 text-white border border-2 border-[--dark-green]">
-                                  <MdSchedule size={24} />
-                                </div>
-                                <motion.div className="flex flex-col gap-1 text-sm items-start">
-                                  <motion.div>
-                                    <span className="font-bold">
-                                      PLV Guidance Counselling Center{" "}
-                                    </span>
-                                    <span className="font-bold">
-                                      rescheduled{" "}
-                                    </span>
-                                    your appointment from{" "}
-                                    <span className="font-bold">
-                                      {convertDate(i?.details?.old?.start)[0]} -{" "}
-                                      {convertDate(i?.details?.old?.end)[2]}
-                                    </span>{" "}
-                                    to{" "}
-                                    <span className="font-bold">
-                                      {convertDate(i?.details?.new?.start)[0]} -{" "}
-                                      {convertDate(i?.details?.new?.end)[2]}{" "}
-                                    </span>
-                                    and{" "}
-                                    <span className="font-bold">changed </span>
-                                    mode from{" "}
-                                    <span className="font-bold">
-                                      {i?.details?.old?.mode === "facetoface"
-                                        ? "face-to-face"
-                                        : "virtual"}
-                                    </span>{" "}
-                                    to{" "}
-                                    <span className="font-bold">
-                                      {i?.details?.new?.mode === "facetoface"
-                                        ? "face-to-face"
-                                        : "virtual"}
-                                    </span>
-                                  </motion.div>
-                                  <motion.div
-                                    className={`text-sm ${
-                                      !i.isSeen
-                                        ? "font-bold text-[--dark-green]"
-                                        : "text-black/60"
-                                    }`}
-                                  >
-                                    <TimeAgo date={i.createdDate} />
-                                  </motion.div>
-                                </motion.div>
-                                <motion.div className="w-auto flex mt-1">
-                                  {!i.isSeen ? (
-                                    <motion.div className="w-3 h-3 rounded-full bg-[--dark-green]" />
-                                  ) : null}
-                                </motion.div>
-                              </motion.div>
-                            </>
-                          );
-                        }
+                        return (
+                          <NotificationItems
+                            status={i?.type}
+                            k={k}
+                            icon={<MdSchedule size={24} />}
+                            description={`<span style="font-weight: bold;">PLV Guidance Counselling Center</span><span style="font-weight: bold;"> rescheduled/edited </span> your appointment`}
+                            isSeen={i.isSeen}
+                            createdDate={i.createdDate}
+                          />
+                        );
                       }
                       return null;
                     })()}
@@ -1940,86 +1699,69 @@ function NotificationContainer({
                     }}
                   >
                     {(() => {
-                      if (i.type === "sos") {
+                      if (i.details?.status === "upcoming") {
+                        if (i.type === "sos") {
+                          return (
+                            <NotificationItems
+                              status={i.details?.status}
+                              k={k}
+                              icon={<MdSos size={24} />}
+                              description={`<span style="font-weight: bold;">${i?.details?.userDetails?.name} </span>have successfully <span style="font-weight: bold;">booked </span>an <span style="font-weight: bold;">SOS appointment</span>`}
+                              isSeen={i.isSeen}
+                              createdDate={i.createdDate}
+                            />
+                          );
+                        }
+                      } else if (i.details?.status === "cancelled") {
+                        if (i.type === "sos") {
+                          return (
+                            <NotificationItems
+                              status={i.details?.status}
+                              k={k}
+                              icon={<MdOutlineCancel size={24} />}
+                              description={`<span style="font-weight: bold;">${i?.details?.userDetails?.name} </span> has <span style="font-weight: bold;">cancelled </span><span style="font-weight: bold;">SOS appointment</span>`}
+                              isSeen={i.isSeen}
+                              createdDate={i.createdDate}
+                            />
+                          );
+                        } else if (i.type === "standard") {
+                          return (
+                            <NotificationItems
+                              status={i.details?.status}
+                              k={k}
+                              icon={<MdOutlineCancel size={24} />}
+                              description={`<span style="font-weight: bold;">${i?.details?.userDetails?.name} </span> has <span style="font-weight: bold;">cancelled </span><span style="font-weight: bold;">regular appointment</span>`}
+                              isSeen={i.isSeen}
+                              createdDate={i.createdDate}
+                            />
+                          );
+                        }
+                      } else if (i.details?.status === "pending") {
                         return (
-                          <>
-                            {k === 0 ? null : (
-                              <motion.hr className="border-[1px] border-black/5 border-top w-full" />
-                            )}
-                            <motion.div className="flex gap-3 px-6 py-6">
-                              <div className="bg-[--red] h-fit rounded-full p-1 text-white border border-2 border-[--red]">
-                                <MdSos size={24} />
-                              </div>
-                              <motion.div className="flex flex-col gap-1 text-sm items-start">
-                                <motion.div>
-                                  <span className="font-bold">
-                                    {i.details.userDetails.name}{" "}
-                                  </span>
-                                  has booked an{" "}
-                                  <span className="font-bold">
-                                    SOS Emergency appointment{" "}
-                                  </span>{" "}
-                                  on {convertDate(i.details.scheduledDate)[0]}
-                                </motion.div>
-                                <motion.div
-                                  className={`text-sm ${
-                                    !i.isSeen
-                                      ? "font-bold text-[--dark-green]"
-                                      : "text-black/60"
-                                  }`}
-                                >
-                                  <TimeAgo date={i.createdDate} />
-                                </motion.div>
-                              </motion.div>
-                              <motion.div className="w-auto flex mt-1">
-                                {!i.isSeen ? (
-                                  <motion.div className="w-3 h-3 rounded-full bg-[--dark-green]" />
-                                ) : null}
-                              </motion.div>
-                            </motion.div>
-                          </>
+                          <NotificationItems
+                            status={i.details?.status}
+                            k={k}
+                            icon={<MdOutlinePending size={24} />}
+                            description={`<span style="font-weight: bold;">${
+                              i?.details?.userDetails?.name
+                            } </span> has a <span style="font-weight: bold;">pending </span> appointment on <span style="font-weight: bold;">${
+                              convertDate(i.details.start)[0]
+                            } to ${convertDate(i.details.end)[2]}</span>`}
+                            isSeen={i.isSeen}
+                            createdDate={i.createdDate}
+                          />
                         );
-                      } else if (i.type === "standard") {
+                      } else if (i.type === "edited") {
+                        console.log(i);
                         return (
-                          <>
-                            {k === 0 ? null : (
-                              <motion.hr className="border-[1px] border-black/5 border-top w-full" />
-                            )}
-                            <motion.div className="flex gap-3 px-6 py-6">
-                              <div className="bg-[--dark-green] h-fit rounded-full p-2 text-white border border-2 border-[--dark-green]">
-                                <BsCalendarPlus size={16} />
-                              </div>
-                              <motion.div className="flex flex-col gap-1 text-sm items-start">
-                                <motion.div>
-                                  <span className="font-bold">
-                                    {i.details.userDetails.name}{" "}
-                                  </span>
-                                  has booked{" "}
-                                  <span className="font-bold">
-                                    regular appointment{" "}
-                                  </span>{" "}
-                                  on{" "}
-                                  {`${convertDate(i.details.start)[0]} to ${
-                                    convertDate(i.details.end)[2]
-                                  }`}
-                                </motion.div>
-                                <motion.div
-                                  className={`text-sm ${
-                                    !i.isSeen
-                                      ? "font-bold text-[--dark-green]"
-                                      : "text-black/60"
-                                  }`}
-                                >
-                                  <TimeAgo date={i.createdDate} />
-                                </motion.div>
-                              </motion.div>
-                              <motion.div className="w-auto flex mt-1">
-                                {!i.isSeen ? (
-                                  <motion.div className="w-3 h-3 rounded-full bg-[--dark-green]" />
-                                ) : null}
-                              </motion.div>
-                            </motion.div>
-                          </>
+                          <NotificationItems
+                            status={i?.type}
+                            k={k}
+                            icon={<MdSchedule size={24} />}
+                            description={`<span style="font-weight: bold;">${i?.details?.old?.userDetails?.name}</span><span style="font-weight: bold;"> rescheduled/edited </span> appointment`}
+                            isSeen={i.isSeen}
+                            createdDate={i.createdDate}
+                          />
                         );
                       }
                       return null;
