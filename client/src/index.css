@@ -757,6 +757,7 @@ div.rbc-row-bg > :first-child {
 
 .rbc-agenda-event-cell {
   width: 100%;
+  height: 1px;
 }
 
 .rbc-time-column {

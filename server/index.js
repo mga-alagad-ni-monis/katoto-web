@@ -246,6 +246,7 @@ io.on("connection", (socket) => {
         }
 
         await addNotificationGcSa(appointmentDetails);
+        
         if (counselorAdmin.length > 0) {
           counselorAdmin.forEach((user) => {
             io.to(user.socketId).emit("scheduleResponse", {

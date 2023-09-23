@@ -52,6 +52,8 @@ function Chatbot({ toast, auth, socket }) {
   const [standardDetails, setStandardDetails] = useState({});
   const [appointmentDetails, setAppointmentDetails] = useState({});
 
+  const [sosNo, setSosNo] = useState(0);
+
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -74,7 +76,6 @@ function Chatbot({ toast, auth, socket }) {
 
       socket.on("hasPending", (message) => {
         toast.error(message.appointmentDetails);
-        
       });
     }
   }, [socket]);
@@ -315,7 +316,7 @@ function Chatbot({ toast, auth, socket }) {
         mode: preferredMode,
         gc: gcNames.filter((i) => i.idNo === preferredGC)[0],
         creator: auth?.userInfo?.idNo,
-        description: "sos",
+        description: description,
       });
     } catch (err) {
       toast.error("Error");
@@ -816,54 +817,104 @@ function Chatbot({ toast, auth, socket }) {
       </Modal>
       <Modal isOpen={popUpSOS}>
         <div className="w-full justify-between flex">
-          <p className="text-2xl font-extrabold">SOS Emergency Button</p>
+          <p className="text-2xl font-extrabold">SOS Appointment</p>
 
           <button
             onClick={() => {
               setPopUpSOS(false);
+              setSosNo(0);
+              setDescription("");
+              setPreferredMode("facetoface");
+              setIsAppointmentChecked(false);
             }}
             type="button"
           >
             <FaTimes size={20} />
           </button>
         </div>
-        <div className="flex flex-col gap-4 mt-5 items-center text-center text-md">
-          <p className="mb-5">
-            <span className="text-black font-bold">TAKE NOTE:</span> If you are
-            experiencing any{" "}
-            <span className="text-black font-bold">emotional distress</span>,
-            please know that you are not alone. PLV guidance counselors are
-            available to provide support and guidance. You can reach them by
-            clicking the SOS button below to set an{" "}
-            <span className="text-black font-bold">
-              immediate emergency appointment
-            </span>
-            .
-          </p>
-          {/* <div className="flex justify-between gap-4">
-            <div>
-              <p className="text-[--dark-green] font-bold flex items-center mb-3 justify-between  ">
-                Concern{" "}
-                <span className="text-[8px] text-[--red]">
-                  {200 - description.length} character(s) left
-                </span>
-              </p>
-              <textarea
-                className="w-auto h-[46px] bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
+        {(() => {
+          if (sosNo === 0) {
+            return (
+              <div>
+                <p className="my-5">
+                  <span className="text-black font-bold">TAKE NOTE:</span> If
+                  you are experiencing any{" "}
+                  <span className="text-black font-bold">
+                    emotional distress
+                  </span>
+                  , please know that you are not alone. PLV guidance counselors
+                  are available to provide support and guidance. You can reach
+                  them by clicking the "Next" button below to set an{" "}
+                  <span className="text-black font-bold">SOS appointment</span>.
+                </p>
+                <div className="flex w-full justify-end">
+                  <button
+                    className="bg-[--dark-green] border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green]
+                rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+                border border-2 transition-all duration-300"
+                    onClick={() => {
+                      setSosNo(sosNo + 1);
+                    }}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            );
+          } else if (sosNo === 1) {
+            return (
+              <div>
+                <p className="my-5">
+                  Please describe your concern and choose mode
+                </p>
+                <div className="flex gap-5 mb-5">
+                  <div>
+                    <p className="text-[--dark-green] font-bold flex items-center mb-3 justify-between  ">
+                      Concern{" "}
+                      <span className="text-[8px] text-[--red]">
+                        {200 - description.length} character(s) left
+                      </span>
+                    </p>
+                    <textarea
+                      className="w-auto h-[46px] bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
               p-3 font-semibold resize-none"
-                placeholder="Describe your concern..."
-                value={description}
-                maxLength={200}
-                onChange={(e) => {
-                  setDescription(e.target.value);
-                }}
-              ></textarea>
-            </div>
-            <div>
-              <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
-                Guidance Counselor
-              </p>
-              <select
+                      placeholder="Describe your concern..."
+                      value={description}
+                      maxLength={200}
+                      onChange={(e) => {
+                        setDescription(e.target.value);
+                      }}
+                    ></textarea>
+                  </div>
+
+                  <div>
+                    <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                      Mode
+                    </p>
+                    <select
+                      id="mode"
+                      className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                      value={preferredMode}
+                      onChange={(e) => {
+                        setPreferredMode(e.target.value);
+                      }}
+                      required
+                    >
+                      <option value="facetoface" defaultValue>
+                        Face-to-face
+                      </option>
+                      <option value="virtual">Virtual</option>
+                    </select>
+                  </div>
+                  <div>
+                    <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
+                      Guidance Counselor
+                    </p>
+                    {console.log(gcNames)}
+                    <p>
+                      {gcNames.filter((i) => i.idNo === preferredGC)[0]?.name}
+                    </p>
+                    {/* <select
                 id="guidanceCounselors"
                 className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
                 value={preferredGC}
@@ -885,41 +936,83 @@ function Chatbot({ toast, auth, socket }) {
                     </option>
                   );
                 })}
-              </select>
-            </div>
-            <div>
-              <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                Mode
-              </p>
-              <select
-                id="mode"
-                className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                value={preferredMode}
-                onChange={(e) => {
-                  setPreferredMode(e.target.value);
-                }}
-                required
-              >
-                <option value="facetoface" defaultValue>
-                  Face-to-face
-                </option>
-                <option value="virtual">Virtual</option>
-              </select>
-            </div>
-          </div> */}
-
-          <div className="w-auto">
-            <button
-              className="bg-[--red] rounded-full p-1 text-white border border-2 border-[--red] hover:bg-transparent hover:text-[--red] 
+              </select> */}
+                  </div>
+                </div>
+                <div className="flex w-full justify-end">
+                  <button
+                    className="bg-[--dark-green] border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green]
+                rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+                border border-2 transition-all duration-300"
+                    onClick={() => {
+                      setSosNo(sosNo + 1);
+                    }}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            );
+          } else {
+            return (
+              <div className="flex flex-col gap-4 mt-5 items-center text-center text-md">
+                <div className="flex gap-5 mb-3">
+                  <input
+                    id="checkbox-1"
+                    className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 mt-1
+   checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
+   float-left cursor-pointer appearance-none border border-solid border-2  border-[--light-gray] checked:border-[--light-gray] checked:border-2 bg-[--light-gray] 
+   bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
+   after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-['✔'] 
+   checked:bg-[--dark-green] checked:after:opacity-100"
+                    type="checkbox"
+                    style={{
+                      fontFamily: "FontAwesome",
+                    }}
+                    checked={isAppointmentChecked ? true : false}
+                    onChange={() => {
+                      setIsAppointmentChecked(!isAppointmentChecked);
+                    }}
+                  />
+                  <p
+                    className="w-fit cursor-pointer text-left"
+                    onClick={() => {
+                      setIsAppointmentChecked(!isAppointmentChecked);
+                    }}
+                  >
+                    By ticking the box, you hereby acknowledge and consent to
+                    the use of your personal information for scheduling
+                    appointments with our mental health chatbot.
+                  </p>
+                </div>
+                <div className="w-auto">
+                  {isAppointmentChecked ? (
+                    <button
+                      className="bg-[--red] rounded-full p-1 text-white border border-2 border-[--red] hover:bg-transparent hover:text-[--red] 
               transition-all duration-300"
-              onClick={() => {
-                handleClickSOS();
-              }}
-            >
-              <MdSos size={160} />
-            </button>
-          </div>
-        </div>
+                      onClick={() => {
+                        handleClickSOS();
+                        setSosNo(0);
+                        setDescription("");
+                        setPreferredMode("facetoface");
+                        setIsAppointmentChecked(false);
+                      }}
+                    >
+                      <MdSos size={160} />
+                    </button>
+                  ) : (
+                    <button
+                      className="bg-[--red] rounded-full p-1 text-white border border-2 border-[--red] opacity-50"
+                      disabled
+                    >
+                      <MdSos size={160} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          }
+        })()}
       </Modal>
       <Modal isOpen={popUpStandard} isCalendar={true}>
         <div className="w-full justify-between flex">

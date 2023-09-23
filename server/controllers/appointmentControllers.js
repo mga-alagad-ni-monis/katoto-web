@@ -10,28 +10,31 @@ const addSOSAppointment = async (
   creator,
   description
 ) => {
-  // let result = await db
-  //   .collection("reports")
-  //   .get()
-  //   .then((querySnapshot) => {
-  //     if (querySnapshot.empty) {
-  //       return res.status(404).send("Error");
-  //     }
+  let result = await db
+    .collection("reports")
+    .get()
+    .then((querySnapshot) => {
+      if (querySnapshot.empty) {
+        return res.status(404).send("Error");
+      }
 
-  //     let message = "";
-  //     querySnapshot.forEach((i) => {
-  //       if (i.data().reports.sosAppointments !== undefined) {
-  //         i.data().reports.sosAppointments.forEach((j) => {
-  //           if (userDetails.idNo === j.userDetails.idNo) {
-  //             message = "The student has a pending appointment";
-  //           }
-  //         });
-  //       }
-  //     });
-  //     return message;
-  //   });
+      let message = "";
+      querySnapshot.forEach((i) => {
+        if (i.data().reports.sosAppointments !== undefined) {
+          i.data().reports.sosAppointments.forEach((j) => {
+            if (
+              userDetails.idNo === j.userDetails.idNo &&
+              j.status === "upcoming"
+            ) {
+              message = "You have pending SOS appointment!";
+            }
+          });
+        }
+      });
+      return message;
+    });
 
-  // if (result !== "") return result;
+  if (result !== "") return result;
 
   const currentDate = new Date()
     .toLocaleDateString("en-US", {
@@ -99,7 +102,10 @@ const addStandardAppointment = async (
       querySnapshot.forEach((i) => {
         if (i.data().reports.standardAppointments !== undefined) {
           i.data().reports.standardAppointments.forEach((j) => {
-            if (userDetails.idNo === j.userDetails.idNo) {
+            if (
+              userDetails.idNo === j.userDetails.idNo &&
+              j.status === "upcoming"
+            ) {
               if (creator !== userDetails.idNo) {
                 message = "The student has a pending appointment";
               } else {
@@ -207,12 +213,14 @@ const getBookedAppointments = async (req, res) => {
         querySnapshot.forEach((i) => {
           if (i.data().reports.standardAppointments !== undefined) {
             i.data().reports.standardAppointments.forEach((j) => {
-              appointmentsArray.push({
-                title: `Regular - ${j.userDetails.name}`,
-                start: j.start,
-                end: j.end,
-                data: j,
-              });
+              if (j.status === "upcoming") {
+                appointmentsArray.push({
+                  title: `Regular - ${j.userDetails.name}`,
+                  start: j.start,
+                  end: j.end,
+                  data: j,
+                });
+              }
             });
           }
         });
@@ -411,6 +419,7 @@ const editAppointment = async (req, res) => {
         });
       });
   } catch (err) {
+    console.log(err);
     res.status(404).send("Error");
   }
 };
@@ -601,12 +610,8 @@ const getMyAppointment = async (req, res) => {
         querySnapshot.forEach((i) => {
           if (i.data().reports.sosAppointments !== undefined) {
             i.data().reports.sosAppointments.forEach((j) => {
-              if (
-                j.userDetails.idNo === idNo &&
-                new Date(j.end) > new Date() &&
-                j.status === "upcoming"
-              ) {
-                appointment = j;
+              if (j.userDetails.idNo === idNo && j.status === "upcoming") {
+                appointment["sos"] = j;
                 return;
               }
             });
@@ -619,7 +624,7 @@ const getMyAppointment = async (req, res) => {
                 new Date(j.end) > new Date() &&
                 j.status === "upcoming"
               ) {
-                appointment = j;
+                appointment["standard"] = j;
                 return;
               }
             });

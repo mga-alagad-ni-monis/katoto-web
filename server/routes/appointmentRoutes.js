@@ -30,13 +30,13 @@ router.get(
 
 router.post(
   "/cancel",
-  verifyRoles(["guidanceCounselor", "systemAdministrator"]),
+  verifyRoles(["guidanceCounselor", "systemAdministrator", "student"]),
   cancelAppointment
 );
 
 router.post(
   "/edit",
-  verifyRoles(["guidanceCounselor", "systemAdministrator"]),
+  verifyRoles(["guidanceCounselor", "systemAdministrator", "student"]),
   editAppointment
 );
 

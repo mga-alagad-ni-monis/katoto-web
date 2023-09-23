@@ -200,7 +200,7 @@ function SideBar({ toast, logout, auth, socket }) {
                   <div className="flex gap-5 items-center text--black] font-medium relative">
                     <BsBell size={20} />
                     <div className="word-in relative">Notifications</div>
-                    {unreadNotifications > 0 ? (
+                    {unreadNotifications !== 0 ? (
                       <span className="absolute p-1 h-6 w-6 bg-[--dark-green] rounded-full -top-0 -right-8 text-xs text-center flex justify-center items-center text-white">
                         {unreadNotifications}
                       </span>
