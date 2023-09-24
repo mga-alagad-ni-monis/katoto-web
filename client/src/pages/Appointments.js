@@ -940,7 +940,8 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
             </div>
           ) : (
             <div className="flex gap-5 justify-end">
-              {auth?.userInfo?.idNo === appointmentDetails?.data?.gc?.idNo ? (
+              {auth?.userInfo?.idNo === appointmentDetails?.data?.gc?.idNo ||
+              auth?.roles[0] === "systemAdministrator" ? (
                 <button
                   className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
@@ -960,7 +961,8 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                   Delete
                 </button>
               ) : null}
-              {auth?.userInfo?.idNo === appointmentDetails?.data?.gc?.idNo &&
+              {(auth?.userInfo?.idNo === appointmentDetails?.data?.gc?.idNo ||
+                auth?.roles[0] === "systemAdministrator") &&
               (appointmentDetails?.data?.status === "pending" ||
                 appointmentDetails?.data?.status === "upcoming") &&
               !(new Date(appointmentDetails?.data?.end) < new Date()) ? (
@@ -1004,7 +1006,8 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                 </button>
               ) : null}
 
-              {appointmentDetails?.data?.creator === auth?.userInfo?.idNo ? (
+              {appointmentDetails?.data?.creator === auth?.userInfo?.idNo &&
+              appointmentDetails?.data?.status === "upcoming" ? (
                 <button
                   className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
@@ -1020,7 +1023,8 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                 </button>
               ) : null}
               {appointmentDetails?.data?.status === "pending" &&
-              auth?.userInfo?.idNo === appointmentDetails?.data?.gc?.idNo ? (
+              (auth?.userInfo?.idNo === appointmentDetails?.data?.gc?.idNo ||
+                auth?.roles[0] === "systemAdministrator") ? (
                 <button
                   className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
@@ -1227,34 +1231,7 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                 }}
               ></textarea>
             </div>
-            {/* <div>
-              <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
-                Guidance Counselor
-              </p>
-              <select
-                id="guidanceCounselors"
-                className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                value={preferredGC}
-                onChange={(e) => {
-                  setPreferredGC(e.target.value);
-                }}
-                required
-              >
-                {gcNames.map((i, k) => {
-                  return (
-                    <option
-                      defaultValue={i?.assignedCollege?.includes(
-                        auth?.userInfo?.mainDepartment
-                      )}
-                      value={i.idNo}
-                      key={k}
-                    >
-                      {i.name}
-                    </option>
-                  );
-                })}
-              </select>
-            </div> */}
+
             <div>
               <p className="text-[--dark-green] font-bold flex items-center mb-3">
                 Mode
@@ -1274,6 +1251,7 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                 <option value="virtual">Virtual</option>
               </select>
             </div>
+
             <div>
               <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
                 Student
@@ -1302,7 +1280,36 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
               </select>
             </div>
           </div>
-
+          {auth?.roles[0] === "systemAdministrator" ? (
+            <div className="mb-5">
+              <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
+                Guidance Counselor
+              </p>
+              <select
+                id="guidanceCounselors"
+                className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                value={preferredGC}
+                onChange={(e) => {
+                  setPreferredGC(e.target.value);
+                }}
+                required
+              >
+                {gcNames.map((i, k) => {
+                  return (
+                    <option
+                      defaultValue={i?.assignedCollege?.includes(
+                        auth?.userInfo?.mainDepartment
+                      )}
+                      value={i.idNo}
+                      key={k}
+                    >
+                      {i.name}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          ) : null}
           {studentDetails["name"] ? (
             <>
               {" "}
