@@ -1,7 +1,6 @@
 import { Markup } from "interweave";
-import TimeAgo from "react-timeago";
-
 import { motion } from "framer-motion";
+import TimeAgo from "react-timeago";
 
 function NotificationItems({
   status,

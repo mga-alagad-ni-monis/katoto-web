@@ -25,6 +25,7 @@ import {
 
 import Modal from "../components/Modal";
 import NotificationItems from "./Notifications/NotificationItems";
+import NotificationModal from "./Notifications/NotificationModal";
 
 function NotificationContainer({
   toast,
@@ -160,1294 +161,393 @@ function NotificationContainer({
       ) : null}
       {isStudent ? (
         <Modal isOpen={isOpenNotificationModal}>
-          <div className="w-full justify-between flex">
-            <p className="text-2xl font-extrabold">
-              {(() => {
-                if (notificationDetails.details?.status === "upcoming") {
-                  if (notificationDetails.type === "sos") {
-                    return "SOS Emergency Appointment";
-                  } else if (notificationDetails.type === "standard") {
-                    return "Regular Appointment";
-                  }
-                } else if (
-                  notificationDetails.details?.status === "completed"
-                ) {
-                  return "Completed Appointment";
-                } else if (
-                  notificationDetails.details?.status === "cancelled"
-                ) {
-                  return "Cancelled Appointment";
-                } else if (notificationDetails.type === "edited") {
-                  return "Updated Appointment";
-                }
-              })()}
-            </p>
-            <button
-              onClick={() => {
-                setIsOpenNotificationModal(false);
-              }}
-              type="button"
-            >
-              <FaTimes size={20} />
-            </button>
-          </div>
-          <div className="flex flex-col gap-4 mt-5">
-            {(() => {
-              if (notificationDetails.details?.status === "upcoming") {
-                if (notificationDetails.type === "sos") {
-                  return (
-                    <div className="flex flex-col gap-5">
-                      <div className="flex gap-5 items-center">
-                        <div className="bg-[--red] h-fit rounded-full p-1 text-white border border-2 border-[--red]">
-                          <MdSos size={48} />
-                        </div>
-                        <div className="flex flex-col gap-5">
-                          <p>
-                            {" "}
-                            <span className="font-bold">You </span>
-                            have booked an{" "}
-                            <span className="font-bold">
-                              SOS Emergency appointment{" "}
-                            </span>{" "}
-                            on{" "}
-                            {
-                              convertDate(
-                                notificationDetails.details.scheduledDate
-                              )[0]
-                            }
-                          </p>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-5">
-                          <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                            Appointment Details
-                          </p>
-                          {new Date(notificationDetails.details.scheduledDate) >
-                          new Date() ? (
-                            <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3">
-                              Upcoming
-                            </div>
-                          ) : (
-                            <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
-                              Overdue
-                            </div>
-                          )}
-                        </div>
-                        <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
-                          <div className="flex gap-4">
-                            <BsCalendar4Week size={24} />
-                            <p>
-                              {
-                                convertDate(
-                                  notificationDetails.details.scheduledDate
-                                )[1]
-                              }
-                            </p>
-                            <div className="border-[1px] border-black/20 border-right"></div>
-                            <BsClockHistory size={24} />
-                            <p>
-                              {
-                                convertDate(
-                                  notificationDetails.details.scheduledDate
-                                )[2]
-                              }
-                            </p>
-                            <p>45 mins</p>
-                          </div>
-                        </div>
-                        <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
-                          Your Details
-                        </p>
-                        <table className="mb-5">
-                          <tr>
-                            <td className="w-[150px] flex justify-start">
-                              Name
-                            </td>
-                            <td>
-                              {notificationDetails.details.userDetails.name}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="w-[150px] flex justify-start">
-                              Gender
-                            </td>
-                            <td>
-                              {notificationDetails.details.userDetails.gender}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="w-[150px] flex justify-start">
-                              Email
-                            </td>
-                            <td>
-                              {notificationDetails.details.userDetails.email}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="w-[150px] flex justify-start">
-                              {" "}
-                              ID Number
-                            </td>
-                            <td>
-                              {" "}
-                              {notificationDetails.details.userDetails.idNo}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="w-[150px] flex justify-start">
-                              Course
-                            </td>
-                            <td>
-                              {
-                                notificationDetails.details.userDetails
-                                  .department
-                              }
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="w-[150px] flex justify-start">
-                              Year and Section
-                            </td>
-                            <td>
-                              {
-                                notificationDetails.details.userDetails
-                                  .yearSection
-                              }
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="w-[150px] flex justify-start">
-                              College
-                            </td>
-                            <td>
-                              {
-                                notificationDetails.details.userDetails
-                                  .mainDepartment
-                              }
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="w-[150px] flex justify-start">
-                              Phone
-                            </td>
-                            <td>
-                              {
-                                notificationDetails.details.userDetails
-                                  .contactNo
-                              }
-                            </td>
-                          </tr>
-                        </table>
-                        <div className="flex justify-end">
-                          <button
-                            className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
-          border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
-                            onClick={() => {
-                              setIsOpenNotificationModal(false);
-                              handleDeleteNotification(notificationDetails.id);
-                              handleDeleteLocal(notificationDetails.id);
-                            }}
-                          >
-                            <BsFillTrash3Fill size={14} />
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                } else if (notificationDetails.type === "standard") {
-                  return (
-                    <div className="flex flex-col gap-5">
-                      <div className="flex gap-5 items-center">
-                        <div className="bg-[--dark-green] h-fit rounded-full p-2 text-white border border-2 border-[--dark-green]">
-                          <MdOutlineCheckCircleOutline size={40} />
-                        </div>
-                        <div className="flex flex-col gap-5">
-                          <p>
-                            {" "}
-                            <span className="font-bold">
-                              {notificationDetails.details.gc.name}{" "}
-                            </span>
-                            approved your{" "}
-                            <span className="font-bold">
-                              regular appointment
-                            </span>{" "}
-                            on{" "}
-                            {`${
-                              convertDate(notificationDetails.details.start)[0]
-                            } to ${
-                              convertDate(notificationDetails.details.end)[2]
-                            }`}
-                          </p>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-5">
-                          <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                            Appointment Details
-                          </p>
-                          {(() => {
-                            if (
-                              new Date(notificationDetails.details.data?.end) <
-                              new Date()
-                            ) {
-                              return (
-                                <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3 font-bold">
-                                  Ended
-                                </div>
-                              );
-                            } else if (
-                              notificationDetails.details.status === "pending"
-                            ) {
-                              return (
-                                <div className="w-max p-2 rounded-lg bg-[--yellow] text-black text-xs mb-3 font-bold">
-                                  Pending
-                                </div>
-                              );
-                            } else if (
-                              notificationDetails.details.status === "upcoming"
-                            ) {
-                              return (
-                                <div className="w-max p-2 rounded-lg bg-[--light-green] text-black text-xs mb-3 font-bold">
-                                  Upcoming
-                                </div>
-                              );
-                            } else if (
-                              notificationDetails.details.status === "completed"
-                            ) {
-                              return (
-                                <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3 font-bold">
-                                  Completed
-                                </div>
-                              );
-                            } else if (
-                              notificationDetails.details.status === "cancelled"
-                            ) {
-                              return (
-                                <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3 font-bold">
-                                  Cancelled
-                                </div>
-                              );
-                            }
-                          })()}
-                        </div>
-                        <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
-                          <div className="flex gap-4">
-                            <BsCalendar4Week size={24} />
-                            <p>
-                              {
-                                convertDate(
-                                  notificationDetails.details.start
-                                )[1]
-                              }
-                            </p>
-                            <div className="border-[1px] border-black/20 border-right"></div>
-                            <BsClockHistory size={24} />
-                            <p>
-                              {`${
-                                convertDate(
-                                  notificationDetails.details.start
-                                )[2]
-                              } to ${
-                                convertDate(notificationDetails.details.end)[2]
-                              }`}
-                            </p>
-                            <p>45 mins</p>
-                          </div>
-                        </div>
-                        <div className="flex gap-5 mb-5">
-                          <div>
-                            <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                              Guidance Counselor
-                            </p>
-                            {notificationDetails.details.gc?.name}
-                          </div>
-                          <div>
-                            <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                              Mode
-                            </p>
-                            {notificationDetails.details.mode === "facetoface"
-                              ? "Face-to-face"
-                              : "Virtual"}
-                          </div>
-                        </div>
-                        <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
-                          Your Details
-                        </p>
-                        <table className="mb-5">
-                          <tr>
-                            <td className="w-[150px] flex justify-start">
-                              Name
-                            </td>
-                            <td>
-                              {notificationDetails.details.userDetails.name}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="w-[150px] flex justify-start">
-                              Gender
-                            </td>
-                            <td>
-                              {notificationDetails.details.userDetails.gender}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="w-[150px] flex justify-start">
-                              Email
-                            </td>
-                            <td>
-                              {notificationDetails.details.userDetails.email}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="w-[150px] flex justify-start">
-                              {" "}
-                              ID Number
-                            </td>
-                            <td>
-                              {" "}
-                              {notificationDetails.details.userDetails.idNo}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="w-[150px] flex justify-start">
-                              Course
-                            </td>
-                            <td>
-                              {
-                                notificationDetails.details.userDetails
-                                  .department
-                              }
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="w-[150px] flex justify-start">
-                              Year and Section
-                            </td>
-                            <td>
-                              {
-                                notificationDetails.details.userDetails
-                                  .yearSection
-                              }
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="w-[150px] flex justify-start">
-                              College
-                            </td>
-                            <td>
-                              {
-                                notificationDetails.details.userDetails
-                                  .mainDepartment
-                              }
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="w-[150px] flex justify-start">
-                              Phone
-                            </td>
-                            <td>
-                              {
-                                notificationDetails.details.userDetails
-                                  .contactNo
-                              }
-                            </td>
-                          </tr>
-                        </table>
-                        <div className="flex justify-end">
-                          <button
-                            className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
-          border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
-                            onClick={() => {
-                              setIsOpenNotificationModal(false);
-                              handleDeleteNotification(notificationDetails.id);
-                              handleDeleteLocal(notificationDetails.id);
-                            }}
-                          >
-                            <BsFillTrash3Fill size={14} />
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-              } else if (notificationDetails.details?.status === "pending") {
+          {(() => {
+            if (notificationDetails.details?.status === "upcoming") {
+              if (notificationDetails.type === "sos") {
                 return (
-                  <div className="flex flex-col gap-5">
-                    <div className="flex gap-5 items-center">
-                      <div className="bg-[--red] h-fit rounded-full p-2 text-white border border-2 border-[--red]">
-                        <MdOutlineCancel size={40} />
-                      </div>
-                      <div className="flex flex-col gap-5">
-                        <p>
-                          <span className="font-bold">
-                            {notificationDetails.details?.gc?.name}{" "}
-                          </span>
-                          <span className="font-bold">marked </span>
-                          your appointment on{" "}
-                          {`${
-                            convertDate(notificationDetails.details.start)[0]
-                          } to ${
-                            convertDate(notificationDetails.details.end)[2]
-                          }`}
-                          <span className="font-bold">as completed </span>
-                        </p>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-5">
-                        <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                          Appointment Details
-                        </p>
-                        {new Date(notificationDetails.details.end) >
-                          new Date() &&
-                        notificationDetails.details.status === "upcoming" ? (
-                          <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3">
-                            Upcoming
-                          </div>
-                        ) : notificationDetails.details.status ===
-                          "cancelled" ? (
-                          <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
-                            Cancelled
-                          </div>
-                        ) : (
-                          <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
-                            Overdue
-                          </div>
-                        )}
-                      </div>
-                      <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
-                        <div className="flex gap-4">
-                          <BsCalendar4Week size={24} />
-                          <p>
-                            {convertDate(notificationDetails.details.start)[1]}
-                          </p>
-                          <div className="border-[1px] border-black/20 border-right"></div>
-                          <BsClockHistory size={24} />
-                          <p>
-                            {`${
-                              convertDate(notificationDetails.details.start)[2]
-                            } to ${
-                              convertDate(notificationDetails.details.end)[2]
-                            }`}
-                          </p>
-                          <p>45 mins</p>
-                        </div>
-                      </div>
-                      <div className="flex justify-end">
-                        <button
-                          className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
-        border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
-                          onClick={() => {
-                            setIsOpenNotificationModal(false);
-                            handleDeleteNotification(notificationDetails.id);
-                            handleDeleteLocal(notificationDetails.id);
-                          }}
-                        >
-                          <BsFillTrash3Fill size={14} />
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  <NotificationModal
+                    setIsOpenNotificationModal={setIsOpenNotificationModal}
+                    title="SOS Appointment"
+                    status={notificationDetails.details?.status}
+                    icon={<MdSos size={48} />}
+                    description={`<span style="font-weight: bold;">You </span>have successfully <span style="font-weight: bold;">booked </span>an <span style="font-weight: bold;">SOS appointment</span>. You can come to PLV Guidance Counseling Center anytime, and you will be entertained first.`}
+                    appointmentDetails={notificationDetails}
+                    dateTime={
+                      "You can come anytime at PLV Guidance Counseling Center, and you will be entertained first"
+                    }
+                    isDisplay={true}
+                    handleDeleteNotification={handleDeleteNotification}
+                    handleDeleteLocal={handleDeleteLocal}
+                  />
                 );
-              } else if (notificationDetails.details?.status === "completed") {
-                return (
-                  <div className="flex flex-col gap-5">
-                    <div className="flex gap-5 items-center">
-                      <div className="bg-[--red] h-fit rounded-full p-2 text-white border border-2 border-[--red]">
-                        <MdOutlineCancel size={40} />
-                      </div>
-                      <div className="flex flex-col gap-5">
-                        <p>
-                          <span className="font-bold">
-                            {notificationDetails.details?.gc?.name}{" "}
-                          </span>
-                          <span className="font-bold">marked </span>
-                          your appointment on{" "}
-                          {`${
-                            convertDate(notificationDetails.details.start)[0]
-                          } to ${
-                            convertDate(notificationDetails.details.end)[2]
-                          }`}
-                          <span className="font-bold">as completed </span>
-                        </p>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-5">
-                        <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                          Appointment Details
-                        </p>
-                        {new Date(notificationDetails.details.end) >
-                          new Date() &&
-                        notificationDetails.details.status === "upcoming" ? (
-                          <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3">
-                            Upcoming
-                          </div>
-                        ) : notificationDetails.details.status ===
-                          "cancelled" ? (
-                          <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
-                            Cancelled
-                          </div>
-                        ) : (
-                          <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
-                            Overdue
-                          </div>
-                        )}
-                      </div>
-                      <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
-                        <div className="flex gap-4">
-                          <BsCalendar4Week size={24} />
-                          <p>
-                            {convertDate(notificationDetails.details.start)[1]}
-                          </p>
-                          <div className="border-[1px] border-black/20 border-right"></div>
-                          <BsClockHistory size={24} />
-                          <p>
-                            {`${
-                              convertDate(notificationDetails.details.start)[2]
-                            } to ${
-                              convertDate(notificationDetails.details.end)[2]
-                            }`}
-                          </p>
-                          <p>45 mins</p>
-                        </div>
-                      </div>
-                      <div className="flex justify-end">
-                        <button
-                          className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
-        border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
-                          onClick={() => {
-                            setIsOpenNotificationModal(false);
-                            handleDeleteNotification(notificationDetails.id);
-                            handleDeleteLocal(notificationDetails.id);
-                          }}
-                        >
-                          <BsFillTrash3Fill size={14} />
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              } else if (notificationDetails.details?.status === "cancelled") {
-                return (
-                  <div className="flex flex-col gap-5">
-                    <div className="flex gap-5 items-center">
-                      <div className="bg-[--red] h-fit rounded-full p-2 text-white border border-2 border-[--red]">
-                        <MdOutlineCancel size={40} />
-                      </div>
-                      <div className="flex flex-col gap-5">
-                        <p>
-                          <span className="font-bold">
-                            PLV Guidance Counselling Center{" "}
-                          </span>
-                          <span className="font-bold">cancelled </span>
-                          your appointment on{" "}
-                          {`${
-                            convertDate(notificationDetails.details.start)[0]
-                          } to ${
-                            convertDate(notificationDetails.details.end)[2]
-                          }`}
-                        </p>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-5">
-                        <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                          Appointment Details
-                        </p>
-                        {new Date(notificationDetails.details.end) >
-                          new Date() &&
-                        notificationDetails.details.status === "upcoming" ? (
-                          <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3">
-                            Upcoming
-                          </div>
-                        ) : notificationDetails.details.status ===
-                          "cancelled" ? (
-                          <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
-                            Cancelled
-                          </div>
-                        ) : (
-                          <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
-                            Overdue
-                          </div>
-                        )}
-                      </div>
-                      <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
-                        <div className="flex gap-4">
-                          <BsCalendar4Week size={24} />
-                          <p>
-                            {convertDate(notificationDetails.details.start)[1]}
-                          </p>
-                          <div className="border-[1px] border-black/20 border-right"></div>
-                          <BsClockHistory size={24} />
-                          <p>
-                            {`${
-                              convertDate(notificationDetails.details.start)[2]
-                            } to ${
-                              convertDate(notificationDetails.details.end)[2]
-                            }`}
-                          </p>
-                          <p>45 mins</p>
-                        </div>
-                      </div>
-                      <div className="flex justify-end">
-                        <button
-                          className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
-        border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
-                          onClick={() => {
-                            setIsOpenNotificationModal(false);
-                            handleDeleteNotification(notificationDetails.id);
-                            handleDeleteLocal(notificationDetails.id);
-                          }}
-                        >
-                          <BsFillTrash3Fill size={14} />
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              } else if (notificationDetails.type === "edited") {
+              } else if (notificationDetails.type === "standard") {
                 if (
-                  notificationDetails?.details?.old?.start !==
-                    notificationDetails?.details?.new?.start &&
-                  notificationDetails?.details?.old?.mode ===
-                    notificationDetails?.details?.new?.mode
+                  notificationDetails?.details?.creator ===
+                  notificationDetails?.details?.userDetails?.idNo
                 ) {
                   return (
-                    <div className="flex flex-col gap-5">
-                      <div className="flex gap-5 items-center">
-                        <div className="bg-[--dark-green] h-fit rounded-full p-2 text-white border border-2 border-[--dark-green]">
-                          <MdSchedule size={40} />
-                        </div>
-                        <div className="flex flex-col gap-5">
+                    <NotificationModal
+                      setIsOpenNotificationModal={setIsOpenNotificationModal}
+                      title="Regular Appointment"
+                      status={notificationDetails.details?.status}
+                      icon={<AiOutlineLike size={40} />}
+                      description={`<span style="font-weight: bold;">PLV Guidance Counselling Center </span><span style="font-weight: bold;">approved </span>your regular appointment on <span style="font-weight: bold;">${
+                        convertDate(notificationDetails.details.start)[0]
+                      } to ${
+                        convertDate(notificationDetails.details.end)[2]
+                      }</span>`}
+                      appointmentDetails={notificationDetails}
+                      dateTime={
+                        <div className="flex gap-4">
+                          {<BsCalendar4Week size={24} />}
                           <p>
-                            <span className="font-bold">
-                              PLV Guidance Counselling Center{" "}
-                            </span>
-                            <span className="font-bold">rescheduled </span>
-                            your appointment from{" "}
-                            <span className="font-bold">
-                              {
-                                convertDate(
-                                  notificationDetails?.details?.old?.start
-                                )[0]
-                              }{" "}
-                              -{" "}
-                              {
-                                convertDate(
-                                  notificationDetails?.details?.old?.end
-                                )[2]
-                              }
-                            </span>{" "}
-                            to{" "}
-                            <span className="font-bold">
-                              {
-                                convertDate(
-                                  notificationDetails?.details?.new?.start
-                                )[0]
-                              }{" "}
-                              -{" "}
-                              {
-                                convertDate(
-                                  notificationDetails?.details?.new?.end
-                                )[2]
-                              }
-                            </span>{" "}
+                            {convertDate(notificationDetails.details.start)[1]}
                           </p>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-5">
-                          <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                            Appointment Details
+                          <div className="border-[1px] border-black/20 border-right"></div>
+                          {<BsClockHistory size={24} />}
+                          <p>
+                            {convertDate(notificationDetails.details.start)[2]}{" "}
+                            to {convertDate(notificationDetails.details.end)[2]}
                           </p>
-                          {new Date(notificationDetails.details.new.end) >
-                            new Date() &&
-                          notificationDetails.details.new.status ===
-                            "upcoming" ? (
-                            <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3">
-                              Upcoming
-                            </div>
-                          ) : notificationDetails.details.new.status ===
-                            "cancelled" ? (
-                            <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
-                              Cancelled
-                            </div>
-                          ) : (
-                            <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
-                              Overdue
-                            </div>
-                          )}
+                          <p>45 mins</p>
                         </div>
-                        <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
-                          <div className="flex gap-4">
-                            <BsCalendar4Week size={24} />
-                            <p>
-                              {
-                                convertDate(
-                                  notificationDetails.details.new.start
-                                )[1]
-                              }
-                            </p>
-                            <div className="border-[1px] border-black/20 border-right"></div>
-                            <BsClockHistory size={24} />
-                            <p>
-                              {`${
-                                convertDate(
-                                  notificationDetails.details.new.start
-                                )[2]
-                              } to ${
-                                convertDate(
-                                  notificationDetails.details.new.end
-                                )[2]
-                              }`}
-                            </p>
-                            <p>45 mins</p>
-                          </div>
-                        </div>
-                        <div className="flex justify-end">
-                          <button
-                            className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
-          border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
-                            onClick={() => {
-                              setIsOpenNotificationModal(false);
-                              handleDeleteNotification(notificationDetails.id);
-                              handleDeleteLocal(notificationDetails.id);
-                            }}
-                          >
-                            <BsFillTrash3Fill size={14} />
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+                      }
+                      isDisplay={true}
+                      handleDeleteNotification={handleDeleteNotification}
+                      handleDeleteLocal={handleDeleteLocal}
+                    />
                   );
-                } else if (
-                  notificationDetails?.details?.old?.start ==
-                    notificationDetails?.details?.new?.start &&
-                  notificationDetails?.details?.old?.mode !==
-                    notificationDetails?.details?.new?.mode
-                ) {
+                } else {
                   return (
-                    <div className="flex flex-col gap-5">
-                      <div className="flex gap-5 items-center">
-                        <div className="bg-[--dark-green] h-fit rounded-full p-2 text-white border border-2 border-[--dark-green]">
-                          <MdEdit size={40} />
-                        </div>
-                        <div className="flex flex-col gap-5">
+                    <NotificationModal
+                      setIsOpenNotificationModal={setIsOpenNotificationModal}
+                      title="Regular Appointment"
+                      status={notificationDetails.details?.status}
+                      icon={<AiOutlineSchedule size={40} />}
+                      description={`<span style="font-weight: bold;">PLV Guidance Counselling Center </span><span style="font-weight: bold;">scheduled </span>your regular appointment on <span style="font-weight: bold;">${
+                        convertDate(notificationDetails.details.start)[0]
+                      } to ${
+                        convertDate(notificationDetails.details.end)[2]
+                      }</span>`}
+                      appointmentDetails={notificationDetails}
+                      dateTime={
+                        <div className="flex gap-4">
+                          {<BsCalendar4Week size={24} />}
                           <p>
-                            <span className="font-bold">
-                              PLV Guidance Counselling Center{" "}
-                            </span>
-                            <span className="font-bold">changed </span>
-                            mode of the your appointment from{" "}
-                            <span className="font-bold">
-                              {notificationDetails?.details?.old?.mode ===
-                              "facetoface"
-                                ? "face-to-face"
-                                : "virtual"}
-                            </span>{" "}
-                            to{" "}
-                            <span className="font-bold">
-                              {notificationDetails?.details?.new?.mode ===
-                              "facetoface"
-                                ? "face-to-face"
-                                : "virtual"}
-                            </span>
+                            {convertDate(notificationDetails.details.start)[1]}
                           </p>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-end">
-                          <button
-                            className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
-          border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
-                            onClick={() => {
-                              setIsOpenNotificationModal(false);
-                              handleDeleteNotification(notificationDetails.id);
-                              handleDeleteLocal(notificationDetails.id);
-                            }}
-                          >
-                            <BsFillTrash3Fill size={14} />
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                } else if (
-                  notificationDetails?.details?.old?.start !==
-                    notificationDetails?.details?.new?.start &&
-                  notificationDetails?.details?.old?.mode !==
-                    notificationDetails?.details?.new?.mode
-                ) {
-                  return (
-                    <div className="flex flex-col gap-5">
-                      <div className="flex gap-5 items-center">
-                        <div className="bg-[--dark-green] h-fit rounded-full p-2 text-white border border-2 border-[--dark-green]">
-                          <MdSchedule size={40} />
-                        </div>
-                        <div className="flex flex-col gap-5">
+                          <div className="border-[1px] border-black/20 border-right"></div>
+                          {<BsClockHistory size={24} />}
                           <p>
-                            <span className="font-bold">
-                              PLV Guidance Counselling Center{" "}
-                            </span>
-                            <span className="font-bold">rescheduled </span>
-                            your appointment from{" "}
-                            <span className="font-bold">
-                              {
-                                convertDate(
-                                  notificationDetails?.details?.old?.start
-                                )[0]
-                              }{" "}
-                              -{" "}
-                              {
-                                convertDate(
-                                  notificationDetails?.details?.old?.end
-                                )[2]
-                              }
-                            </span>{" "}
-                            to{" "}
-                            <span className="font-bold">
-                              {
-                                convertDate(
-                                  notificationDetails?.details?.new?.start
-                                )[0]
-                              }{" "}
-                              -{" "}
-                              {
-                                convertDate(
-                                  notificationDetails?.details?.new?.end
-                                )[2]
-                              }
-                            </span>{" "}
-                            and <span className="font-bold">changed </span>
-                            mode from{" "}
-                            <span className="font-bold">
-                              {notificationDetails?.details?.old?.mode ===
-                              "facetoface"
-                                ? "face-to-face"
-                                : "virtual"}
-                            </span>{" "}
-                            to{" "}
-                            <span className="font-bold">
-                              {notificationDetails?.details?.new?.mode ===
-                              "facetoface"
-                                ? "face-to-face"
-                                : "virtual"}
-                            </span>
+                            {convertDate(notificationDetails.details.start)[2]}{" "}
+                            to {convertDate(notificationDetails.details.end)[2]}
                           </p>
+                          <p>45 mins</p>
                         </div>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-5">
-                          <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                            Appointment Details
-                          </p>
-                          {new Date(notificationDetails.details.new.end) >
-                            new Date() &&
-                          notificationDetails.details.new.status ===
-                            "upcoming" ? (
-                            <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3">
-                              Upcoming
-                            </div>
-                          ) : notificationDetails.details.new.status ===
-                            "cancelled" ? (
-                            <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
-                              Cancelled
-                            </div>
-                          ) : (
-                            <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
-                              Overdue
-                            </div>
-                          )}
-                        </div>
-                        <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
-                          <div className="flex gap-4">
-                            <BsCalendar4Week size={24} />
-                            <p>
-                              {
-                                convertDate(
-                                  notificationDetails.details.new.start
-                                )[1]
-                              }
-                            </p>
-                            <div className="border-[1px] border-black/20 border-right"></div>
-                            <BsClockHistory size={24} />
-                            <p>
-                              {`${
-                                convertDate(
-                                  notificationDetails.details.new.start
-                                )[2]
-                              } to ${
-                                convertDate(
-                                  notificationDetails.details.new.end
-                                )[2]
-                              }`}
-                            </p>
-                            <p>45 mins</p>
-                          </div>
-                        </div>
-                        <div className="flex justify-end">
-                          <button
-                            className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
-          border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
-                            onClick={() => {
-                              setIsOpenNotificationModal(false);
-                              handleDeleteNotification(notificationDetails.id);
-                              handleDeleteLocal(notificationDetails.id);
-                            }}
-                          >
-                            <BsFillTrash3Fill size={14} />
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+                      }
+                      isDisplay={true}
+                      handleDeleteNotification={handleDeleteNotification}
+                      handleDeleteLocal={handleDeleteLocal}
+                    />
                   );
                 }
               }
-            })()}
-          </div>
-        </Modal>
-      ) : (
-        <Modal isOpen={isOpenNotificationModal}>
-          <div className="w-full justify-between flex">
-            <p className="text-2xl font-extrabold">
-              {(() => {
-                if (notificationDetails.type === "sos") {
-                  return "SOS Emergency Appointment";
-                } else if (notificationDetails.type === "standard") {
-                  return "Regular Appointment";
-                }
-              })()}
-            </p>
-            <button
-              onClick={() => {
-                setIsOpenNotificationModal(false);
-              }}
-              type="button"
-            >
-              <FaTimes size={20} />
-            </button>
-          </div>
-          <div className="flex flex-col gap-4 mt-5">
-            {(() => {
+            } else if (notificationDetails.details?.status === "completed") {
               if (notificationDetails.type === "sos") {
                 return (
-                  <div className="flex flex-col gap-5">
-                    <div className="flex gap-5 items-center">
-                      <div className="bg-[--red] h-fit rounded-full p-1 text-white border border-2 border-[--red]">
-                        <MdSos size={48} />
-                      </div>
-                      <div className="flex flex-col gap-5">
-                        <p>
-                          {" "}
-                          <span className="font-bold">
-                            {notificationDetails.details.userDetails.name}{" "}
-                          </span>
-                          has booked an{" "}
-                          <span className="font-bold">
-                            SOS Emergency appointment{" "}
-                          </span>{" "}
-                          on{" "}
-                          {
-                            convertDate(
-                              notificationDetails.details.scheduledDate
-                            )[0]
-                          }
-                        </p>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-5">
-                        <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                          Appointment Details
-                        </p>
-                        {new Date(notificationDetails.details.scheduledDate) >
-                        new Date() ? (
-                          <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3">
-                            Upcoming
-                          </div>
-                        ) : (
-                          <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
-                            Overdue
-                          </div>
-                        )}
-                      </div>
-                      <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
-                        <div className="flex gap-4">
-                          <BsCalendar4Week size={24} />
-                          <p>
-                            {
-                              convertDate(
-                                notificationDetails.details.scheduledDate
-                              )[1]
-                            }
-                          </p>
-                          <div className="border-[1px] border-black/20 border-right"></div>
-                          <BsClockHistory size={24} />
-                          <p>
-                            {
-                              convertDate(
-                                notificationDetails.details.scheduledDate
-                              )[2]
-                            }
-                          </p>
-                          <p>45 mins</p>
-                        </div>
-                      </div>
-                      <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
-                        Student Details
-                      </p>
-                      <table className="mb-5">
-                        <tr>
-                          <td className="w-[150px] flex justify-start">Name</td>
-                          <td>
-                            {notificationDetails.details.userDetails.name}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="w-[150px] flex justify-start">
-                            Gender
-                          </td>
-                          <td>
-                            {notificationDetails.details.userDetails.gender}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="w-[150px] flex justify-start">
-                            Email
-                          </td>
-                          <td>
-                            {notificationDetails.details.userDetails.email}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="w-[150px] flex justify-start">
-                            {" "}
-                            ID Number
-                          </td>
-                          <td>
-                            {" "}
-                            {notificationDetails.details.userDetails.idNo}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="w-[150px] flex justify-start">
-                            Course
-                          </td>
-                          <td>
-                            {notificationDetails.details.userDetails.department}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="w-[150px] flex justify-start">
-                            Year and Section
-                          </td>
-                          <td>
-                            {
-                              notificationDetails.details.userDetails
-                                .yearSection
-                            }
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="w-[150px] flex justify-start">
-                            College
-                          </td>
-                          <td>
-                            {
-                              notificationDetails.details.userDetails
-                                .mainDepartment
-                            }
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="w-[150px] flex justify-start">
-                            Phone
-                          </td>
-                          <td>
-                            {notificationDetails.details.userDetails.contactNo}
-                          </td>
-                        </tr>
-                      </table>
-                      <div className="flex justify-end">
-                        <button
-                          className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
-          border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
-                          onClick={() => {
-                            setIsOpenNotificationModal(false);
-                            handleDeleteNotification(notificationDetails.id);
-                            handleDeleteLocal(notificationDetails.id);
-                          }}
-                        >
-                          <BsFillTrash3Fill size={14} />
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  <NotificationModal
+                    setIsOpenNotificationModal={setIsOpenNotificationModal}
+                    title="Completed SOS Appointment"
+                    status={notificationDetails.details?.status}
+                    icon={<MdOutlineCheckCircleOutline size={48} />}
+                    description={
+                      '<span style="font-weight: bold;">PLV Guidance Counselling Center </span><span style="font-weight: bold;">marked</span> your <span style="font-weight: bold;">SOS appointment</span> as completed'
+                    }
+                    appointmentDetails={notificationDetails}
+                    dateTime={null}
+                    isDisplay={false}
+                    handleDeleteNotification={handleDeleteNotification}
+                    handleDeleteLocal={handleDeleteLocal}
+                  />
                 );
               } else if (notificationDetails.type === "standard") {
                 return (
-                  <div className="flex flex-col gap-5">
-                    <div className="flex gap-5 items-center">
-                      <div className="bg-[--dark-green] h-fit rounded-full p-3 text-white border border-2 border-[--dark-green]">
-                        <BsCalendarPlus size={32} />
-                      </div>
-                      <div className="flex flex-col gap-5">
+                  <NotificationModal
+                    setIsOpenNotificationModal={setIsOpenNotificationModal}
+                    title="Completed Regular Appointment"
+                    status={notificationDetails.details?.status}
+                    icon={<MdOutlineCheckCircleOutline size={48} />}
+                    description={
+                      '<span style="font-weight: bold;">PLV Guidance Counselling Center </span><span style="font-weight: bold;">marked</span> your <span style="font-weight: bold;">regular appointment</span> as completed'
+                    }
+                    appointmentDetails={notificationDetails}
+                    dateTime={
+                      <div className="flex gap-4">
+                        {<BsCalendar4Week size={24} />}
                         <p>
-                          {" "}
-                          <span className="font-bold">
-                            {notificationDetails.details.userDetails.name}{" "}
-                          </span>
-                          has booked an{" "}
-                          <span className="font-bold">regular appointment</span>{" "}
-                          on{" "}
-                          {`${
-                            convertDate(notificationDetails.details.start)[0]
-                          } to ${
-                            convertDate(notificationDetails.details.end)[2]
-                          }`}
+                          {convertDate(notificationDetails.details.start)[1]}
                         </p>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-5">
-                        <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                          Appointment Details
+                        <div className="border-[1px] border-black/20 border-right"></div>
+                        {<BsClockHistory size={24} />}
+                        <p>
+                          {convertDate(notificationDetails.details.start)[2]} to{" "}
+                          {convertDate(notificationDetails.details.end)[2]}
                         </p>
-                        {new Date(notificationDetails.details.end) >
-                        new Date() ? (
-                          <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3">
-                            Upcoming
-                          </div>
-                        ) : (
-                          <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
-                            Overdue
-                          </div>
-                        )}
+                        <p>45 mins</p>
                       </div>
-                      <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
-                        <div className="flex gap-4">
-                          <BsCalendar4Week size={24} />
-                          <p>
-                            {convertDate(notificationDetails.details.start)[1]}
-                          </p>
-                          <div className="border-[1px] border-black/20 border-right"></div>
-                          <BsClockHistory size={24} />
-                          <p>
-                            {`${
-                              convertDate(notificationDetails.details.start)[2]
-                            } to ${
-                              convertDate(notificationDetails.details.end)[2]
-                            }`}
-                          </p>
-                          <p>45 mins</p>
-                        </div>
-                      </div>
-                      <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
-                        Student Details
-                      </p>
-                      <table className="mb-5">
-                        <tr>
-                          <td className="w-[150px] flex justify-start">Name</td>
-                          <td>
-                            {notificationDetails.details.userDetails.name}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="w-[150px] flex justify-start">
-                            Gender
-                          </td>
-                          <td>
-                            {notificationDetails.details.userDetails.gender}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="w-[150px] flex justify-start">
-                            Email
-                          </td>
-                          <td>
-                            {notificationDetails.details.userDetails.email}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="w-[150px] flex justify-start">
-                            {" "}
-                            ID Number
-                          </td>
-                          <td>
-                            {" "}
-                            {notificationDetails.details.userDetails.idNo}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="w-[150px] flex justify-start">
-                            Course
-                          </td>
-                          <td>
-                            {notificationDetails.details.userDetails.department}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="w-[150px] flex justify-start">
-                            Year and Section
-                          </td>
-                          <td>
-                            {
-                              notificationDetails.details.userDetails
-                                .yearSection
-                            }
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="w-[150px] flex justify-start">
-                            College
-                          </td>
-                          <td>
-                            {
-                              notificationDetails.details.userDetails
-                                .mainDepartment
-                            }
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="w-[150px] flex justify-start">
-                            Phone
-                          </td>
-                          <td>
-                            {notificationDetails.details.userDetails.contactNo}
-                          </td>
-                        </tr>
-                      </table>
-                      <div className="flex justify-end">
-                        <button
-                          className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
-          border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
-                          onClick={() => {
-                            setIsOpenNotificationModal(false);
-                            handleDeleteNotification(notificationDetails.id);
-                            handleDeleteLocal(notificationDetails.id);
-                          }}
-                        >
-                          <BsFillTrash3Fill size={14} />
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                    }
+                    isDisplay={true}
+                    handleDeleteNotification={handleDeleteNotification}
+                    handleDeleteLocal={handleDeleteLocal}
+                  />
                 );
               }
-            })()}
-          </div>
+            } else if (notificationDetails.details?.status === "cancelled") {
+              if (notificationDetails.type === "sos") {
+                return (
+                  <NotificationModal
+                    setIsOpenNotificationModal={setIsOpenNotificationModal}
+                    title="Cancelled SOS Appointment"
+                    status={notificationDetails.details?.status}
+                    icon={<MdOutlineCancel size={48} />}
+                    description={
+                      '<span style="font-weight: bold;">PLV Guidance Counselling Center </span> has <span style="font-weight: bold;">cancelled </span> your <span style="font-weight: bold;">SOS appointment</span>'
+                    }
+                    appointmentDetails={notificationDetails}
+                    dateTime={null}
+                    isDisplay={false}
+                    handleDeleteNotification={handleDeleteNotification}
+                    handleDeleteLocal={handleDeleteLocal}
+                  />
+                );
+              } else if (notificationDetails.type === "standard") {
+                return (
+                  <NotificationModal
+                    setIsOpenNotificationModal={setIsOpenNotificationModal}
+                    title="Cancelled Regular Appointment"
+                    status={notificationDetails.details?.status}
+                    icon={<MdOutlineCancel size={48} />}
+                    description={
+                      '<span style="font-weight: bold;">PLV Guidance Counselling Center </span> has <span style="font-weight: bold;">cancelled </span> your <span style="font-weight: bold;">regular appointment</span>'
+                    }
+                    appointmentDetails={notificationDetails}
+                    dateTime={
+                      <div className="flex gap-4">
+                        {<BsCalendar4Week size={24} />}
+                        <p>
+                          {convertDate(notificationDetails.details.start)[1]}
+                        </p>
+                        <div className="border-[1px] border-black/20 border-right"></div>
+                        {<BsClockHistory size={24} />}
+                        <p>
+                          {convertDate(notificationDetails.details.start)[2]} to{" "}
+                          {convertDate(notificationDetails.details.end)[2]}
+                        </p>
+                        <p>45 mins</p>
+                      </div>
+                    }
+                    isDisplay={true}
+                    handleDeleteNotification={handleDeleteNotification}
+                    handleDeleteLocal={handleDeleteLocal}
+                  />
+                );
+              }
+            } else if (notificationDetails.details?.status === "pending") {
+              return (
+                <NotificationModal
+                  setIsOpenNotificationModal={setIsOpenNotificationModal}
+                  title="Pending Regular Appointment"
+                  status={notificationDetails.details?.status}
+                  icon={<MdOutlinePending size={48} />}
+                  description={`<span style="font-weight: bold;">You </span> have <span style="font-weight: bold;">pending </span> regular appointment on <span style="font-weight: bold;">${
+                    convertDate(notificationDetails.details.start)[0]
+                  } to ${
+                    convertDate(notificationDetails.details.end)[2]
+                  }</span>`}
+                  appointmentDetails={notificationDetails}
+                  dateTime={
+                    <div className="flex gap-4">
+                      {<BsCalendar4Week size={24} />}
+                      <p>{convertDate(notificationDetails.details.start)[1]}</p>
+                      <div className="border-[1px] border-black/20 border-right"></div>
+                      {<BsClockHistory size={24} />}
+                      <p>
+                        {convertDate(notificationDetails.details.start)[2]} to{" "}
+                        {convertDate(notificationDetails.details.end)[2]}
+                      </p>
+                      <p>45 mins</p>
+                    </div>
+                  }
+                  isDisplay={true}
+                  handleDeleteNotification={handleDeleteNotification}
+                  handleDeleteLocal={handleDeleteLocal}
+                />
+              );
+            } else if (notificationDetails.type === "edited") {
+              console.log(notificationDetails);
+              return (
+                <NotificationModal
+                  setIsOpenNotificationModal={setIsOpenNotificationModal}
+                  title="Rescheduled/Edited Regular Appointment"
+                  status={notificationDetails.details.type}
+                  icon={<MdSchedule size={48} />}
+                  description={`<span style="font-weight: bold;">PLV Guidance Counselling Center</span><span style="font-weight: bold;"> rescheduled/edited </span> your regular appointment`}
+                  appointmentDetails={notificationDetails.details.new}
+                  dateTime={
+                    <div className="flex gap-4">
+                      {<BsCalendar4Week size={24} />}
+                      <p>
+                        {convertDate(notificationDetails.details.new.start)[1]}
+                      </p>
+                      <div className="border-[1px] border-black/20 border-right"></div>
+                      {<BsClockHistory size={24} />}
+                      <p>
+                        {convertDate(notificationDetails.details.new.start)[2]}{" "}
+                        to {convertDate(notificationDetails.details.new.end)[2]}
+                      </p>
+                      <p>45 mins</p>
+                    </div>
+                  }
+                  isDisplay={true}
+                  handleDeleteNotification={handleDeleteNotification}
+                  handleDeleteLocal={handleDeleteLocal}
+                />
+              );
+            }
+          })()}
+        </Modal>
+      ) : (
+        <Modal isOpen={isOpenNotificationModal}>
+          {(() => {
+            if (notificationDetails.details?.status === "upcoming") {
+              if (notificationDetails.type === "sos") {
+                return (
+                  <NotificationModal
+                    setIsOpenNotificationModal={setIsOpenNotificationModal}
+                    title="SOS Appointment"
+                    status={notificationDetails.details?.status}
+                    icon={<MdSos size={48} />}
+                    description={`<span style="font-weight: bold;">${notificationDetails?.details?.userDetails?.name} </span>have successfully <span style="font-weight: bold;">booked </span>an <span style="font-weight: bold;">SOS appointment</span>`}
+                    appointmentDetails={notificationDetails}
+                    dateTime={
+                      "You can come anytime at PLV Guidance Counseling Center, and you will be entertained first"
+                    }
+                    isDisplay={true}
+                    handleDeleteNotification={handleDeleteNotification}
+                    handleDeleteLocal={handleDeleteLocal}
+                  />
+                );
+              }
+            } else if (notificationDetails.details?.status === "cancelled") {
+              if (notificationDetails.type === "sos") {
+                return (
+                  <NotificationModal
+                    setIsOpenNotificationModal={setIsOpenNotificationModal}
+                    title="Cancelled SOS Appointment"
+                    status={notificationDetails.details?.status}
+                    icon={<MdOutlineCancel size={48} />}
+                    description={`<span style="font-weight: bold;">${notificationDetails?.details?.userDetails?.name} </span> has <span style="font-weight: bold;">cancelled </span><span style="font-weight: bold;">SOS appointment</span>`}
+                    appointmentDetails={notificationDetails}
+                    dateTime={null}
+                    isDisplay={false}
+                    handleDeleteNotification={handleDeleteNotification}
+                    handleDeleteLocal={handleDeleteLocal}
+                  />
+                );
+              } else if (notificationDetails.type === "standard") {
+                return (
+                  <NotificationModal
+                    setIsOpenNotificationModal={setIsOpenNotificationModal}
+                    title="Cancelled Regular Appointment"
+                    status={notificationDetails.details?.status}
+                    icon={<MdOutlineCancel size={48} />}
+                    description={`<span style="font-weight: bold;">${notificationDetails?.details?.userDetails?.name} </span> has <span style="font-weight: bold;">cancelled </span><span style="font-weight: bold;">regular appointment</span>`}
+                    appointmentDetails={notificationDetails}
+                    dateTime={
+                      <div className="flex gap-4">
+                        {<BsCalendar4Week size={24} />}
+                        <p>
+                          {convertDate(notificationDetails.details.start)[1]}
+                        </p>
+                        <div className="border-[1px] border-black/20 border-right"></div>
+                        {<BsClockHistory size={24} />}
+                        <p>
+                          {convertDate(notificationDetails.details.start)[2]} to{" "}
+                          {convertDate(notificationDetails.details.end)[2]}
+                        </p>
+                        <p>45 mins</p>
+                      </div>
+                    }
+                    isDisplay={true}
+                    handleDeleteNotification={handleDeleteNotification}
+                    handleDeleteLocal={handleDeleteLocal}
+                  />
+                );
+              }
+            } else if (notificationDetails.details?.status === "pending") {
+              return (
+                <NotificationModal
+                  setIsOpenNotificationModal={setIsOpenNotificationModal}
+                  title="Pending Regular Appointment"
+                  status={notificationDetails.details?.status}
+                  icon={<MdOutlinePending size={48} />}
+                  description={`<span style="font-weight: bold;">${
+                    notificationDetails?.details?.userDetails?.name
+                  } </span> has a <span style="font-weight: bold;">pending </span> regular appointment on <span style="font-weight: bold;">${
+                    convertDate(notificationDetails.details.start)[0]
+                  } to ${
+                    convertDate(notificationDetails.details.end)[2]
+                  }</span>`}
+                  appointmentDetails={notificationDetails}
+                  dateTime={
+                    <div className="flex gap-4">
+                      {<BsCalendar4Week size={24} />}
+                      <p>{convertDate(notificationDetails.details.start)[1]}</p>
+                      <div className="border-[1px] border-black/20 border-right"></div>
+                      {<BsClockHistory size={24} />}
+                      <p>
+                        {convertDate(notificationDetails.details.start)[2]} to{" "}
+                        {convertDate(notificationDetails.details.end)[2]}
+                      </p>
+                      <p>45 mins</p>
+                    </div>
+                  }
+                  isDisplay={true}
+                  handleDeleteNotification={handleDeleteNotification}
+                  handleDeleteLocal={handleDeleteLocal}
+                />
+              );
+            } else if (notificationDetails.type === "edited") {
+              return (
+                <NotificationModal
+                  setIsOpenNotificationModal={setIsOpenNotificationModal}
+                  title="Rescheduled/Edited Regular Appointment"
+                  status={notificationDetails.details.type}
+                  icon={<MdSchedule size={48} />}
+                  description={`<span style="font-weight: bold;">${notificationDetails?.details?.old?.userDetails?.name}</span><span style="font-weight: bold;"> rescheduled/edited </span> regular appointment`}
+                  appointmentDetails={notificationDetails.details.new}
+                  dateTime={
+                    <div className="flex gap-4">
+                      {<BsCalendar4Week size={24} />}
+                      <p>
+                        {convertDate(notificationDetails.details.new.start)[1]}
+                      </p>
+                      <div className="border-[1px] border-black/20 border-right"></div>
+                      {<BsClockHistory size={24} />}
+                      <p>
+                        {convertDate(notificationDetails.details.new.start)[2]}{" "}
+                        to {convertDate(notificationDetails.details.new.end)[2]}
+                      </p>
+                      <p>45 mins</p>
+                    </div>
+                  }
+                  isDisplay={true}
+                  handleDeleteNotification={handleDeleteNotification}
+                  handleDeleteLocal={handleDeleteLocal}
+                />
+              );
+            }
+          })()}
         </Modal>
       )}
       {isStudent ? (
@@ -1568,7 +668,7 @@ function NotificationContainer({
                               k={k}
                               icon={<MdOutlineCheckCircleOutline size={24} />}
                               description={
-                                '<span style="font-weight: bold;">PLV Guidance Counselling Center </span><span style="font-weight: bold;">marked</span> your <span style="font-weight: bold;">Regular appointment</span> as completed'
+                                '<span style="font-weight: bold;">PLV Guidance Counselling Center </span><span style="font-weight: bold;">marked</span> your <span style="font-weight: bold;">regular appointment</span> as completed'
                               }
                               isSeen={i.isSeen}
                               createdDate={i.createdDate}
@@ -1609,7 +709,7 @@ function NotificationContainer({
                             status={i.details?.status}
                             k={k}
                             icon={<MdOutlinePending size={24} />}
-                            description={`<span style="font-weight: bold;">You </span> have <span style="font-weight: bold;">pending </span> appointment on <span style="font-weight: bold;">${
+                            description={`<span style="font-weight: bold;">You </span> have <span style="font-weight: bold;">pending </span> regular appointment on <span style="font-weight: bold;">${
                               convertDate(i.details.start)[0]
                             } to ${convertDate(i.details.end)[2]}</span>`}
                             isSeen={i.isSeen}
@@ -1622,7 +722,7 @@ function NotificationContainer({
                             status={i?.type}
                             k={k}
                             icon={<MdSchedule size={24} />}
-                            description={`<span style="font-weight: bold;">PLV Guidance Counselling Center</span><span style="font-weight: bold;"> rescheduled/edited </span> your appointment`}
+                            description={`<span style="font-weight: bold;">PLV Guidance Counselling Center</span><span style="font-weight: bold;"> rescheduled/edited </span> your regular appointment`}
                             isSeen={i.isSeen}
                             createdDate={i.createdDate}
                           />
@@ -1744,7 +844,7 @@ function NotificationContainer({
                             icon={<MdOutlinePending size={24} />}
                             description={`<span style="font-weight: bold;">${
                               i?.details?.userDetails?.name
-                            } </span> has a <span style="font-weight: bold;">pending </span> appointment on <span style="font-weight: bold;">${
+                            } </span> has a <span style="font-weight: bold;">pending </span> regular appointment on <span style="font-weight: bold;">${
                               convertDate(i.details.start)[0]
                             } to ${convertDate(i.details.end)[2]}</span>`}
                             isSeen={i.isSeen}
@@ -1752,13 +852,12 @@ function NotificationContainer({
                           />
                         );
                       } else if (i.type === "edited") {
-                        console.log(i);
                         return (
                           <NotificationItems
                             status={i?.type}
                             k={k}
                             icon={<MdSchedule size={24} />}
-                            description={`<span style="font-weight: bold;">${i?.details?.old?.userDetails?.name}</span><span style="font-weight: bold;"> rescheduled/edited </span> appointment`}
+                            description={`<span style="font-weight: bold;">${i?.details?.old?.userDetails?.name}</span><span style="font-weight: bold;"> rescheduled/edited </span> regular appointment`}
                             isSeen={i.isSeen}
                             createdDate={i.createdDate}
                           />

@@ -32,7 +32,7 @@ function Modal({ children, isOpen, isCalendar }) {
     >
       <motion.div
         className={`${
-          isCalendar ? null : "w-4/12"
+          isCalendar ? null : "w-[35%]"
         } h-max z-50 bg-[--light-brown] p-8 rounded-2xl`}
       >
         <motion.div>{children}</motion.div>
