@@ -1,5 +1,5 @@
 import axios from "../api/axios";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import React from "react";
 
 import CalendarSmall from "react-calendar";
@@ -18,18 +18,6 @@ import Modal from "../components/Modal";
 import CalendarComponent from "../components/Calendar/CalendarComponent";
 
 const localizer = momentLocalizer(moment);
-
-const MemoizedTextarea = React.memo(({ value, onChange }) => {
-  return (
-    <textarea
-      className="w-full h-full bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
-        p-3 font-semibold resize-none"
-      placeholder="Aa..."
-      value={value}
-      onChange={onChange}
-    ></textarea>
-  );
-});
 
 function Appointments({ socket, toast, auth }) {
   const [events, setEvents] = useState([]);
@@ -56,6 +44,8 @@ function Appointments({ socket, toast, auth }) {
   const [description, setDescription] = useState("");
   const [preferredMode, setPreferredMode] = useState("facetoface");
   const [notes, setNotes] = useState("");
+
+  const notesRef = useRef();
 
   useEffect(() => {
     getAppointments();
@@ -457,37 +447,31 @@ function Appointments({ socket, toast, auth }) {
 
   const handleSaveNotes = async () => {
     try {
-      if (notes !== "") {
-        await axios
-          .post(
-            "/api/appointments/save-notes",
-            {
-              id: appointmentDetails?.data?.id,
-              notes,
-              type: appointmentDetails?.data?.type,
+      await axios
+        .post(
+          "/api/appointments/save-notes",
+          {
+            id: appointmentDetails?.data?.id,
+            notes: notesRef.current.value,
+            type: appointmentDetails?.data?.type,
+          },
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${auth?.accessToken}`,
             },
-            {
-              withCredentials: true,
-              headers: {
-                Authorization: `Bearer ${auth?.accessToken}`,
-              },
-            }
-          )
-          .then((res) => {
-            toast.success(res?.data?.message);
-            // editAppointmentRealTime(res?.data?.appointmentOldNew);
-            // setTimeout(() => {
-            //   getAppointments();
-            //   getBookedAppointments();
-            // }, 200);
-          })
-          .catch((err) => {
-            toast.error(err?.response?.data);
-          });
-      } else {
-        toast.error("Please check the details!");
-      }
+          }
+        )
+        .then((res) => {
+          toast.success(res?.data?.message);
+          // editAppointmentRealTime(res?.data?.appointmentOldNew);
+          // setTimeout(() => {
+          //   getAppointments();
+          //   getBookedAppointments();
+          // }, 200);
+        });
     } catch (err) {
+      console.log(err);
       toast.error("Error");
     }
   };
@@ -880,7 +864,8 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                     <button
                       className="font-bold text-[--dark-green] hover:underline transition-all duration-300 mt-1"
                       onClick={() => {
-                        setNotes(appointmentDetails?.data?.notes);
+                        notesRef.current.value =
+                          appointmentDetails?.data?.notes;
                         setIsOpenNotesModal(true);
                         setIsViewNotes(true);
                       }}
@@ -1069,6 +1054,7 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
               setIsOpenNotesModal(false);
               setIsViewNotes(false);
               setNotes("");
+              notesRef.current.value = "";
             }}
             type="button"
           >
@@ -1096,12 +1082,16 @@ border border-2 border-[--dark-green] transition-all duration-300"
           ) : (
             <>
               <div className="h-[600px] w-full">
-                <MemoizedTextarea
-                  value={notes}
-                  onChange={(e) => {
-                    setNotes(e.target.value);
-                  }}
-                />
+                <textarea
+                  className="w-full h-full bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
+        p-3 font-semibold resize-none"
+                  placeholder="Aa..."
+                  // value={notes}
+                  ref={notesRef}
+                  // onChange={(e) => {
+                  //   setNotes(e.target.value);
+                  // }}
+                ></textarea>
               </div>
               <div className="w-full flex justify-end mt-4">
                 <button
@@ -1111,6 +1101,7 @@ border border-2 border-[--dark-green] transition-all duration-300"
                     handleSaveNotes();
                     setIsViewNotes(true);
                     setNotes("");
+                    notesRef.current.value = "";
                     setIsOpenNotesModal(false);
                   }}
                 >

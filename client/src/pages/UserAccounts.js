@@ -624,11 +624,11 @@ function UserAccounts({ toast, auth }) {
                     className="flex gap-1 items-center w-auto p-1 text-sm rounded-lg text-[--dark-green]
           hover:underline transition-all duration-300 font-semibold cursor-pointer"
                     onClick={() => {
-                      if (assignedCollegeLen < 3) {
+                      if (assignedCollegeLen.length < 2) {
                         if (
                           assignedCollege.length !== assignedCollegeLen.length
                         ) {
-                          toast.error("Assigned 1 college!");
+                          toast.error("Assigned college!");
                           return;
                         }
                         setAssignedCollegeLen([...assignedCollegeLen, ""]);
@@ -643,7 +643,7 @@ function UserAccounts({ toast, auth }) {
                 </div>
                 {assignedCollegeLen.map((i, k) => {
                   return (
-                    <div className="flex gap-5 w-full" key={k}>
+                    <div className="flex gap-2 w-full" key={k}>
                       <div className="w-full flex flex-col gap-2">
                         <select
                           id="department"
@@ -670,6 +670,20 @@ function UserAccounts({ toast, auth }) {
                             );
                           })}
                         </select>
+                      </div>
+                      <div className="flex gap-5">
+                        <div
+                          className="flex gap-1 items-center w-auto p-1 text-sm rounded-lg text-[--red]
+          hover:underline transition-all duration-300 font-semibold cursor-pointer"
+                          onClick={() => {
+                            let newArray = assignedCollege;
+                            newArray.splice(k, 1);
+                            setAssignedCollege(newArray);
+                            setAssignedCollegeLen(newArray);
+                          }}
+                        >
+                          Delete
+                        </div>
                       </div>
                     </div>
                   );
@@ -826,23 +840,24 @@ function UserAccounts({ toast, auth }) {
               </div>
             </div>
             <div className="flex gap-5 w-full">
-              <div className="w-1/2 flex flex-col gap-2">
-                <label htmlFor="year-sec" className="font-semibold">
-                  Year and Section *
-                </label>
-                <input
-                  id="year-sec"
-                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                  type="tel"
-                  placeholder="1-4"
-                  pattern="[1-4]{1}[-]{1}[1-20]{1-2}"
-                  value={yearSection}
-                  onChange={(e) => {
-                    setYearSection(e.target.value);
-                  }}
-                />
-              </div>
-
+              {userType === "guidanceCounselor" ? null : (
+                <div className="w-1/2 flex flex-col gap-2">
+                  <label htmlFor="year-sec" className="font-semibold">
+                    Year and Section *
+                  </label>
+                  <input
+                    id="year-sec"
+                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                    type="tel"
+                    placeholder="1-4"
+                    pattern="[1-4]{1}[-]{1}[1-20]{1-2}"
+                    value={yearSection}
+                    onChange={(e) => {
+                      setYearSection(e.target.value);
+                    }}
+                  />
+                </div>
+              )}
               <div className="w-1/2 flex flex-col gap-2">
                 <label htmlFor="birthday" className="font-semibold">
                   Birthday *
@@ -859,36 +874,38 @@ function UserAccounts({ toast, auth }) {
                 />
               </div>
             </div>
-            <div className="flex gap-5 w-full">
-              <div className="w-full flex flex-col gap-2">
-                <label htmlFor="department" className="font-semibold">
-                  Department/Courses *
-                </label>
-                <select
-                  id="department"
-                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                  value={department}
-                  onChange={(e) => {
-                    setDepartment(e.target.value);
-                  }}
-                  required
-                >
-                  <option
-                    hidden
-                    defaultValue
-                    value=""
-                    className="text-black/30"
-                  ></option>
-                  {courses?.map((i, k) => {
-                    return (
-                      <option value={i} key={k}>
-                        {i}
-                      </option>
-                    );
-                  })}
-                </select>
+            {userType === "guidanceCounselor" ? null : (
+              <div className="flex gap-5 w-full">
+                <div className="w-full flex flex-col gap-2">
+                  <label htmlFor="department" className="font-semibold">
+                    Department/Courses *
+                  </label>
+                  <select
+                    id="department"
+                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                    value={department}
+                    onChange={(e) => {
+                      setDepartment(e.target.value);
+                    }}
+                    required
+                  >
+                    <option
+                      hidden
+                      defaultValue
+                      value=""
+                      className="text-black/30"
+                    ></option>
+                    {courses?.map((i, k) => {
+                      return (
+                        <option value={i} key={k}>
+                          {i}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
               </div>
-            </div>
+            )}
             {userType === "guidanceCounselor" ? (
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between">
@@ -899,7 +916,13 @@ function UserAccounts({ toast, auth }) {
                     className="flex gap-1 items-center w-auto p-1 text-sm rounded-lg text-[--dark-green]
           hover:underline transition-all duration-300 font-semibold cursor-pointer"
                     onClick={() => {
-                      if (assignedCollegeLen < 3) {
+                      if (assignedCollegeLen.length < 2) {
+                        if (
+                          assignedCollege.length !== assignedCollegeLen.length
+                        ) {
+                          toast.error("Assigned college!");
+                          return;
+                        }
                         setAssignedCollegeLen([...assignedCollegeLen, ""]);
                       } else {
                         toast.error("Limit of assigned college reached!");
@@ -910,7 +933,7 @@ function UserAccounts({ toast, auth }) {
                     Add
                   </div>
                 </div>
-                {assignedCollege.map((i, k) => {
+                {assignedCollegeLen.map((i, k) => {
                   return (
                     <div className="flex gap-5 w-full" key={k}>
                       <div className="w-full flex flex-col gap-2">
@@ -931,14 +954,29 @@ function UserAccounts({ toast, auth }) {
                             value=""
                             className="text-black/30"
                           ></option>
-                          {colleges?.map((i, k) => {
+                          {colleges?.map((j, l) => {
                             return (
-                              <option value={i} key={k}>
-                                {i}
+                              <option value={j} key={l}>
+                                {j}
                               </option>
                             );
                           })}
                         </select>
+                      </div>
+                      <div className="flex gap-5">
+                        <div
+                          className="flex gap-1 items-center w-auto p-1 text-sm rounded-lg text-[--red]
+          hover:underline transition-all duration-300 font-semibold cursor-pointer"
+                          onClick={() => {
+                            console.log(assignedCollege, assignedCollegeLen);
+                            let newArray = assignedCollege;
+                            newArray.splice(k, 1);
+                            setAssignedCollege(newArray);
+                            setAssignedCollegeLen(newArray);
+                          }}
+                        >
+                          Delete
+                        </div>
                       </div>
                     </div>
                   );
@@ -1151,8 +1189,9 @@ function UserAccounts({ toast, auth }) {
                     setContactNo(editUser[0].contactNo);
                     setBirthday(editUser[0].birthday);
                     setDepartment(editUser[0].department);
-
                     setAssignedCollege(editUser[0]?.assignedCollege);
+                    setAssignedCollegeLen(editUser[0]?.assignedCollege);
+                    console.log(editUser[0]);
                   }
                   setIsOpenEditModal(true);
                 }}

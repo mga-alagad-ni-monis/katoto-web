@@ -746,18 +746,37 @@ const saveNotes = async (req, res) => {
 
         let appointmentsArray = docInfo.appointments.map((j) => {
           if (j.id === id) {
-            let newAppointment = {
-              createdDate: j.createdDate,
-              end: j.end,
-              id: j.id,
-              start: j.start,
-              type: j.type,
-              mode: j.mode,
-              userDetails: j.userDetails,
-              status: j.status,
-              notes: notes,
-              gc: j.gc,
-            };
+            let newAppointment = {};
+            if (type === "standard") {
+              newAppointment = {
+                createdDate: j.createdDate,
+                end: j.end,
+                id: j.id,
+                start: j.start,
+                type: j.type,
+                mode: j.mode,
+                userDetails: j.userDetails,
+                status: j.status,
+                notes: notes,
+                gc: j.gc,
+                description: j.description,
+                creator: j.creator,
+              };
+            } else {
+              newAppointment = {
+                creator: j.creator,
+                mode: j.mode,
+                gc: j.gc,
+                createdDate: j.createdDate,
+                id: j.id,
+                scheduledDate: j.scheduledDate,
+                type: j.type,
+                userDetails: j.userDetails,
+                description: j.description,
+                status: j.status,
+                notes: notes,
+              };
+            }
 
             return newAppointment;
           }
@@ -783,6 +802,7 @@ const saveNotes = async (req, res) => {
         });
       });
   } catch (err) {
+    console.log(err);
     res.status(404).send("Error");
   }
 };
