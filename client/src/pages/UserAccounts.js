@@ -531,22 +531,24 @@ function UserAccounts({ toast, auth }) {
               </div>
             </div>
             <div className="flex gap-5 w-full">
-              <div className="w-1/3 flex flex-col gap-2">
-                <label htmlFor="year-sec" className="font-semibold">
-                  Year and Section *
-                </label>
-                <input
-                  id="year-sec"
-                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                  type="tel"
-                  placeholder="1-4"
-                  pattern="[1-4]{1}[-]{1}[1-20]{1-2}"
-                  value={yearSection}
-                  onChange={(e) => {
-                    setYearSection(e.target.value);
-                  }}
-                />
-              </div>
+              {userType === "guidanceCounselor" ? null : (
+                <div className="w-1/3 flex flex-col gap-2">
+                  <label htmlFor="year-sec" className="font-semibold">
+                    Year and Section *
+                  </label>
+                  <input
+                    id="year-sec"
+                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                    type="tel"
+                    placeholder="1-4"
+                    pattern="[1-4]{1}[-]{1}[1-20]{1-2}"
+                    value={yearSection}
+                    onChange={(e) => {
+                      setYearSection(e.target.value);
+                    }}
+                  />
+                </div>
+              )}
               <div className="w-1/3 flex flex-col gap-2">
                 <label htmlFor="contact-no" className="font-semibold">
                   Contact Number *
@@ -581,34 +583,36 @@ function UserAccounts({ toast, auth }) {
               </div>
             </div>
             <div className="flex gap-5 w-full">
-              <div className="w-full flex flex-col gap-2">
-                <label htmlFor="department" className="font-semibold">
-                  Department/Course *
-                </label>
-                <select
-                  id="department"
-                  className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                  value={department}
-                  onChange={(e) => {
-                    setDepartment(e.target.value);
-                  }}
-                  required
-                >
-                  <option
-                    hidden
-                    defaultValue
-                    value=""
-                    className="text-black/30"
-                  ></option>
-                  {courses?.map((i, k) => {
-                    return (
-                      <option value={i} key={k}>
-                        {i}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
+              {userType === "guidanceCounselor" ? null : (
+                <div className="w-full flex flex-col gap-2">
+                  <label htmlFor="department" className="font-semibold">
+                    Department *
+                  </label>
+                  <select
+                    id="department"
+                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                    value={department}
+                    onChange={(e) => {
+                      setDepartment(e.target.value);
+                    }}
+                    required
+                  >
+                    <option
+                      hidden
+                      defaultValue
+                      value=""
+                      className="text-black/30"
+                    ></option>
+                    {courses?.map((i, k) => {
+                      return (
+                        <option value={i} key={k}>
+                          {i}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              )}
             </div>
             {userType === "guidanceCounselor" ? (
               <div className="flex flex-col gap-2">
@@ -621,6 +625,12 @@ function UserAccounts({ toast, auth }) {
           hover:underline transition-all duration-300 font-semibold cursor-pointer"
                     onClick={() => {
                       if (assignedCollegeLen < 3) {
+                        if (
+                          assignedCollege.length !== assignedCollegeLen.length
+                        ) {
+                          toast.error("Assigned 1 college!");
+                          return;
+                        }
                         setAssignedCollegeLen([...assignedCollegeLen, ""]);
                       } else {
                         toast.error("Limit of assigned college reached!");
@@ -1175,6 +1185,8 @@ function UserAccounts({ toast, auth }) {
                 setContactNo("");
                 setBirthday("");
                 setDepartment("");
+                setAssignedCollege([]);
+                setAssignedCollegeLen([""]);
               }}
             >
               <HiPlus size={16} />

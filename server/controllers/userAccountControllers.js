@@ -26,6 +26,9 @@ const addUser = async (req, res) => {
       if (!yearSection.trim()) {
         return res.status(404).send("Please add a year and section!");
       }
+      if (!department.trim()) {
+        return res.status(404).send("Please add department!");
+      }
     }
 
     if (userType.trim() === "guidanceCounselor") {
@@ -46,7 +49,6 @@ const addUser = async (req, res) => {
       !gender.trim() ||
       !contactNo.trim() ||
       !birthday.trim() ||
-      !department.trim() ||
       !userType.trim()
     ) {
       return res.status(404).send("Please complete the form!");
