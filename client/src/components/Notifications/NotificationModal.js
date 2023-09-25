@@ -234,20 +234,23 @@ function NotificationModal({
                 </table>
               </>
             ) : null}
-            <div className="flex justify-end">
-              <button
-                className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+            {handleDeleteLocal === null &&
+            handleDeleteNotification === null ? null : (
+              <div className="flex justify-end">
+                <button
+                  className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
-                onClick={() => {
-                  setIsOpenNotificationModal(false);
-                  handleDeleteNotification(appointmentDetails.id);
-                  handleDeleteLocal(appointmentDetails.id);
-                }}
-              >
-                <BsFillTrash3Fill size={14} />
-                Delete
-              </button>
-            </div>
+                  onClick={() => {
+                    setIsOpenNotificationModal(false);
+                    handleDeleteNotification(appointmentDetails.id);
+                    handleDeleteLocal(appointmentDetails.id);
+                  }}
+                >
+                  <BsFillTrash3Fill size={14} />
+                  Delete
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

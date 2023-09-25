@@ -6,7 +6,7 @@ import moment from "moment";
 
 import { IoSend } from "react-icons/io5";
 import { AiOutlineCloseCircle } from "react-icons/ai";
-import { MdSos } from "react-icons/md";
+import { MdSos, MdOutlinePending } from "react-icons/md";
 import { FaTimes } from "react-icons/fa";
 
 import {
@@ -22,6 +22,8 @@ import katoto from "../assets/katoto/katoto-full.png";
 import katotoWatch from "../assets/katoto/katoto-watch.png";
 import logo from "../assets/logo/katoto-logo.png";
 import wave from "../assets/wave.png";
+
+import NotificationModal from "../components/Notifications/NotificationModal";
 
 function Chatbot({ toast, auth, socket }) {
   const [isInitial, setIsInitial] = useState(true);
@@ -55,6 +57,7 @@ function Chatbot({ toast, auth, socket }) {
   const [sosNo, setSosNo] = useState(0);
 
   const bottomRef = useRef(null);
+  const descRef = useRef();
 
   useEffect(() => {
     getBookedAppointments();
@@ -65,6 +68,7 @@ function Chatbot({ toast, auth, socket }) {
     if (socket) {
       socket.on("studentScheduleResponse", (details) => {
         getBookedAppointments();
+        setSosNo(0);
         setPopUpSOS(false);
         setIsOpenStandardAppoint(false);
         if (details.appointmentDetails.type === "sos") {
@@ -352,8 +356,9 @@ function Chatbot({ toast, auth, socket }) {
             gc: gcNames.filter((i) => i.idNo === preferredGC)[0],
             mode: preferredMode,
             creator: auth?.userInfo?.idNo,
-            description: description,
+            description: descRef.current.value,
           });
+          descRef.current.value = "";
         } catch (err) {
           toast.error("Error");
         }
@@ -413,407 +418,72 @@ function Chatbot({ toast, auth, socket }) {
       ) : null}
 
       <Modal isOpen={isOpenNotificationModal}>
-        <div className="w-full justify-between flex">
-          <p className="text-2xl font-extrabold">
-            {(() => {
-              if (sosDetails?.appointmentDetails?.type === "sos") {
-                return "SOS Emergency Appointment";
-              } else if (
-                standardDetails?.appointmentDetails?.type === "standard"
-              ) {
-                return "Regular Appointment";
-              }
-            })()}
-          </p>
-          <button
-            onClick={() => {
-              setIsOpenNotificationModal(false);
-              setSosDetails({});
-              setStandardDetails({});
-              setAppointmentDetails({});
-              setIsAppointmentChecked(false);
-              setAppointmentDateEnd("");
-              setAppointmentDateStart("");
-              setDescription("");
-              handleSubmitMessage(
-                auth?.accessToken,
-                "Nakapag-iskedyul na ako ng Appointment, Salamat!"
-              );
-            }}
-            type="button"
-          >
-            <FaTimes size={20} />
-          </button>
-        </div>
-        <div className="flex flex-col gap-4 mt-5">
-          {(() => {
-            if (sosDetails?.appointmentDetails?.type === "sos") {
-              return (
-                <div className="flex flex-col gap-5">
-                  <div className="flex gap-5 items-center">
-                    <div className="bg-[--dark-green] h-fit rounded-full p-1 text-white border border-2 border-[--dark-green]">
-                      <BsPatchCheck size={48} />
-                    </div>
-                    <div className="flex flex-col gap-5">
-                      <p>
-                        You have successfully booked an{" "}
-                        <span className="font-bold">
-                          SOS Emergency appointment{" "}
-                        </span>{" "}
-                        . This is received and acknowledged by PLV Guidance and
-                        Counselling Center. Thank You!
-                      </p>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-5">
-                      <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                        Appointment Details
-                      </p>
-                      {new Date(sosDetails?.appointmentDetails?.scheduledDate) >
-                      new Date() ? (
-                        <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3">
-                          Upcoming
-                        </div>
-                      ) : (
-                        <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3">
-                          Overdue
-                        </div>
-                      )}
-                    </div>
-                    <div className="bg-black/10 w-full h-auto p-3 rounded-lg mb-5">
-                      <p>
-                        You can come anytime at PLV Guidance Counseling Center,
-                        and you will be entertained first.
-                      </p>
-                    </div>
-                    <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
-                      Your Details
+        {(() => {
+          let newAppointmentDetails = {};
+          if (sosDetails?.appointmentDetails?.type === "sos") {
+            newAppointmentDetails["details"] = sosDetails?.appointmentDetails;
+            return (
+              <NotificationModal
+                setIsOpenNotificationModal={setIsOpenNotificationModal}
+                title="SOS Appointment"
+                status={sosDetails?.appointmentDetails?.status}
+                icon={<MdSos size={48} />}
+                description={`<span style="font-weight: bold;">You </span>have successfully <span style="font-weight: bold;">booked </span>an <span style="font-weight: bold;">SOS appointment</span>. You can come to PLV Guidance Counseling Center anytime, and you will be entertained first.`}
+                appointmentDetails={newAppointmentDetails}
+                dateTime={
+                  "You can come anytime at PLV Guidance Counseling Center, and you will be entertained first"
+                }
+                isDisplay={true}
+                handleDeleteNotification={null}
+                handleDeleteLocal={null}
+              />
+            );
+          } else if (standardDetails?.appointmentDetails?.type === "standard") {
+            newAppointmentDetails["details"] =
+              standardDetails?.appointmentDetails;
+            return (
+              <NotificationModal
+                setIsOpenNotificationModal={setIsOpenNotificationModal}
+                title="Pending Regular Appointment"
+                status={standardDetails?.appointmentDetails?.status}
+                icon={<MdOutlinePending size={48} />}
+                description={`<span style="font-weight: bold;">You </span> have <span style="font-weight: bold;">pending </span> regular appointment on <span style="font-weight: bold;">${
+                  convertDate(standardDetails?.appointmentDetails?.start)[0]
+                } to ${
+                  convertDate(standardDetails?.appointmentDetails?.end)[2]
+                }</span>`}
+                appointmentDetails={newAppointmentDetails}
+                dateTime={
+                  <div className="flex gap-4">
+                    {<BsCalendar4Week size={24} />}
+                    <p>
+                      {
+                        convertDate(
+                          standardDetails?.appointmentDetails?.start
+                        )[1]
+                      }
                     </p>
-                    <table className="mb-5">
-                      <tr>
-                        <td className="w-[150px] flex justify-start">Name</td>
-                        <td>
-                          {sosDetails?.appointmentDetails?.userDetails?.name}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="w-[150px] flex justify-start">Gender</td>
-                        <td>
-                          {sosDetails?.appointmentDetails?.userDetails?.gender}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="w-[150px] flex justify-start">Email</td>
-                        <td>
-                          {sosDetails?.appointmentDetails?.userDetails?.email}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="w-[150px] flex justify-start">
-                          {" "}
-                          ID Number
-                        </td>
-                        <td>
-                          {" "}
-                          {sosDetails?.appointmentDetails?.userDetails?.idNo}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="w-[150px] flex justify-start">Course</td>
-                        <td>
-                          {
-                            sosDetails?.appointmentDetails?.userDetails
-                              ?.department
-                          }
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="w-[150px] flex justify-start">
-                          Year and Section
-                        </td>
-                        <td>
-                          {
-                            sosDetails?.appointmentDetails?.userDetails
-                              ?.yearSection
-                          }
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="w-[150px] flex justify-start">
-                          College
-                        </td>
-                        <td>
-                          {
-                            sosDetails?.appointmentDetails?.userDetails
-                              ?.mainDepartment
-                          }
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="w-[150px] flex justify-start">Phone</td>
-                        <td>
-                          {
-                            sosDetails?.appointmentDetails?.userDetails
-                              ?.contactNo
-                          }
-                        </td>
-                      </tr>
-                    </table>
-                    <div className="flex justify-end">
-                      {/* <button
-                      className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
-        border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
-                      onClick={() => {
-                        setIsOpenNotificationModal(false);
-                        // handleDeleteNotification(notificationDetails.id);
-                        // handleDeleteLocal(notificationDetails.id);
-                      }}
-                    >
-                      <BsFillTrash3Fill size={14} />
-                      Delete
-                    </button>  */}
-                    </div>
-                  </div>
-                </div>
-              );
-            } else if (
-              standardDetails?.appointmentDetails?.type === "standard"
-            ) {
-              return (
-                <div className="flex flex-col gap-5">
-                  <div className="flex gap-5 items-center">
-                    <div className="bg-[--dark-green] h-fit rounded-full p-1 text-white border border-2 border-[--dark-green]">
-                      <BsPatchCheck size={48} />
-                    </div>
-                    <div className="flex flex-col gap-5">
-                      <p>
-                        You have successfully booked an{" "}
-                        <span className="font-bold">regular appointment </span>{" "}
-                        on{" "}
-                        {`${
-                          convertDate(
-                            standardDetails?.appointmentDetails?.start
-                          )[0]
-                        } to ${
-                          convertDate(
-                            standardDetails?.appointmentDetails?.end
-                          )[2]
-                        }`}
-                        . This is received and acknowledged by PLV Guidance and
-                        Counselling Center. Thank You!
-                      </p>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-5">
-                      <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                        Appointment Details
-                      </p>
-                      {(() => {
-                        if (
-                          new Date(standardDetails?.appointmentDetails?.end) <
-                          new Date()
-                        ) {
-                          return (
-                            <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3 font-bold">
-                              Ended
-                            </div>
-                          );
-                        } else if (
-                          standardDetails?.appointmentDetails?.status ===
-                          "pending"
-                        ) {
-                          return (
-                            <div className="w-max p-2 rounded-lg bg-[--yellow] text-black text-xs mb-3 font-bold">
-                              Pending
-                            </div>
-                          );
-                        } else if (
-                          standardDetails?.appointmentDetails?.status ===
-                          "upcoming"
-                        ) {
-                          return (
-                            <div className="w-max p-2 rounded-lg bg-[--light-green] text-black text-xs mb-3 font-bold">
-                              Upcoming
-                            </div>
-                          );
-                        } else if (
-                          standardDetails?.appointmentDetails?.status ===
-                          "completed"
-                        ) {
-                          return (
-                            <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3 font-bold">
-                              Completed
-                            </div>
-                          );
-                        } else if (
-                          standardDetails?.appointmentDetails?.status ===
-                          "cancelled"
-                        ) {
-                          return (
-                            <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3 font-bold">
-                              Cancelled
-                            </div>
-                          );
-                        }
-                      })()}
-                    </div>
-                    <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
-                      <div className="flex gap-4">
-                        <BsCalendar4Week size={24} />
-                        <p>
-                          {
-                            convertDate(
-                              standardDetails?.appointmentDetails?.start
-                            )[1]
-                          }
-                        </p>
-                        <div className="border-[1px] border-black/20 border-right"></div>
-                        <BsClockHistory size={24} />
-                        <p>
-                          {`${
-                            convertDate(
-                              standardDetails?.appointmentDetails?.start
-                            )[2]
-                          } to ${
-                            convertDate(
-                              standardDetails?.appointmentDetails?.end
-                            )[2]
-                          }`}
-                        </p>
-                        <p>45 mins</p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-5 mb-5">
-                      <div>
-                        <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                          Guidance Counselor
-                        </p>
-                        {standardDetails?.appointmentDetails?.gc?.name}
-                      </div>
-                      <div>
-                        <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                          Mode
-                        </p>
-                        {standardDetails?.appointmentDetails?.mode ===
-                        "facetoface"
-                          ? "Face-to-face"
-                          : "Virtual"}
-                      </div>
-                    </div>
-                    <div className="w-auto break-words mb-5">
-                      <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                        Concern Overview
-                      </p>
-                      {standardDetails?.appointmentDetails?.description}
-                    </div>
-                    <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
-                      Your Details
+                    <div className="border-[1px] border-black/20 border-right"></div>
+                    {<BsClockHistory size={24} />}
+                    <p>
+                      {
+                        convertDate(
+                          standardDetails?.appointmentDetails?.start
+                        )[2]
+                      }{" "}
+                      to{" "}
+                      {convertDate(standardDetails?.appointmentDetails?.end)[2]}
                     </p>
-                    <table className="mb-5">
-                      <tr>
-                        <td className="w-[150px] flex justify-start">Name</td>
-                        <td>
-                          {
-                            standardDetails?.appointmentDetails?.userDetails
-                              ?.name
-                          }
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="w-[150px] flex justify-start">Gender</td>
-                        <td>
-                          {
-                            standardDetails?.appointmentDetails?.userDetails
-                              ?.gender
-                          }
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="w-[150px] flex justify-start">Email</td>
-                        <td>
-                          {
-                            standardDetails?.appointmentDetails?.userDetails
-                              ?.email
-                          }
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="w-[150px] flex justify-start">
-                          {" "}
-                          ID Number
-                        </td>
-                        <td>
-                          {" "}
-                          {
-                            standardDetails?.appointmentDetails?.userDetails
-                              ?.idNo
-                          }
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="w-[150px] flex justify-start">Course</td>
-                        <td>
-                          {
-                            standardDetails?.appointmentDetails?.userDetails
-                              ?.department
-                          }
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="w-[150px] flex justify-start">
-                          Year and Section
-                        </td>
-                        <td>
-                          {
-                            standardDetails?.appointmentDetails?.userDetails
-                              ?.yearSection
-                          }
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="w-[150px] flex justify-start">
-                          College
-                        </td>
-                        <td>
-                          {
-                            standardDetails?.appointmentDetails?.userDetails
-                              ?.mainDepartment
-                          }
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="w-[150px] flex justify-start">Phone</td>
-                        <td>
-                          {
-                            standardDetails?.appointmentDetails?.userDetails
-                              ?.contactNo
-                          }
-                        </td>
-                      </tr>
-                    </table>
-                    <div className="flex justify-end">
-                      {/* <button
-                      className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
-        border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
-                      onClick={() => {
-                        setIsOpenNotificationModal(false);
-                        // handleDeleteNotification(notificationDetails.id);
-                        // handleDeleteLocal(notificationDetails.id);
-                      }}
-                    >
-                      <BsFillTrash3Fill size={14} />
-                      Delete
-                    </button>  */}
-                    </div>
+                    <p>45 mins</p>
                   </div>
-                </div>
-              );
-            }
-          })()}
-        </div>
+                }
+                isDisplay={true}
+                handleDeleteNotification={null}
+                handleDeleteLocal={null}
+              />
+            );
+          }
+        })()}
       </Modal>
       <Modal isOpen={popUpSOS}>
         <div className="w-full justify-between flex">
@@ -879,11 +549,8 @@ function Chatbot({ toast, auth, socket }) {
                       className="w-auto h-[46px] bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
               p-3 font-semibold resize-none"
                       placeholder="Describe your concern..."
-                      value={description}
                       maxLength={200}
-                      onChange={(e) => {
-                        setDescription(e.target.value);
-                      }}
+                      ref={descRef}
                     ></textarea>
                   </div>
 
@@ -910,7 +577,6 @@ function Chatbot({ toast, auth, socket }) {
                     <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
                       Guidance Counselor
                     </p>
-                    {console.log(gcNames)}
                     <p>
                       {gcNames.filter((i) => i.idNo === preferredGC)[0]?.name}
                     </p>
@@ -946,6 +612,7 @@ function Chatbot({ toast, auth, socket }) {
                 border border-2 transition-all duration-300"
                     onClick={() => {
                       setSosNo(sosNo + 1);
+                      setDescription(descRef.current.value);
                     }}
                   >
                     Next
@@ -992,10 +659,10 @@ function Chatbot({ toast, auth, socket }) {
               transition-all duration-300"
                       onClick={() => {
                         handleClickSOS();
-                        setSosNo(0);
                         setDescription("");
                         setPreferredMode("facetoface");
                         setIsAppointmentChecked(false);
+                        setDescription("");
                       }}
                     >
                       <MdSos size={160} />
@@ -1135,11 +802,13 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                 className="w-auto h-[46px] bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
               p-3 font-semibold resize-none"
                 placeholder="Describe your concern..."
-                value={description}
+                // value={description}
+                ref={descRef}
                 maxLength={200}
-                onChange={(e) => {
-                  setDescription(e.target.value);
-                }}
+
+                // onChange={(e) => {
+                //   setDescription(e.target.value);
+                // }}
               ></textarea>
             </div>
 
@@ -1166,7 +835,7 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
               <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
                 Guidance Counselor
               </p>
-              {console.log(gcNames)}
+
               <p>{gcNames.filter((i) => i.idNo === preferredGC)[0]?.name}</p>
               {/* <select
                 id="guidanceCounselors"
@@ -1321,6 +990,7 @@ border border-2 transition-all duration-300`}
                     className="bg-[--dark-green] rounded-full p-1 text-white p-2 border border-2 border-[--dark-green] 
                   hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                     onClick={() => {
+                      descRef.current.value = "";
                       setPopUpStandard(true);
                       setIsOpenNotificationModal(false);
                       setPreferredGC(

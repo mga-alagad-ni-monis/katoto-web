@@ -46,6 +46,7 @@ function Appointments({ socket, toast, auth }) {
   const [notes, setNotes] = useState("");
 
   const notesRef = useRef();
+  const descRef = useRef();
 
   useEffect(() => {
     getAppointments();
@@ -421,7 +422,6 @@ function Appointments({ socket, toast, auth }) {
           setAppointmentDateStart("");
           setAppointmentDateEnd("");
           setStudentDetails({});
-          setDescription("");
           socket.emit("scheduleRequest", {
             id: socket.id,
             token: auth?.accessToken,
@@ -431,9 +431,10 @@ function Appointments({ socket, toast, auth }) {
             gc: gcNames.filter((i) => i.idNo === preferredGC)[0],
             mode: preferredMode,
             creator: auth?.userInfo?.idNo,
-            description: description,
+            description: descRef.current.value,
             studentId: studentDetails?.idNo,
           });
+          descRef.current.value = "";
           setIsOpenAddAppointment(false);
           setIsOpenCalendar(false);
         } catch (err) {
@@ -464,11 +465,9 @@ function Appointments({ socket, toast, auth }) {
         )
         .then((res) => {
           toast.success(res?.data?.message);
-          // editAppointmentRealTime(res?.data?.appointmentOldNew);
-          // setTimeout(() => {
-          //   getAppointments();
-          //   getBookedAppointments();
-          // }, 200);
+          setTimeout(() => {
+            getAppointments();
+          }, 200);
         });
     } catch (err) {
       console.log(err);
@@ -1123,6 +1122,7 @@ border border-2 border-[--dark-green] transition-all duration-300"
               setAppointmentDateEnd("");
               setStudentDetails({});
               setDescription("");
+              descRef.current.value = "";
               // setIsAppointmentChecked(false);
             }}
             type="button"
@@ -1215,11 +1215,12 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                 className="w-auto h-[46px] bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
               p-3 font-semibold resize-none"
                 placeholder="Describe your concern..."
-                value={description}
+                // value={description}
                 maxLength={200}
-                onChange={(e) => {
-                  setDescription(e.target.value);
-                }}
+                ref={descRef}
+                // onChange={(e) => {
+                //   setDescription(e.target.value);
+                // }}
               ></textarea>
             </div>
 
@@ -1422,6 +1423,7 @@ border border-2 transition-all duration-300"
           border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
                     onClick={() => {
                       setIsOpenCalendar(true);
+                      setIsOpenAppointmentSidebar(false);
                     }}
                   >
                     <HiPlus size={16} />
