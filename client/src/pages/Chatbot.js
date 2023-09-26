@@ -3,6 +3,8 @@ import axios from "../api/axios";
 import axiosDef from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import moment from "moment";
+import { Rating, RoundedStar, ThinStar } from "@smastrom/react-rating";
+import "@smastrom/react-rating/style.css";
 
 import { IoSend } from "react-icons/io5";
 import { AiOutlineCloseCircle } from "react-icons/ai";
@@ -35,6 +37,7 @@ function Chatbot({ toast, auth, socket }) {
   const [isOpenStandardAppoint, setIsOpenStandardAppoint] = useState(false);
   const [isOpenNotificationModal, setIsOpenNotificationModal] = useState(false);
   const [isAppointmentChecked, setIsAppointmentChecked] = useState(false);
+  const [isOpenFeedbackModal, setIsOpenFeedbackModal] = useState(true);
 
   const [katotoMessage, setKatotoMessage] = useState("");
   const [inputFriendly, setInputFriendly] = useState("");
@@ -55,9 +58,11 @@ function Chatbot({ toast, auth, socket }) {
   const [appointmentDetails, setAppointmentDetails] = useState({});
 
   const [sosNo, setSosNo] = useState(0);
+  const [rating, setRating] = useState(0);
 
   const bottomRef = useRef(null);
   const descRef = useRef();
+  const feedbackRef = useRef();
 
   useEffect(() => {
     getBookedAppointments();
@@ -377,12 +382,49 @@ function Chatbot({ toast, auth, socket }) {
     { no: "14", time: "2:00:00 PM" },
   ];
 
+  const handleSendFeedback = async () => {
+    if (rating !== 0) {
+      try {
+        await axios
+          .post(
+            "/api/feedbacks/send",
+            {
+              feedbackDetails: feedbackRef.current.value,
+              rating: rating,
+              userInfo: auth?.userInfo,
+            },
+            {
+              withCredentials: true,
+              headers: {
+                Authorization: `Bearer ${auth?.accessToken}`,
+              },
+            }
+          )
+          .then((res) => {
+            feedbackRef.current.value = "";
+            setRating(0);
+            setIsOpenFeedbackModal(false);
+            toast.success(res?.data?.message);
+          })
+          .catch((err) => {
+            toast.error(err?.response?.data);
+          });
+        descRef.current.value = "";
+      } catch (err) {
+        toast.error("Error");
+      }
+    } else {
+      toast.error("Please rate!");
+    }
+  };
+
   return (
     <>
       {isOpenNotificationModal ||
       popUpSOS ||
       popUpStandard ||
-      isOpenStandardAppoint ? (
+      isOpenStandardAppoint ||
+      isOpenFeedbackModal ? (
         <motion.div
           className="bg-black/50 absolute w-screen h-screen z-50 overflow-hidden"
           variants={{
@@ -407,7 +449,8 @@ function Chatbot({ toast, auth, socket }) {
             isOpenNotificationModal ||
             popUpSOS ||
             popUpStandard ||
-            isOpenStandardAppoint
+            isOpenStandardAppoint ||
+            isOpenFeedbackModal
               ? "show"
               : "hide"
           }
@@ -950,6 +993,73 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
 border border-2 transition-all duration-300`}
               onClick={handleSetStandardAppointment}
               disabled={isAppointmentChecked ? false : true}
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      </Modal>
+      <Modal isOpen={isOpenFeedbackModal} isCalendar={true}>
+        <div className="w-full justify-between flex">
+          <p className="text-2xl font-extrabold">Give Feedback</p>
+          <button
+            onClick={() => {
+              setIsOpenFeedbackModal(false);
+              feedbackRef.current.value = "";
+              setRating(0);
+            }}
+            type="button"
+          >
+            <FaTimes size={20} />
+          </button>
+        </div>
+
+        <div className="mt-4">
+          <div>
+            <p>How's your experience with Katoto? Share with us!</p>
+          </div>
+          <div className="w-full justify-center flex mt-10">
+            <Rating
+              style={{ width: 500, gap: "30px" }}
+              value={rating}
+              onChange={setRating}
+              itemStyles={{
+                itemShapes: RoundedStar,
+                activeFillColor: "#f0ad4e",
+                inactiveFillColor: "rgba(240, 173, 78, 0.5)",
+              }}
+            />
+          </div>
+          <div className="mt-10">
+            <p className="font-bold text-sm">
+              What are the main reasons for your rating?
+            </p>
+            <textarea
+              className="mt-3 mb-5 w-full h-[150px] bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
+              p-3 font-semibold resize-none"
+              placeholder="Tell us your reasons..."
+              maxLength={1000}
+              ref={feedbackRef}
+            ></textarea>
+          </div>
+          <div className="flex justify-end gap-5">
+            <button
+              className="bg-[--red] border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red]
+                rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+                border border-2 transition-all duration-300"
+              onClick={() => {
+                setIsOpenFeedbackModal(false);
+                feedbackRef.current.value = "";
+                setRating(0);
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              className={
+                "hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] bg-[--dark-green] border-[--dark-green]  rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center border border-2 transition-all duration-300"
+              }
+              onClick={handleSendFeedback}
             >
               Submit
             </button>

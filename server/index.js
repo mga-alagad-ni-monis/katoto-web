@@ -17,6 +17,7 @@ const logRoutes = require("./routes/logRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const trainRoutes = require("./routes/trainRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const feedbackRoutes = require("./routes/feedbackRoutes");
 const appointmentRoutes = require("./routes/appointmentRoutes");
 const { createDocument } = require("./controllers/reportControllers");
 const { getUser } = require("./controllers/userAccountControllers");
@@ -393,6 +394,7 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/train", trainRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/appointments", appointmentRoutes);
+app.use("/api/feedbacks", feedbackRoutes);
 
 cron.schedule("0 0 * * *", () => {
   createDocument();
