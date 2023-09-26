@@ -40,11 +40,13 @@ function NavBar({ auth, logout, socket, toast }) {
 
   const holiday = new Holidays("PH");
 
-  useEffect(() => {
-    getNotification();
-    getMyAppointment();
-    getBookedAppointments();
-  }, []);
+  useEffect(() => { 
+    if (auth?.userInfo) {
+      getNotification();
+      getMyAppointment();
+      getBookedAppointments();
+    }
+  }, [auth]);
 
   useEffect(() => {
     setUnreadNotifications(0);

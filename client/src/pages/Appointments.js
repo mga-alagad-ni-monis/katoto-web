@@ -45,6 +45,8 @@ function Appointments({ socket, toast, auth }) {
   const [preferredMode, setPreferredMode] = useState("facetoface");
   const [notes, setNotes] = useState("");
 
+  const [descRefLen, setDescRefLen] = useState(0);
+
   const notesRef = useRef();
   const descRef = useRef();
 
@@ -1208,19 +1210,20 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
               <p className="text-[--dark-green] font-bold flex items-center mb-3 justify-between  ">
                 Concern{" "}
                 <span className="text-[8px] text-[--red]">
-                  {200 - description.length} character(s) left
+                  {200 - descRefLen} character(s) left
                 </span>
               </p>
               <textarea
                 className="w-auto h-[46px] bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
               p-3 font-semibold resize-none"
                 placeholder="Describe your concern..."
-                // value={description}
                 maxLength={200}
                 ref={descRef}
-                // onChange={(e) => {
-                //   setDescription(e.target.value);
-                // }}
+                onChange={() => {
+                  setTimeout(() => {
+                    setDescRefLen(descRef.current.value.length);
+                  }, 1000);
+                }}
               ></textarea>
             </div>
 
@@ -1424,6 +1427,7 @@ border border-2 transition-all duration-300"
                     onClick={() => {
                       setIsOpenCalendar(true);
                       setIsOpenAppointmentSidebar(false);
+                      setDescRefLen(0);
                     }}
                   >
                     <HiPlus size={16} />

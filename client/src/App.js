@@ -41,6 +41,7 @@ function App() {
   }, [socket, email, auth]);
 
   const logout = async () => {
+    socket?.emit("logout");
     setAuth({});
     try {
       await axios

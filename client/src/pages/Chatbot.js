@@ -59,6 +59,7 @@ function Chatbot({ toast, auth, socket }) {
 
   const [sosNo, setSosNo] = useState(0);
   const [rating, setRating] = useState(0);
+  const [descRefLen, setDescRefLen] = useState(0);
 
   const bottomRef = useRef(null);
   const descRef = useRef();
@@ -76,6 +77,7 @@ function Chatbot({ toast, auth, socket }) {
         setSosNo(0);
         setPopUpSOS(false);
         setIsOpenStandardAppoint(false);
+        setDescRefLen(0);
         if (details.appointmentDetails.type === "sos") {
           setSosDetails(details);
         } else if (details.appointmentDetails.type === "standard") {
@@ -539,6 +541,7 @@ function Chatbot({ toast, auth, socket }) {
               setDescription("");
               setPreferredMode("facetoface");
               setIsAppointmentChecked(false);
+              setDescRefLen(0);
             }}
             type="button"
           >
@@ -585,7 +588,7 @@ function Chatbot({ toast, auth, socket }) {
                     <p className="text-[--dark-green] font-bold flex items-center mb-3 justify-between  ">
                       Concern{" "}
                       <span className="text-[8px] text-[--red]">
-                        {200 - description.length} character(s) left
+                        {200 - descRefLen} character(s) left
                       </span>
                     </p>
                     <textarea
@@ -594,6 +597,11 @@ function Chatbot({ toast, auth, socket }) {
                       placeholder="Describe your concern..."
                       maxLength={200}
                       ref={descRef}
+                      onChange={() => {
+                        setTimeout(() => {
+                          setDescRefLen(descRef.current.value.length);
+                        }, 1000);
+                      }}
                     ></textarea>
                   </div>
 
@@ -754,6 +762,7 @@ function Chatbot({ toast, auth, socket }) {
               setAppointmentDateStart("");
               setAppointmentDateEnd("");
               setIsAppointmentChecked(false);
+              setDescRefLen(0);
             }}
             type="button"
           >
@@ -838,20 +847,20 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
               <p className="text-[--dark-green] font-bold flex items-center mb-3 justify-between  ">
                 Concern{" "}
                 <span className="text-[8px] text-[--red]">
-                  {200 - description.length} character(s) left
+                  {200 - descRefLen} character(s) left
                 </span>
               </p>
               <textarea
                 className="w-auto h-[46px] bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
               p-3 font-semibold resize-none"
                 placeholder="Describe your concern..."
-                // value={description}
                 ref={descRef}
                 maxLength={200}
-
-                // onChange={(e) => {
-                //   setDescription(e.target.value);
-                // }}
+                onChange={() => {
+                  setTimeout(() => {
+                    setDescRefLen(descRef.current.value.length);
+                  }, 1000);
+                }}
               ></textarea>
             </div>
 
@@ -1101,6 +1110,7 @@ border border-2 transition-all duration-300`}
                   hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                     onClick={() => {
                       descRef.current.value = "";
+                      setDescRefLen(0);
                       setPopUpStandard(true);
                       setIsOpenNotificationModal(false);
                       setPreferredGC(
