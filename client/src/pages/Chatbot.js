@@ -37,7 +37,7 @@ function Chatbot({ toast, auth, socket }) {
   const [isOpenStandardAppoint, setIsOpenStandardAppoint] = useState(false);
   const [isOpenNotificationModal, setIsOpenNotificationModal] = useState(false);
   const [isAppointmentChecked, setIsAppointmentChecked] = useState(false);
-  const [isOpenFeedbackModal, setIsOpenFeedbackModal] = useState(true);
+  const [isOpenFeedbackModal, setIsOpenFeedbackModal] = useState(false);
 
   const [katotoMessage, setKatotoMessage] = useState("");
   const [inputFriendly, setInputFriendly] = useState("");
@@ -1242,6 +1242,27 @@ border border-2 transition-all duration-300`}
                         {"Learn more about our "}
                         <span className="font-bold text-[--dark-green] hover:underline transition-all cursor-pointer">
                           Privacy Policy
+                        </span>
+                        .
+                      </p>
+                    </motion.li>
+                    <motion.li
+                      variants={{
+                        hidden: { y: 20, opacity: 0 },
+                        visible: {
+                          y: 0,
+                          opacity: 1,
+                        },
+                      }}
+                    >
+                      <p
+                        className="text-xs"
+                        onClick={() => {
+                          setIsOpenFeedbackModal(true);
+                        }}
+                      >
+                        <span className="font-bold text-[--dark-green] hover:underline transition-all cursor-pointer">
+                          Please leave a feedback here
                         </span>
                         .
                       </p>
