@@ -30,6 +30,8 @@ const sendFeedback = async (req, res) => {
       feedbackDetails,
     };
 
+    console.log(feedback);
+
     feedbacks.push(feedback);
 
     await document.update({
@@ -38,7 +40,7 @@ const sendFeedback = async (req, res) => {
 
     res.status(200).json({ message: "Feedback submitted!" });
   } catch (err) {
-    console.log(err);
+    res.status(404).send("Error");
   }
 };
 

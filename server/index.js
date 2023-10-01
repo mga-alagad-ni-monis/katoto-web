@@ -281,6 +281,7 @@ io.on("connection", (socket) => {
         await addNotificationStudent(appointmentDetails, idNo);
         onlineUsers.forEach((user) => {
           if (idNo === user.idNo) {
+            console.log("adasdda");
             io.to(user.socketId).emit("cancelAppointmentResponse", {
               appointmentDetails,
             });

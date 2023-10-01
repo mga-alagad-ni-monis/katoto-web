@@ -69,9 +69,9 @@ const getReports = async (req, res) => {
               .substring(4, 8)}`,
             dailyUsers: i.data().reports.dailyUsers,
             demographics: i.data().reports.demographics,
-            feedback: i.data().reports.feedback,
-            sosSchedules: i.data().reports.sosSchedules,
-            appointmentSchedules: i.data().reports.appointmentSchedules,
+            feedbacks: i.data().reports.feedbacks,
+            sosAppointments: i.data().reports.sosAppointments,
+            standardAppointments: i.data().reports.standardAppointments,
           });
         });
         res.status(200).json({ reports: reportsArray });

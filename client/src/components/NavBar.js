@@ -40,7 +40,7 @@ function NavBar({ auth, logout, socket, toast }) {
 
   const holiday = new Holidays("PH");
 
-  useEffect(() => { 
+  useEffect(() => {
     if (auth?.userInfo) {
       getNotification();
       getMyAppointment();

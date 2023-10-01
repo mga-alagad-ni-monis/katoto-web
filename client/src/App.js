@@ -12,6 +12,7 @@ import useAuth from "./hooks/useAuth";
 import Login from "./pages/Login";
 import NavBar from "./components/NavBar";
 import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
 import Reports from "./pages/Reports";
 import Train from "./pages/Train";
 import UserAccounts from "./pages/UserAccounts";
@@ -119,7 +120,7 @@ function App() {
               />
             }
           >
-            {/* reports module*/}
+            {/*dashaboard module  */}
             <Route
               element={
                 <RequiredAuth
@@ -128,8 +129,61 @@ function App() {
               }
             >
               <Route
-                path="/reports"
-                element={<Reports auth={auth} toast={toast} />}
+                path="/dashboard"
+                element={<Dashboard auth={auth} toast={toast} />}
+              ></Route>
+            </Route>
+            {/* train module */}
+            <Route
+              element={
+                <RequiredAuth
+                  allowedRoles={["guidanceCounselor", "systemAdministrator"]}
+                />
+              }
+            >
+              <Route
+                path="/train"
+                element={<Train auth={auth} toast={toast} socket={socket} />}
+              ></Route>
+            </Route>
+            {/* appointments reports module*/}
+            <Route
+              element={
+                <RequiredAuth
+                  allowedRoles={["guidanceCounselor", "systemAdministrator"]}
+                />
+              }
+            >
+              <Route
+                path="/reports/appointments"
+                element={
+                  <Reports
+                    auth={auth}
+                    toast={toast}
+                    title={"Appointment"}
+                    filters={{
+                      dateTime: true,
+                      college: true,
+                      department: true,
+                      year: true,
+                      section: true,
+                      gender: true,
+                    }}
+                    tableCategories={{
+                      date: true,
+                      time: true,
+                      idNo: true,
+                      name: true,
+                      email: true,
+                      guidanceCounselor: true,
+                      concernOverview: true,
+                      mode: true,
+                      status: true,
+                      notes: true,
+                      phone: true,
+                    }}
+                  />
+                }
               ></Route>
             </Route>
             {/* train module */}

@@ -50,7 +50,7 @@ function Login({ toast, loading, setLoading }) {
             "systemAdministrator"
           ) {
             setLoading(false);
-            return navigate("/reports");
+            return navigate("/dashboard");
           }
         })
         .catch((err) => {

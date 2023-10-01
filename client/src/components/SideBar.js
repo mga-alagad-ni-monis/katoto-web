@@ -13,18 +13,30 @@ import {
   BsRobot,
   BsBell,
   BsCalendar4Week,
+  BsGrid1X2,
+  BsChevronUp,
+  BsChevronDown,
 } from "react-icons/bs";
 import { AiOutlineLogout } from "react-icons/ai";
 
 function SideBar({ toast, logout, auth, socket }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isOpenNotifications, setIsOpenNotifications] = useState(false);
+  const [isOpenReportsModal, setIsOpenReportsModal] = useState(false);
+
   const [notifications, setNotifications] = useState([]);
+
   const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   useEffect(() => {
     getNotification();
   }, []);
+
+  useEffect(() => {
+    if (!isHovered) {
+      setIsOpenReportsModal(false);
+    }
+  }, [isHovered]);
 
   useEffect(() => {
     setUnreadNotifications(0);
@@ -108,18 +120,91 @@ function SideBar({ toast, logout, auth, socket }) {
               >
                 <li>
                   <Link
-                    to={"/reports"}
+                    to={"/dashboard"}
+                    className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
+                  >
+                    {isHovered ? (
+                      <div className="flex gap-5 items-center">
+                        <BsGrid1X2 size={20} />
+                        <span className="word-in">Dashboard</span>
+                      </div>
+                    ) : (
+                      <BsGrid1X2 size={24} />
+                    )}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    onClick={() => {
+                      setIsOpenReportsModal(!isOpenReportsModal);
+                    }}
                     className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
                   >
                     {isHovered ? (
                       <div className="flex gap-5 items-center">
                         <BsCardList size={20} />
                         <span className="word-in">Reports</span>
+
+                        {isOpenReportsModal ? (
+                          <BsChevronUp size={14} />
+                        ) : (
+                          <BsChevronDown size={14} />
+                        )}
                       </div>
                     ) : (
                       <BsCardList size={24} />
                     )}
                   </Link>
+                  {isOpenReportsModal ? (
+                    <div className="mt-5 rounded-lg pl-10">
+                      <ul
+                        className={`flex flex-col ${
+                          isHovered ? "gap-5" : "gap-5"
+                        } font-medium`}
+                      >
+                        <li>
+                          <Link
+                            to={"/reports/appointments"}
+                            className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
+                          >
+                            <div className="flex gap-5 items-center">
+                              <span className="word-in">Appointments</span>
+                            </div>
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            to={"/reports/concerns"}
+                            className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
+                          >
+                            <div className="flex gap-5 items-center">
+                              <span className="word-in">Concerns</span>
+                            </div>
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            to={"/reports/users"}
+                            className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
+                          >
+                            <div className="flex gap-5 items-center">
+                              <span className="word-in">Users</span>
+                            </div>
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            to={"/reports/feedbacks"}
+                            className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
+                          >
+                            <div className="flex gap-5 items-center">
+                              <span className="word-in">Feedbacks</span>
+                            </div>
+                          </Link>
+                        </li>
+                      </ul>
+                    </div>
+                  ) : null}
                 </li>
                 <li>
                   <Link
