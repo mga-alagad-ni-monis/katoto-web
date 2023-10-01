@@ -19,8 +19,8 @@ function ReportTable({ filters, tableCategories, title, auth }) {
   const [filterDateTime, setFilterDateTime] = useState("Today");
   const [filterDepartment, setFilterDepartment] = useState("All");
   const [filterCollege, setFilterCollege] = useState("All");
-  const [filterYear, setFilterYear] = useState("1");
-  const [filterSection, setFilterSection] = useState("1");
+  const [filterYear, setFilterYear] = useState("All");
+  const [filterSection, setFilterSection] = useState("All");
   const [filterGender, setFilterGender] = useState("All");
   const [search, setSearch] = useState("");
 
@@ -95,6 +95,7 @@ function ReportTable({ filters, tableCategories, title, auth }) {
   const dateTime = ["Today", "Yesterday", "Week", "Month", "Year"];
 
   const departments = [
+    "All",
     "Bachelor of Early Childhood Education (BECED)",
     "Bachelor of Secondary Education Major in English (BSED English)",
     "Bachelor of Secondary Education Major in Filipino (BSED Filipino)",
@@ -115,6 +116,7 @@ function ReportTable({ filters, tableCategories, title, auth }) {
   ];
 
   const colleges = [
+    "All",
     "College of Education",
     "College of Arts and Sciences",
     "College of Engineering and Information Technology",
@@ -279,7 +281,7 @@ function ReportTable({ filters, tableCategories, title, auth }) {
                   } absolute top-9 transition-all duration-100
               z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
                 >
-                  {[1, 2, 3, 4].map((i, k) => {
+                  {["All", "1", "2", "3", "4"].map((i, k) => {
                     return (
                       <button
                         key={k}
@@ -318,7 +320,21 @@ function ReportTable({ filters, tableCategories, title, auth }) {
                   } absolute top-9 transition-all duration-100
               z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
                 >
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i, k) => {
+                  {[
+                    "All",
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                    "6",
+                    "7",
+                    "8",
+                    "9",
+                    "10",
+                    "11",
+                    "12",
+                  ].map((i, k) => {
                     return (
                       <button
                         key={k}
@@ -441,7 +457,6 @@ function ReportTable({ filters, tableCategories, title, auth }) {
                 } else if (filterDateTime === "Year") {
                   let year = moment();
                   year.subtract(1, "years");
-
                   return (
                     moment(convertDate(year)[1]).isBefore(
                       convertDate(i["start"])[1]
@@ -449,6 +464,31 @@ function ReportTable({ filters, tableCategories, title, auth }) {
                   );
                 }
               })
+              ?.filter((i) =>
+                filterCollege === "All"
+                  ? i
+                  : filterCollege === i["userDetails.mainDepartment"]
+              )
+              ?.filter((i) =>
+                filterDepartment === "All"
+                  ? i
+                  : filterDepartment === i["userDetails.department"]
+              )
+              ?.filter((i) =>
+                filterYear === "All"
+                  ? i
+                  : filterYear === i["userDetails.yearSection"][0]
+              )
+              ?.filter((i) =>
+                filterSection === "All"
+                  ? i
+                  : filterSection === i["userDetails.yearSection"].slice(2)
+              )
+              ?.filter((i) =>
+                filterGender === "All"
+                  ? i
+                  : filterGender === i["userDetails.gender"]
+              )
               ?.filter((i) => {
                 if (search?.toLowerCase().trim()) {
                   if (title === "Appointment") {
@@ -486,22 +526,6 @@ function ReportTable({ filters, tableCategories, title, auth }) {
                         .includes(search.toLowerCase())
                     );
                   }
-
-                  // } else if (filterCategory === "Department/Course") {
-                  //   return i?.department
-                  //     .toLowerCase()
-                  //     .includes(search.toLowerCase());
-                  // } else if (filterCategory === "User Type") {
-                  //   return i?.credentials?.privilegeType === "student"
-                  //     ? "Student".toLowerCase().includes(search.toLowerCase())
-                  //     : i?.credentials?.privilegeType === "systemAdministrator"
-                  //     ? "System Administrator"
-                  //         .toLowerCase()
-                  //         .includes(search.toLowerCase())
-                  //     : "Guidance Counselor"
-                  //         .toLowerCase()
-                  //         .includes(search.toLowerCase());
-                  // }
                 } else {
                   return i;
                 }
