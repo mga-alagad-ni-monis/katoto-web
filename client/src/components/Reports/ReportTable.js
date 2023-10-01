@@ -1,20 +1,22 @@
 import { useState, useEffect } from "react";
 import { FiChevronDown } from "react-icons/fi";
-import { RiFileExcel2Line } from "react-icons/ri";
+import { RiFileExcel2Line, RiDownloadCloud2Line } from "react-icons/ri";
 import { toHeaderCase } from "js-convert-case";
 import Loading from "../Loading";
 import axios from "../../api/axios";
 import { flatten } from "flat";
 import ReportsTd from "./ReportsTd";
 import moment from "moment";
+import download from "js-file-download";
 
-function ReportTable({ filters, tableCategories, title, auth }) {
+function ReportTable({ toast, filters, tableCategories, title, auth }) {
   const [isOpenDateTimeButton, setIsOpenDateTimeButton] = useState(false);
   const [isOpenDepartmentButton, setIsOpenDepartmentButton] = useState(false);
   const [isOpenCollegeButton, setIsOpenCollegeButton] = useState(false);
   const [isOpenYearButton, setIsOpenYearButton] = useState(false);
   const [isOpenSectionButton, setIsOpenSectionButton] = useState(false);
   const [isOpenGenderButton, setIsOpenGenderButton] = useState(false);
+  const [isOpenExport, setIsOpenExport] = useState(false);
 
   const [filterDateTime, setFilterDateTime] = useState("Today");
   const [filterDepartment, setFilterDepartment] = useState("All");
@@ -44,12 +46,20 @@ function ReportTable({ filters, tableCategories, title, auth }) {
             let updatedReports = [];
             res?.data?.reports.forEach((i) => {
               i?.sosAppointments?.forEach((j) => {
-                if (auth?.userInfo?.idNo === j?.gc?.idNo) {
+                if (
+                  auth?.userInfo?.assignedCollege.includes(
+                    j?.userDetails.mainDepartment
+                  )
+                ) {
                   updatedReports.push(flatten(j));
                 }
               });
               i?.standardAppointments?.forEach((k) => {
-                if (auth?.userInfo?.idNo === k?.gc?.idNo) {
+                if (
+                  auth?.userInfo?.assignedCollege.includes(
+                    k?.userDetails.mainDepartment
+                  )
+                ) {
                   updatedReports.push(flatten(k));
                 }
               });
@@ -58,7 +68,7 @@ function ReportTable({ filters, tableCategories, title, auth }) {
           }
         });
     } catch (err) {
-      console.log(err);
+      toast.error("Error");
     }
   };
 
@@ -90,6 +100,132 @@ function ReportTable({ filters, tableCategories, title, auth }) {
     });
 
     return [convertedDateTime, convertedDate, convertedTime];
+  };
+
+  const filteredReports = () => {
+    const filteredReports = reports
+      ?.filter((i) => {
+        let date = new Date();
+        if (filterDateTime === "Today") {
+          return (
+            convertDate(i["start"])[1] === convertDate(date.toLocaleString())[1]
+          );
+        } else if (filterDateTime === "Yesterday") {
+          let yesterday = moment();
+          yesterday.subtract(1, "days");
+          return convertDate(yesterday)[1] === convertDate(i["start"])[1];
+        } else if (filterDateTime === "Week") {
+          let week = moment();
+          week.subtract(1, "weeks");
+          return (
+            moment(convertDate(week)[1]).isBefore(convertDate(i["start"])[1]) &&
+            moment(new Date()).isAfter(convertDate(i["start"])[1])
+          );
+        } else if (filterDateTime === "Month") {
+          let month = moment();
+          month.subtract(1, "months");
+          return (
+            moment(convertDate(month)[1]).isBefore(
+              convertDate(i["start"])[1]
+            ) && moment(new Date()).isAfter(convertDate(i["start"])[1])
+          );
+        } else if (filterDateTime === "Year") {
+          let year = moment();
+          year.subtract(1, "years");
+          return (
+            moment(convertDate(year)[1]).isBefore(convertDate(i["start"])[1]) &&
+            moment(new Date()).isAfter(convertDate(i["start"])[1])
+          );
+        }
+      })
+      ?.filter((i) =>
+        filterCollege === "All"
+          ? i
+          : filterCollege === i["userDetails.mainDepartment"]
+      )
+      ?.filter((i) =>
+        filterDepartment === "All"
+          ? i
+          : filterDepartment === i["userDetails.department"]
+      )
+      ?.filter((i) =>
+        filterYear === "All"
+          ? i
+          : filterYear === i["userDetails.yearSection"][0]
+      )
+      ?.filter((i) =>
+        filterSection === "All"
+          ? i
+          : filterSection === i["userDetails.yearSection"].slice(2)
+      )
+      ?.filter((i) =>
+        filterGender === "All" ? i : filterGender === i["userDetails.gender"]
+      )
+      ?.filter((i) => {
+        if (search?.toLowerCase().trim()) {
+          if (title === "Appointment") {
+            return (
+              convertDate(i["start"])[1]
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              convertDate(i["start"])[2]
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              i["userDetails.idNo"]
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              i["userDetails.name"]
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              i["userDetails.email"]
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              i["gc.name"].toLowerCase().includes(search.toLowerCase()) ||
+              i["description"].toLowerCase().includes(search.toLowerCase()) ||
+              (i["mode"] === "facetoface" ? "Face-to-face" : "Virtual")
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              i["status"].toLowerCase().includes(search.toLowerCase()) ||
+              i["notes"].toLowerCase().includes(search.toLowerCase()) ||
+              i["userDetails.contactNo"]
+                .toLowerCase()
+                .includes(search.toLowerCase())
+            );
+          }
+        } else {
+          return i;
+        }
+      });
+
+    return filteredReports;
+  };
+
+  const exportReports = async (type) => {
+    try {
+      const finalReports = filteredReports();
+      await axios
+        .post(
+          "/api/reports/export",
+          { reports: finalReports, type, title },
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${auth?.accessToken}`,
+            },
+            responseType: "arraybuffer",
+          }
+        )
+        .then((res) => {
+          download(
+            res.data,
+            `${moment().format("YYYY-MM-DD")}-${moment().format(
+              "hh-mm-ss"
+            )}-${title}Reports.xlsx`
+          );
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
   };
 
   const dateTime = ["Today", "Yesterday", "Week", "Month", "Year"];
@@ -147,7 +283,7 @@ function ReportTable({ filters, tableCategories, title, auth }) {
               <div className="relative">
                 <button
                   type="button"
-                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+                  className="w-[120px] flex justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
               border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                   onClick={() => {
                     setIsOpenDateTimeButton(!isOpenDateTimeButton);
@@ -159,7 +295,7 @@ function ReportTable({ filters, tableCategories, title, auth }) {
                 <div
                   className={`${
                     isOpenDateTimeButton ? "visible" : "hidden"
-                  } absolute top-9 transition-all duration-100
+                  } absolute top-9 transition-all duration-100 w-[120px]
               z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
                 >
                   {dateTime.map((i, k) => {
@@ -391,15 +527,37 @@ function ReportTable({ filters, tableCategories, title, auth }) {
               </div>
             ) : null}
           </div>
-          <div className="flex items-end">
+          <div className="flex items-end relative">
             <button
               className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
       border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300 ml-10"
-              onClick={() => {}}
+              onClick={() => {
+                setIsOpenExport(!isOpenExport);
+              }}
             >
-              <RiFileExcel2Line size={16} />
+              <RiDownloadCloud2Line size={16} />
               Export
             </button>
+            <div
+              className={`${
+                isOpenExport ? "visible" : "hidden"
+              } w-[105px] absolute top-16 right-0 transition-all duration-100
+              z-10 mt-2 shadow-md rounded-lg p-2 bg-black`}
+            >
+              {["Excel", "CSV"].map((i, k) => {
+                return (
+                  <button
+                    key={k}
+                    className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-black"
+                    onClick={() => {
+                      exportReports(i);
+                    }}
+                  >
+                    {i}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -407,7 +565,6 @@ function ReportTable({ filters, tableCategories, title, auth }) {
         className="w-full rounded-lg shadow-lg bg-[--light-green] relative"
         style={{ backgroundColor: "rgba(169, 230, 194, 0.2)" }}
       >
-        {console.log(reports)}
         <thead className="flex px-5 py-3 text-sm text-[--light-brown] font-bold bg-[--dark-green] rounded-lg m-1">
           {Object.entries(tableCategories).map(([key, value]) => {
             return (
@@ -421,146 +578,40 @@ function ReportTable({ filters, tableCategories, title, auth }) {
             );
           })}
         </thead>
-        {console.log(reports)}
+
         <tbody className="flex flex-col max-h-[624px] overflow-y-auto">
           {reports.length ? (
-            reports
-              ?.filter((i) => {
-                let date = new Date();
-                if (filterDateTime === "Today") {
-                  return (
-                    convertDate(i["start"])[1] ===
-                    convertDate(date.toLocaleString())[1]
-                  );
-                } else if (filterDateTime === "Yesterday") {
-                  let yesterday = moment();
-                  yesterday.subtract(1, "days");
-                  return (
-                    convertDate(yesterday)[1] === convertDate(i["start"])[1]
-                  );
-                } else if (filterDateTime === "Week") {
-                  let week = moment();
-                  week.subtract(1, "weeks");
-                  return (
-                    moment(convertDate(week)[1]).isBefore(
-                      convertDate(i["start"])[1]
-                    ) && moment(new Date()).isAfter(convertDate(i["start"])[1])
-                  );
-                } else if (filterDateTime === "Month") {
-                  let month = moment();
-                  month.subtract(1, "months");
-                  return (
-                    moment(convertDate(month)[1]).isBefore(
-                      convertDate(i["start"])[1]
-                    ) && moment(new Date()).isAfter(convertDate(i["start"])[1])
-                  );
-                } else if (filterDateTime === "Year") {
-                  let year = moment();
-                  year.subtract(1, "years");
-                  return (
-                    moment(convertDate(year)[1]).isBefore(
-                      convertDate(i["start"])[1]
-                    ) && moment(new Date()).isAfter(convertDate(i["start"])[1])
-                  );
-                }
-              })
-              ?.filter((i) =>
-                filterCollege === "All"
-                  ? i
-                  : filterCollege === i["userDetails.mainDepartment"]
-              )
-              ?.filter((i) =>
-                filterDepartment === "All"
-                  ? i
-                  : filterDepartment === i["userDetails.department"]
-              )
-              ?.filter((i) =>
-                filterYear === "All"
-                  ? i
-                  : filterYear === i["userDetails.yearSection"][0]
-              )
-              ?.filter((i) =>
-                filterSection === "All"
-                  ? i
-                  : filterSection === i["userDetails.yearSection"].slice(2)
-              )
-              ?.filter((i) =>
-                filterGender === "All"
-                  ? i
-                  : filterGender === i["userDetails.gender"]
-              )
-              ?.filter((i) => {
-                if (search?.toLowerCase().trim()) {
-                  if (title === "Appointment") {
-                    return (
-                      convertDate(i["start"])[1]
-                        .toLowerCase()
-                        .includes(search.toLowerCase()) ||
-                      convertDate(i["start"])[2]
-                        .toLowerCase()
-                        .includes(search.toLowerCase()) ||
-                      i["userDetails.idNo"]
-                        .toLowerCase()
-                        .includes(search.toLowerCase()) ||
-                      i["userDetails.name"]
-                        .toLowerCase()
-                        .includes(search.toLowerCase()) ||
-                      i["userDetails.email"]
-                        .toLowerCase()
-                        .includes(search.toLowerCase()) ||
-                      i["gc.name"]
-                        .toLowerCase()
-                        .includes(search.toLowerCase()) ||
-                      i["description"]
-                        .toLowerCase()
-                        .includes(search.toLowerCase()) ||
-                      (i["mode"] === "facetoface" ? "Face-to-face" : "Virtual")
-                        .toLowerCase()
-                        .includes(search.toLowerCase()) ||
-                      i["status"]
-                        .toLowerCase()
-                        .includes(search.toLowerCase()) ||
-                      i["notes"].toLowerCase().includes(search.toLowerCase()) ||
-                      i["userDetails.contactNo"]
-                        .toLowerCase()
-                        .includes(search.toLowerCase())
-                    );
-                  }
-                } else {
-                  return i;
-                }
-              })
-              ?.map((i, k) => {
-                if (title === "Appointment") {
-                  return (
-                    <tr key={k}>
-                      <td
-                        className={`flex font-medium mx-1 px-5 mb-1 py-3 text-sm ${
-                          k % 2 ? "bg-[--light-green] rounded-lg" : null
-                        }`}
-                      >
-                        <ReportsTd value={convertDate(i["start"])[1]} />
-                        <ReportsTd value={convertDate(i["start"])[2]} />
-                        <ReportsTd value={i["userDetails.idNo"]} />
-                        <ReportsTd value={i["userDetails.name"]} />
-                        <ReportsTd value={i["userDetails.email"]} />
-                        <ReportsTd value={i["gc.name"]} />
-                        <ReportsTd value={i["description"]} />
-                        <ReportsTd
-                          value={
-                            i["mode"] === "facetoface"
-                              ? "Face-to-face"
-                              : "Virtual"
-                          }
-                        />
-                        <ReportsTd value={toHeaderCase(i["status"])} />
-                        <ReportsTd value={i["notes"]} />
-                        <ReportsTd value={i["userDetails.contactNo"]} />
-                      </td>
-                    </tr>
-                  );
-                }
-              })
+            filteredReports()?.map((i, k) => {
+              if (title === "Appointment") {
+                return (
+                  <tr key={k}>
+                    <td
+                      className={`flex font-medium mx-1 px-5 mb-1 py-3 text-sm ${
+                        k % 2 ? "bg-[--light-green] rounded-lg" : null
+                      }`}
+                    >
+                      <ReportsTd value={convertDate(i["start"])[1]} />
+                      <ReportsTd value={convertDate(i["start"])[2]} />
+                      <ReportsTd value={i["userDetails.idNo"]} />
+                      <ReportsTd value={i["userDetails.name"]} />
+                      <ReportsTd value={i["userDetails.email"]} />
+                      <ReportsTd value={i["gc.name"]} />
+                      <ReportsTd value={i["description"]} />
+                      <ReportsTd
+                        value={
+                          i["mode"] === "facetoface"
+                            ? "Face-to-face"
+                            : "Virtual"
+                        }
+                      />
+                      <ReportsTd value={toHeaderCase(i["status"])} />
+                      <ReportsTd value={i["notes"]} />
+                      <ReportsTd value={i["userDetails.contactNo"]} />
+                    </td>
+                  </tr>
+                );
+              }
+            })
           ) : (
             <Loading />
           )}

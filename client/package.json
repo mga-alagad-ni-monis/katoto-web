@@ -16,6 +16,7 @@
     "framer-motion": "^10.12.10",
     "interweave": "^13.1.0",
     "js-convert-case": "^4.2.0",
+    "js-file-download": "^0.4.12",
     "js-yaml": "^4.1.0",
     "jwt-decode": "^3.1.2",
     "moment": "^2.29.4",
