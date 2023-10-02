@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { FiChevronDown } from "react-icons/fi";
 import { RiFileExcel2Line, RiDownloadCloud2Line } from "react-icons/ri";
-import { toHeaderCase } from "js-convert-case";
+import { FaLongArrowAltUp, FaLongArrowAltDown } from "react-icons/fa";
+import { toHeaderCase, toLowerCase } from "js-convert-case";
 import Loading from "../Loading";
 import axios from "../../api/axios";
 import { flatten } from "flat";
@@ -17,7 +18,10 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
   const [isOpenSectionButton, setIsOpenSectionButton] = useState(false);
   const [isOpenGenderButton, setIsOpenGenderButton] = useState(false);
   const [isOpenExport, setIsOpenExport] = useState(false);
+  const [isAscending, setIsAscending] = useState(true);
 
+  const [sortString, setSortString] = useState({});
+  const [sortName, setSortName] = useState("");
   const [filterDateTime, setFilterDateTime] = useState("Today");
   const [filterDepartment, setFilterDepartment] = useState("All");
   const [filterCollege, setFilterCollege] = useState("All");
@@ -29,6 +33,11 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
   const [reports, setReports] = useState([]);
 
   useEffect(() => {
+    let newSortString = {};
+    Object.entries(tableCategories).forEach(([key, value]) => {
+      newSortString[key] = value;
+    });
+    setSortString(newSortString);
     getReports();
   }, []);
 
@@ -104,38 +113,132 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
 
   const filteredReports = () => {
     const filteredReports = reports
+      ?.sort((a, b) => {
+        if (sortName) {
+          let propA = "";
+          let propB = "";
+          if (title === "Appointment") {
+            if (sortName === "date") {
+              propA = a["scheduledDate"]
+                ? new Date(convertDate(a["createdDate"])[1])
+                : new Date(convertDate(a["start"])[1]);
+              propB = b["scheduledDate"]
+                ? new Date(convertDate(b["createdDate"])[1])
+                : new Date(convertDate(b["start"])[1]);
+            } else if (sortName === "time") {
+              propA = a["scheduledDate"]
+                ? convertDate(a["createdDate"])[2]
+                : convertDate(a["start"])[2];
+              propB = b["scheduledDate"]
+                ? convertDate(b["createdDate"])[2]
+                : convertDate(b["start"])[2];
+            } else if (sortName === "idNo") {
+              propA = toLowerCase(a["userDetails.idNo"]);
+              propB = toLowerCase(b["userDetails.idNo"]);
+            } else if (sortName === "name") {
+              propA = toLowerCase(a["userDetails.name"]);
+              propB = toLowerCase(b["userDetails.name"]);
+            } else if (sortName === "email") {
+              propA = toLowerCase(a["userDetails.email"]);
+              propB = toLowerCase(b["userDetails.email"]);
+            } else if (sortName === "guidanceCounselor") {
+              propA = toLowerCase(a["gc.name"]);
+              propB = toLowerCase(b["gc.name"]);
+            } else if (sortName === "guidanceCounselor") {
+              propA = toLowerCase(a["gc.name"]);
+              propB = toLowerCase(b["gc.name"]);
+            } else if (sortName === "concernOverview") {
+              propA = toLowerCase(a["description"]);
+              propB = toLowerCase(b["description"]);
+            } else if (sortName === "phone") {
+              propA = toLowerCase(a["userDetails.contactNo"]);
+              propB = toLowerCase(b["userDetails.contactNo"]);
+            } else {
+              propA = toLowerCase(a[sortName]);
+              propB = toLowerCase(b[sortName]);
+            }
+
+            if (isAscending) {
+              if (propA > propB) {
+                return 1;
+              } else {
+                return -1;
+              }
+            } else {
+              if (propA < propB) {
+                return 1;
+              } else {
+                return -1;
+              }
+            }
+          }
+        } else {
+          return 0;
+        }
+      })
       ?.filter((i) => {
         let date = new Date();
         if (filterDateTime === "Today") {
-          return (
-            convertDate(i["start"])[1] === convertDate(date.toLocaleString())[1]
-          );
+          return i["scheduledDate"] !== undefined
+            ? convertDate(i["createdDate"])[1] ===
+                convertDate(date.toLocaleString())[1]
+            : convertDate(i["start"])[1] ===
+                convertDate(date.toLocaleString())[1];
         } else if (filterDateTime === "Yesterday") {
           let yesterday = moment();
           yesterday.subtract(1, "days");
-          return convertDate(yesterday)[1] === convertDate(i["start"])[1];
+          return i["scheduledDate"] !== undefined
+            ? convertDate(yesterday)[1] === convertDate(i["createdDate"])[1]
+            : convertDate(yesterday)[1] === convertDate(i["start"])[1];
         } else if (filterDateTime === "Week") {
           let week = moment();
           week.subtract(1, "weeks");
-          return (
-            moment(convertDate(week)[1]).isBefore(convertDate(i["start"])[1]) &&
-            moment(new Date()).isAfter(convertDate(i["start"])[1])
-          );
+          if (i["scheduledDate"] !== undefined) {
+            return (
+              moment(convertDate(week)[1]).isBefore(
+                convertDate(i["createdDate"])[1]
+              ) && moment(new Date()).isAfter(convertDate(i["createdDate"])[1])
+            );
+          } else {
+            return (
+              moment(convertDate(week)[1]).isBefore(
+                convertDate(i["start"])[1]
+              ) && moment(new Date()).isAfter(convertDate(i["start"])[1])
+            );
+          }
         } else if (filterDateTime === "Month") {
           let month = moment();
           month.subtract(1, "months");
-          return (
-            moment(convertDate(month)[1]).isBefore(
-              convertDate(i["start"])[1]
-            ) && moment(new Date()).isAfter(convertDate(i["start"])[1])
-          );
+          if (i["scheduledDate"] !== undefined) {
+            return (
+              moment(convertDate(month)[1]).isBefore(
+                convertDate(i["createdDate"])[1]
+              ) && moment(new Date()).isAfter(convertDate(i["createdDate"])[1])
+            );
+          } else {
+            return (
+              moment(convertDate(month)[1]).isBefore(
+                convertDate(i["start"])[1]
+              ) && moment(new Date()).isAfter(convertDate(i["start"])[1])
+            );
+          }
         } else if (filterDateTime === "Year") {
           let year = moment();
           year.subtract(1, "years");
-          return (
-            moment(convertDate(year)[1]).isBefore(convertDate(i["start"])[1]) &&
-            moment(new Date()).isAfter(convertDate(i["start"])[1])
-          );
+
+          if (i["scheduledDate"] !== undefined) {
+            return (
+              moment(convertDate(year)[1]).isBefore(
+                convertDate(i["createdDate"])[1]
+              ) && moment(new Date()).isAfter(convertDate(i["createdDate"])[1])
+            );
+          } else {
+            return (
+              moment(convertDate(year)[1]).isBefore(
+                convertDate(i["start"])[1]
+              ) && moment(new Date()).isAfter(convertDate(i["start"])[1])
+            );
+          }
         }
       })
       ?.filter((i) =>
@@ -324,19 +427,21 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
               <div className="relative">
                 <button
                   type="button"
-                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+                  className="w-[200px] flex justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
               border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                   onClick={() => {
                     setIsOpenCollegeButton(!isOpenCollegeButton);
                   }}
                 >
-                  {filterCollege}
+                  <span class="truncate w-[130px] text-left">
+                    {filterCollege}
+                  </span>
                   <FiChevronDown size={16} />
                 </button>
                 <div
                   className={`${
                     isOpenCollegeButton ? "visible" : "hidden"
-                  } absolute top-9 transition-all duration-100
+                  } absolute top-9 transition-all duration-100 w-[570px]
               z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
                 >
                   {colleges.map((i, k) => {
@@ -363,19 +468,25 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
               <div className="relative">
                 <button
                   type="button"
-                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+                  className="w-[150px] flex justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
               border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                   onClick={() => {
                     setIsOpenDepartmentButton(!isOpenDepartmentButton);
                   }}
                 >
-                  {filterDepartment}
+                  <span class="truncate w-[80px] text-left">
+                    {filterDepartment === "All"
+                      ? "All"
+                      : JSON.stringify(
+                          filterDepartment.match(/\(([^)]+)\)/g)
+                        ).slice(3, -3)}
+                  </span>
                   <FiChevronDown size={16} />
                 </button>
                 <div
                   className={`${
                     isOpenDepartmentButton ? "visible" : "hidden"
-                  } absolute top-9 transition-all duration-100
+                  } absolute top-9 transition-all duration-100 w-[190px]
               z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
                 >
                   {departments.map((i, k) => {
@@ -388,7 +499,12 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                           setIsOpenDepartmentButton(false);
                         }}
                       >
-                        {i}
+                        {i === "All"
+                          ? "All"
+                          : JSON.stringify(i.match(/\(([^)]+)\)/g)).slice(
+                              3,
+                              -3
+                            )}
                       </button>
                     );
                   })}
@@ -402,7 +518,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
               <div className="relative">
                 <button
                   type="button"
-                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+                  className="w-[71px] bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
               border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                   onClick={() => {
                     setIsOpenYearButton(!isOpenYearButton);
@@ -414,7 +530,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                 <div
                   className={`${
                     isOpenYearButton ? "visible" : "hidden"
-                  } absolute top-9 transition-all duration-100
+                  } absolute top-9 transition-all duration-100 w-[71px]
               z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
                 >
                   {["All", "1", "2", "3", "4"].map((i, k) => {
@@ -441,7 +557,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
               <div className="relative">
                 <button
                   type="button"
-                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+                  className="w-[71px] bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
               border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                   onClick={() => {
                     setIsOpenSectionButton(!isOpenSectionButton);
@@ -453,7 +569,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                 <div
                   className={`${
                     isOpenSectionButton ? "visible" : "hidden"
-                  } absolute top-9 transition-all duration-100
+                  } absolute top-9 transition-all duration-100 w-[71px]
               z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
                 >
                   {[
@@ -494,7 +610,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
               <div className="relative">
                 <button
                   type="button"
-                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+                  className="flex justify-between w-[102px] bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
               border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                   onClick={() => {
                     setIsOpenGenderButton(!isOpenGenderButton);
@@ -506,7 +622,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                 <div
                   className={`${
                     isOpenGenderButton ? "visible" : "hidden"
-                  } absolute top-9 transition-all duration-100
+                  } absolute top-9 transition-all duration-100 w-[102px]
               z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
                 >
                   {genders.map((i, k) => {
@@ -568,17 +684,40 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
         <thead className="flex px-5 py-3 text-sm text-[--light-brown] font-bold bg-[--dark-green] rounded-lg m-1">
           {Object.entries(tableCategories).map(([key, value]) => {
             return (
-              <tr>
-                <td className="flex gap-5 items-center">
-                  <p className="min-w-[100px] w-auto mr-5 flex justify-start truncate text-ellipsis">
-                    {toHeaderCase(key)}
-                  </p>
-                </td>
-              </tr>
+              <p className="min-w-[100px] max-w-[100px] mr-[20px] flex justify-between truncate text-ellipsis">
+                <span className="truncate w-[70%]">{toHeaderCase(key)}</span>
+                {sortString[key] ? (
+                  <button
+                    onClick={() => {
+                      setSortString((prevSortString) => ({
+                        ...prevSortString,
+                        [key]: !prevSortString[key],
+                      }));
+                      setSortName(key);
+                      setIsAscending(false);
+                    }}
+                  >
+                    <FaLongArrowAltUp />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setSortString((prevSortString) => ({
+                        ...prevSortString,
+                        [key]: !prevSortString[key],
+                      }));
+                      setSortName(key);
+                      setIsAscending(true);
+                    }}
+                  >
+                    <FaLongArrowAltDown />
+                  </button>
+                )}
+              </p>
             );
           })}
         </thead>
-
+        {console.log(reports)}
         <tbody className="flex flex-col max-h-[624px] overflow-y-auto">
           {reports.length ? (
             filteredReports()?.map((i, k) => {
@@ -590,13 +729,24 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                         k % 2 ? "bg-[--light-green] rounded-lg" : null
                       }`}
                     >
-                      <ReportsTd value={convertDate(i["start"])[1]} />
-                      <ReportsTd value={convertDate(i["start"])[2]} />
+                      <ReportsTd
+                        value={
+                          convertDate(
+                            i["scheduledDate"] ? i["createdDate"] : i["start"]
+                          )[1]
+                        }
+                      />
+                      <ReportsTd
+                        value={
+                          convertDate(
+                            i["scheduledDate"] ? i["createdDate"] : i["start"]
+                          )[2]
+                        }
+                      />
                       <ReportsTd value={i["userDetails.idNo"]} />
                       <ReportsTd value={i["userDetails.name"]} />
                       <ReportsTd value={i["userDetails.email"]} />
                       <ReportsTd value={i["gc.name"]} />
-                      <ReportsTd value={i["description"]} />
                       <ReportsTd
                         value={
                           i["mode"] === "facetoface"
@@ -604,6 +754,8 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                             : "Virtual"
                         }
                       />
+                      <ReportsTd value={i["description"]} />
+                      <ReportsTd value={toHeaderCase(i["type"])} />
                       <ReportsTd value={toHeaderCase(i["status"])} />
                       <ReportsTd value={i["notes"]} />
                       <ReportsTd value={i["userDetails.contactNo"]} />
