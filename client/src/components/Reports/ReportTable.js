@@ -144,9 +144,6 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
             } else if (sortName === "guidanceCounselor") {
               propA = toLowerCase(a["gc.name"]);
               propB = toLowerCase(b["gc.name"]);
-            } else if (sortName === "guidanceCounselor") {
-              propA = toLowerCase(a["gc.name"]);
-              propB = toLowerCase(b["gc.name"]);
             } else if (sortName === "concernOverview") {
               propA = toLowerCase(a["description"]);
               propB = toLowerCase(b["description"]);
@@ -309,7 +306,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
       await axios
         .post(
           "/api/reports/export",
-          { reports: finalReports, type, title },
+          { reports: finalReports, type, title, tableCategories },
           {
             withCredentials: true,
             headers: {
@@ -319,12 +316,21 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
           }
         )
         .then((res) => {
-          download(
-            res.data,
-            `${moment().format("YYYY-MM-DD")}-${moment().format(
-              "hh-mm-ss"
-            )}-${title}Reports.xlsx`
-          );
+          if (type === "Excel") {
+            download(
+              res.data,
+              `${moment().format("YYYY-MM-DD")}-${moment().format(
+                "hh-mm-ss"
+              )}-${title}Reports.xlsx`
+            );
+          } else {
+            download(
+              res.data,
+              `${moment().format("YYYY-MM-DD")}-${moment().format(
+                "hh-mm-ss"
+              )}-${title}Reports.csv`
+            );
+          }
         });
     } catch (err) {
       toast.error("Error");

@@ -2,6 +2,7 @@ const XLSX = require("xlsx");
 const moment = require("moment");
 const path = require("node:path");
 const fs = require("fs");
+const jsConvert = require("js-convert-case");
 
 const db = require("../utils/firebase");
 
@@ -86,11 +87,77 @@ const getReports = async (req, res) => {
   }
 };
 
+const convertDate = (date) => {
+  const formattedDate = new Date(date);
+
+  const convertedDateTime = formattedDate.toLocaleString("en-PH", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+    timeZone: "Asia/Singapore",
+  });
+
+  const convertedDate = formattedDate.toLocaleString("en-PH", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "Asia/Singapore",
+  });
+
+  const convertedTime = formattedDate.toLocaleString("en-PH", {
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+    timeZone: "Asia/Singapore",
+  });
+
+  return [convertedDateTime, convertedDate, convertedTime];
+};
+
 const exportReports = async (req, res) => {
-  const { reports, type, title } = req.body;
+  const { reports, type, title, tableCategories } = req.body;
   try {
+    let newReports = [];
+
+    if (title === "Appointment") {
+      reports.forEach((i) => {
+        let obj = {};
+        Object.entries(tableCategories).map(([key, value]) => {
+          if (key === "date") {
+            obj["Date"] = i["scheduledDate"]
+              ? convertDate(i["createdDate"])[1]
+              : convertDate(i["start"])[1];
+          } else if (key === "time") {
+            obj["Time"] = i["scheduledDate"]
+              ? convertDate(i["createdDate"])[2]
+              : convertDate(i["start"])[2];
+          } else if (key === "idNo") {
+            obj["Id No"] = i["userDetails.idNo"];
+          } else if (key === "name") {
+            obj["Name"] = jsConvert.toHeaderCase(i["userDetails.name"]);
+          } else if (key === "email") {
+            obj["Email"] = i["userDetails.email"];
+          } else if (key === "guidanceCounselor") {
+            obj["Guidance Counselor"] = jsConvert.toHeaderCase(i["gc.name"]);
+          } else if (key === "concernOverview") {
+            obj["Concern Overview"] = i["description"];
+          } else if (key === "phone") {
+            obj["Phone"] = i["userDetails.contactNo"];
+          } else if (key === "mode") {
+            obj["Mode"] = i["mode"] === "virtual" ? "Virtual" : "Face-to-face";
+          } else {
+            obj[jsConvert.toHeaderCase(key)] = jsConvert.toHeaderCase(i[key]);
+          }
+        });
+        newReports.push(obj);
+      });
+    }
+
     if (type === "Excel") {
-      const worksheet = XLSX.utils.json_to_sheet(reports);
+      const worksheet = XLSX.utils.json_to_sheet(newReports);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, title);
       XLSX.write(workbook, { bookType: "xlsx", type: "buffer" });
@@ -111,7 +178,7 @@ const exportReports = async (req, res) => {
         if (err) console.log(err);
       });
     } else if (type === "CSV") {
-      const worksheet = XLSX.utils.json_to_sheet(reports);
+      const worksheet = XLSX.utils.json_to_sheet(newReports);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, title);
       XLSX.write(workbook, { bookType: "csv", type: "buffer" });
