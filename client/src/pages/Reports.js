@@ -6,7 +6,7 @@ function Reports({ auth, toast, title, filters, tableCategories }) {
   useEffect(() => {}, []);
 
   return (
-    <div className="bg-[--light-brown] h-screen">
+    <div className="bg-[--light-brown] h-screen overflow-hidden">
       <div className="flex flex-col px-52">
         <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">
           {`${title} Reports`}

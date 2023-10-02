@@ -187,6 +187,47 @@ function App() {
                 }
               ></Route>
             </Route>
+            {/* users reports module*/}
+            <Route
+              element={
+                <RequiredAuth
+                  allowedRoles={["guidanceCounselor", "systemAdministrator"]}
+                />
+              }
+            >
+              <Route
+                path="/reports/users"
+                element={
+                  <Reports
+                    auth={auth}
+                    toast={toast}
+                    title={"Daily User"}
+                    filters={{
+                      dateTime: true,
+                      college: true,
+                      department: true,
+                      year: true,
+                      section: true,
+                      gender: true,
+                    }}
+                    tableCategories={{
+                      date: true,
+                      time: true,
+                      idNo: true,
+                      name: true,
+                      email: true,
+                      guidanceCounselor: true,
+                      mode: true,
+                      concernOverview: true,
+                      type: true,
+                      status: true,
+                      notes: true,
+                      phone: true,
+                    }}
+                  />
+                }
+              ></Route>
+            </Route>
             {/* train module */}
             <Route
               element={

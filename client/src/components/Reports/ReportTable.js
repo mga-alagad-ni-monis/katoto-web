@@ -331,6 +331,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
               )}-${title}Reports.csv`
             );
           }
+          setIsOpenExport(false);
         });
     } catch (err) {
       toast.error("Error");
@@ -723,15 +724,21 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
             );
           })}
         </thead>
-        {console.log(reports)}
         <tbody className="flex flex-col max-h-[624px] overflow-y-auto">
+          {reports.length ? (
+            filteredReports()?.length === 0 ? (
+              <p className="font-bold flex justify-center items-center min-h-[624px]">
+                No data...
+              </p>
+            ) : null
+          ) : null}
           {reports.length ? (
             filteredReports()?.map((i, k) => {
               if (title === "Appointment") {
                 return (
                   <tr key={k}>
                     <td
-                      className={`flex font-medium mx-1 px-5 mb-1 py-3 text-sm ${
+                      className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
                         k % 2 ? "bg-[--light-green] rounded-lg" : null
                       }`}
                     >
