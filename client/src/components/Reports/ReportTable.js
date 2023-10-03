@@ -102,6 +102,18 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                 }
               });
             });
+          } else if (title === "Feedback") {
+            res?.data?.reports.forEach((i) => {
+              i?.feedbacks?.forEach((j) => {
+                if (
+                  auth?.userInfo?.assignedCollege.includes(
+                    j?.userDetails?.mainDepartment
+                  )
+                ) {
+                  updatedReports.push(flatten(j));
+                }
+              });
+            });
           }
           setReports(updatedReports);
         });
@@ -183,8 +195,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
               propA = toLowerCase(a[sortName]);
               propB = toLowerCase(b[sortName]);
             }
-          }
-          if (title === "Daily User") {
+          } else if (title === "Daily User") {
             if (sortName === "date") {
               propA = new Date(convertDate(a["createdDate"])[1]);
               propB = new Date(convertDate(b["createdDate"])[1]);
@@ -197,6 +208,35 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
             } else if (sortName === "phone") {
               propA = toLowerCase(a["contactNo"]);
               propB = toLowerCase(b["contactNo"]);
+            } else {
+              propA = toLowerCase(a[sortName]);
+              propB = toLowerCase(b[sortName]);
+            }
+          } else if (title === "Feedback") {
+            if (sortName === "date") {
+              propA = new Date(convertDate(a["createdDate"])[1]);
+              propB = new Date(convertDate(b["createdDate"])[1]);
+            } else if (sortName === "time") {
+              propA = convertDate(a["createdDate"])[2];
+              propB = convertDate(b["createdDate"])[2];
+            } else if (sortName === "idNo") {
+              propA = toLowerCase(a["userDetails.idNo"]);
+              propB = toLowerCase(b["userDetails.idNo"]);
+            } else if (sortName === "name") {
+              propA = toLowerCase(a["userDetails.name"]);
+              propB = toLowerCase(b["userDetails.name"]);
+            } else if (sortName === "email") {
+              propA = toLowerCase(a["userDetails.credentials.email"]);
+              propB = toLowerCase(b["userDetails.credentials.email"]);
+            } else if (sortName === "department") {
+              propA = toLowerCase(a["userDetails.department"]);
+              propB = toLowerCase(b["userDetails.department"]);
+            } else if (sortName === "yearSection") {
+              propA = toLowerCase(a["userDetails.yearSection"]);
+              propB = toLowerCase(b["userDetails.yearSection"]);
+            } else if (sortName === "feedback") {
+              propA = toLowerCase(a["feedbackDetails"]);
+              propB = toLowerCase(b["feedbackDetails"]);
             } else {
               propA = toLowerCase(a[sortName]);
               propB = toLowerCase(b[sortName]);
@@ -290,7 +330,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
           }
         }
 
-        if (title === "Daily User") {
+        if (title === "Daily User" || title === "Feedback") {
           if (filterDateTime === "Today") {
             return (
               convertDate(i["createdDate"])[1] ===
@@ -332,7 +372,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
         }
       })
       ?.filter((i) => {
-        if (title === "Appointment") {
+        if (title === "Appointment" || title === "Feedback") {
           return filterCollege === "All"
             ? i
             : filterCollege === i["userDetails.mainDepartment"];
@@ -343,7 +383,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
         }
       })
       ?.filter((i) => {
-        if (title === "Appointment") {
+        if (title === "Appointment" || title === "Feedback") {
           return filterDepartment === "All"
             ? i
             : filterDepartment === i["userDetails.department"];
@@ -354,7 +394,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
         }
       })
       ?.filter((i) => {
-        if (title === "Appointment") {
+        if (title === "Appointment" || title === "Feedback") {
           return filterYear === "All"
             ? i
             : filterYear === i["userDetails.yearSection"][0];
@@ -363,7 +403,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
         }
       })
       ?.filter((i) => {
-        if (title === "Appointment") {
+        if (title === "Appointment" || title === "Feedback") {
           return filterSection === "All"
             ? i
             : filterSection === i["userDetails.yearSection"].slice(2);
@@ -374,7 +414,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
         }
       })
       ?.filter((i) => {
-        if (title === "Appointment") {
+        if (title === "Appointment" || title === "Feedback") {
           return filterGender === "All"
             ? i
             : filterGender === i["userDetails.gender"];
@@ -434,6 +474,35 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
               i["yearSection"].toLowerCase().includes(search.toLowerCase()) ||
               i["type"].toLowerCase().includes(search.toLowerCase()) ||
               i["contactNo"].toLowerCase().includes(search.toLowerCase())
+            );
+          } else if (title === "Feedback") {
+            return (
+              convertDate(i["createdDate"])[1]
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              convertDate(i["createdDate"])[2]
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              i["userDetails.idNo"]
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              i["userDetails.name"]
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              i["userDetails.credentials.email"]
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              i["userDetails.department"]
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              i["userDetails.yearSection"]
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              i["rating"]
+                .toString()
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              i["feedbackDetails"].toLowerCase().includes(search.toLowerCase())
             );
           }
         } else {
@@ -939,6 +1008,26 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                       <ReportsTd value={i["yearSection"]} />
                       <ReportsTd value={i["type"]} />
                       <ReportsTd value={i["contactNo"]} />
+                    </td>
+                  </tr>
+                );
+              } else if (title === "Feedback") {
+                return (
+                  <tr key={k}>
+                    <td
+                      className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
+                        k % 2 ? "bg-[--light-green] rounded-lg" : null
+                      }`}
+                    >
+                      <ReportsTd value={convertDate(i["createdDate"])[1]} />
+                      <ReportsTd value={convertDate(i["createdDate"])[2]} />
+                      <ReportsTd value={i["userDetails.idNo"]} />
+                      <ReportsTd value={i["userDetails.name"]} />
+                      <ReportsTd value={i["userDetails.credentials.email"]} />
+                      <ReportsTd value={i["userDetails.department"]} />
+                      <ReportsTd value={i["userDetails.yearSection"]} />
+                      <ReportsTd value={i["rating"]} />
+                      <ReportsTd value={i["feedbackDetails"]} />
                     </td>
                   </tr>
                 );

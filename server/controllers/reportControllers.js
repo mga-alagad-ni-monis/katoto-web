@@ -178,6 +178,32 @@ const exportReports = async (req, res) => {
         });
         newReports.push(obj);
       });
+    } else if (title === "Feedback") {
+      reports.forEach((i) => {
+        let obj = {};
+        Object.entries(tableCategories).map(([key, value]) => {
+          if (key === "date") {
+            obj["Date"] = convertDate(i["createdDate"])[1];
+          } else if (key === "time") {
+            obj["Time"] = convertDate(i["createdDate"])[1];
+          } else if (key === "idNo") {
+            obj["Id No"] = i["userDetails.idNo"];
+          } else if (key === "name") {
+            obj["Name"] = i["userDetails.name"];
+          } else if (key === "email") {
+            obj["Email"] = i["userDetails.credentials.email"];
+          } else if (key === "department") {
+            obj["Department"] = i["userDetails.department"];
+          } else if (key === "yearSection") {
+            obj["Year Section"] = i["userDetails.yearSection"];
+          } else if (key === "feedback") {
+            obj["Feedback"] = i["feedbackDetails"];
+          } else {
+            obj[jsConvert.toHeaderCase(key)] = jsConvert.toHeaderCase(i[key]);
+          }
+        });
+        newReports.push(obj);
+      });
     }
 
     if (type === "Excel") {

@@ -158,6 +158,7 @@ function App() {
                 path="/reports/appointments"
                 element={
                   <Reports
+                    key={"Appointment"}
                     auth={auth}
                     toast={toast}
                     title={"Appointment"}
@@ -199,6 +200,7 @@ function App() {
                 path="/reports/users"
                 element={
                   <Reports
+                    key={"Daily User"}
                     auth={auth}
                     toast={toast}
                     title={"Daily User"}
@@ -222,6 +224,45 @@ function App() {
                       yearSection: true,
                       type: true,
                       phone: true,
+                    }}
+                  />
+                }
+              ></Route>
+            </Route>
+            {/* feedback reports module*/}
+            <Route
+              element={
+                <RequiredAuth
+                  allowedRoles={["guidanceCounselor", "systemAdministrator"]}
+                />
+              }
+            >
+              <Route
+                path="/reports/feedbacks"
+                element={
+                  <Reports
+                    key={"Feedback"}
+                    auth={auth}
+                    toast={toast}
+                    title={"Feedback"}
+                    filters={{
+                      dateTime: true,
+                      college: true,
+                      department: true,
+                      year: true,
+                      section: true,
+                      gender: true,
+                    }}
+                    tableCategories={{
+                      date: true,
+                      time: true,
+                      idNo: true,
+                      name: true,
+                      email: true,
+                      department: true,
+                      yearSection: true,
+                      rating: true,
+                      feedback: true,
                     }}
                   />
                 }
