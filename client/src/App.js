@@ -216,12 +216,11 @@ function App() {
                       idNo: true,
                       name: true,
                       email: true,
-                      guidanceCounselor: true,
-                      mode: true,
-                      concernOverview: true,
+                      age: true,
+                      department: true,
+                      gender: true,
+                      yearSection: true,
                       type: true,
-                      status: true,
-                      notes: true,
                       phone: true,
                     }}
                   />

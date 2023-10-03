@@ -154,6 +154,30 @@ const exportReports = async (req, res) => {
         });
         newReports.push(obj);
       });
+    } else if (title === "Daily User") {
+      reports.forEach((i) => {
+        let obj = {};
+        Object.entries(tableCategories).map(([key, value]) => {
+          if (key === "date") {
+            obj["Date"] = convertDate(i["createdDate"])[1];
+          } else if (key === "time") {
+            obj["Time"] = convertDate(i["createdDate"])[1];
+          } else if (key === "email") {
+            obj["Email"] = i["credentials.email"];
+          } else if (key === "phone") {
+            obj["Phone"] = i["contactNo"];
+          } else if (key === "idNo") {
+            obj["Id No"] = i["idNo"];
+          } else if (key === "department") {
+            obj["Department"] = i["department"];
+          } else if (key === "yearSection") {
+            obj["Year Section"] = i["yearSection"];
+          } else {
+            obj[jsConvert.toHeaderCase(key)] = jsConvert.toHeaderCase(i[key]);
+          }
+        });
+        newReports.push(obj);
+      });
     }
 
     if (type === "Excel") {

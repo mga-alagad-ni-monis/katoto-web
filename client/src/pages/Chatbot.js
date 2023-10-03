@@ -268,6 +268,7 @@ function Chatbot({ toast, auth, socket }) {
                   message: res.data[0].text,
                 },
                 isGuided,
+                credentials: auth?.userInfo,
               },
               {
                 withCredentials: true,
@@ -297,6 +298,7 @@ function Chatbot({ toast, auth, socket }) {
               {
                 studentMessage: { sender },
                 isGuided,
+                credentials: auth?.userInfo,
               },
               {
                 withCredentials: true,

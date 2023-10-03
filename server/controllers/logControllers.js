@@ -5,7 +5,7 @@ const db = require("../utils/firebase");
 const ageCalculator = require("age-calculator");
 
 const sendConversation = async (req, res) => {
-  const { studentMessage, katotoMessage, isGuided } = req.body;
+  const { studentMessage, katotoMessage, isGuided, credentials } = req.body;
 
   try {
     const token = jwt.decode(studentMessage.sender);
@@ -63,8 +63,17 @@ const sendConversation = async (req, res) => {
     if (isGuided) {
       let guidedArray = reports.data().reports.dailyUsers.guided;
 
-      if (!guidedArray.includes(token.email)) {
-        guidedArray.push(token.email);
+      let includes = false;
+
+      guidedArray?.forEach((i) => {
+        if (i.idNo === credentials.idNo) {
+          includes = true;
+        }
+      });
+
+      if (!includes) {
+        credentials["createdDate"] = new Date().toLocaleString();
+        guidedArray.push(credentials);
       }
 
       let conversationLogsArray = reports.data().reports.conversationLogs;
@@ -121,8 +130,19 @@ const sendConversation = async (req, res) => {
     } else {
       let friendlyArray = reports.data().reports.dailyUsers.friendly;
 
-      if (!friendlyArray.includes(token.email)) {
-        friendlyArray.push(token.email);
+      let includes = false;
+
+      console.log(credentials);
+
+      friendlyArray?.forEach((i) => {
+        if (i.idNo === credentials.idNo) {
+          includes = true;
+        }
+      });
+
+      if (!includes) {
+        credentials["createdDate"] = new Date().toLocaleString();
+        friendlyArray.push(credentials);
       }
 
       await document.update({
@@ -132,6 +152,7 @@ const sendConversation = async (req, res) => {
 
     res.status(200);
   } catch (err) {
+    console.log(err);
     res.status(404).send("Error");
   }
 };

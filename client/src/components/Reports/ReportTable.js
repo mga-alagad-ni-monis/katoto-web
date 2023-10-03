@@ -51,8 +51,8 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
           },
         })
         .then((res) => {
+          let updatedReports = [];
           if (title === "Appointment") {
-            let updatedReports = [];
             res?.data?.reports.forEach((i) => {
               i?.sosAppointments?.forEach((j) => {
                 if (
@@ -73,8 +73,37 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                 }
               });
             });
-            setReports(updatedReports);
+          } else if (title === "Daily User") {
+            res?.data?.reports.forEach((i) => {
+              i?.dailyUsers?.friendly?.forEach((j) => {
+                if (
+                  auth?.userInfo?.assignedCollege.includes(j?.mainDepartment)
+                ) {
+                  j["type"] = "Friendly";
+                  j["age"] = moment().diff(
+                    new Date(j["birthday"]),
+                    "years",
+                    false
+                  );
+                  updatedReports.push(flatten(j));
+                }
+              });
+              i?.dailyUsers?.guided?.forEach((k) => {
+                if (
+                  auth?.userInfo?.assignedCollege.includes(k?.mainDepartment)
+                ) {
+                  k["age"] = moment().diff(
+                    new Date(k["birthday"]),
+                    "years",
+                    false
+                  );
+                  k["type"] = "Guided";
+                  updatedReports.push(flatten(k));
+                }
+              });
+            });
           }
+          setReports(updatedReports);
         });
     } catch (err) {
       toast.error("Error");
@@ -154,19 +183,37 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
               propA = toLowerCase(a[sortName]);
               propB = toLowerCase(b[sortName]);
             }
-
-            if (isAscending) {
-              if (propA > propB) {
-                return 1;
-              } else {
-                return -1;
-              }
+          }
+          if (title === "Daily User") {
+            if (sortName === "date") {
+              propA = new Date(convertDate(a["createdDate"])[1]);
+              propB = new Date(convertDate(b["createdDate"])[1]);
+            } else if (sortName === "time") {
+              propA = convertDate(a["createdDate"])[2];
+              propB = convertDate(b["createdDate"])[2];
+            } else if (sortName === "email") {
+              propA = toLowerCase(a["credentials.email"]);
+              propB = toLowerCase(b["credentials.email"]);
+            } else if (sortName === "phone") {
+              propA = toLowerCase(a["contactNo"]);
+              propB = toLowerCase(b["contactNo"]);
             } else {
-              if (propA < propB) {
-                return 1;
-              } else {
-                return -1;
-              }
+              propA = toLowerCase(a[sortName]);
+              propB = toLowerCase(b[sortName]);
+            }
+          }
+
+          if (isAscending) {
+            if (propA > propB) {
+              return 1;
+            } else {
+              return -1;
+            }
+          } else {
+            if (propA < propB) {
+              return 1;
+            } else {
+              return -1;
             }
           }
         } else {
@@ -175,92 +222,166 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
       })
       ?.filter((i) => {
         let date = new Date();
-        if (filterDateTime === "Today") {
-          return i["scheduledDate"] !== undefined
-            ? convertDate(i["createdDate"])[1] ===
-                convertDate(date.toLocaleString())[1]
-            : convertDate(i["start"])[1] ===
-                convertDate(date.toLocaleString())[1];
-        } else if (filterDateTime === "Yesterday") {
-          let yesterday = moment();
-          yesterday.subtract(1, "days");
-          return i["scheduledDate"] !== undefined
-            ? convertDate(yesterday)[1] === convertDate(i["createdDate"])[1]
-            : convertDate(yesterday)[1] === convertDate(i["start"])[1];
-        } else if (filterDateTime === "Week") {
-          let week = moment();
-          week.subtract(1, "weeks");
-          if (i["scheduledDate"] !== undefined) {
-            return (
-              moment(convertDate(week)[1]).isBefore(
-                convertDate(i["createdDate"])[1]
-              ) && moment(new Date()).isAfter(convertDate(i["createdDate"])[1])
-            );
-          } else {
-            return (
-              moment(convertDate(week)[1]).isBefore(
-                convertDate(i["start"])[1]
-              ) && moment(new Date()).isAfter(convertDate(i["start"])[1])
-            );
-          }
-        } else if (filterDateTime === "Month") {
-          let month = moment();
-          month.subtract(1, "months");
-          if (i["scheduledDate"] !== undefined) {
-            return (
-              moment(convertDate(month)[1]).isBefore(
-                convertDate(i["createdDate"])[1]
-              ) && moment(new Date()).isAfter(convertDate(i["createdDate"])[1])
-            );
-          } else {
-            return (
-              moment(convertDate(month)[1]).isBefore(
-                convertDate(i["start"])[1]
-              ) && moment(new Date()).isAfter(convertDate(i["start"])[1])
-            );
-          }
-        } else if (filterDateTime === "Year") {
-          let year = moment();
-          year.subtract(1, "years");
+        if (title === "Appointment") {
+          if (filterDateTime === "Today") {
+            return i["scheduledDate"] !== undefined
+              ? convertDate(i["createdDate"])[1] ===
+                  convertDate(date.toLocaleString())[1]
+              : convertDate(i["start"])[1] ===
+                  convertDate(date.toLocaleString())[1];
+          } else if (filterDateTime === "Yesterday") {
+            let yesterday = moment();
+            yesterday.subtract(1, "days");
+            return i["scheduledDate"] !== undefined
+              ? convertDate(yesterday)[1] === convertDate(i["createdDate"])[1]
+              : convertDate(yesterday)[1] === convertDate(i["start"])[1];
+          } else if (filterDateTime === "Week") {
+            let week = moment();
+            week.subtract(1, "weeks");
+            if (i["scheduledDate"] !== undefined) {
+              return (
+                moment(convertDate(week)[1]).isBefore(
+                  convertDate(i["createdDate"])[1]
+                ) &&
+                moment(new Date()).isAfter(convertDate(i["createdDate"])[1])
+              );
+            } else {
+              return (
+                moment(convertDate(week)[1]).isBefore(
+                  convertDate(i["start"])[1]
+                ) && moment(new Date()).isAfter(convertDate(i["start"])[1])
+              );
+            }
+          } else if (filterDateTime === "Month") {
+            let month = moment();
+            month.subtract(1, "months");
+            if (i["scheduledDate"] !== undefined) {
+              return (
+                moment(convertDate(month)[1]).isBefore(
+                  convertDate(i["createdDate"])[1]
+                ) &&
+                moment(new Date()).isAfter(convertDate(i["createdDate"])[1])
+              );
+            } else {
+              return (
+                moment(convertDate(month)[1]).isBefore(
+                  convertDate(i["start"])[1]
+                ) && moment(new Date()).isAfter(convertDate(i["start"])[1])
+              );
+            }
+          } else if (filterDateTime === "Year") {
+            let year = moment();
+            year.subtract(1, "years");
 
-          if (i["scheduledDate"] !== undefined) {
+            if (i["scheduledDate"] !== undefined) {
+              return (
+                moment(convertDate(year)[1]).isBefore(
+                  convertDate(i["createdDate"])[1]
+                ) &&
+                moment(new Date()).isAfter(convertDate(i["createdDate"])[1])
+              );
+            } else {
+              return (
+                moment(convertDate(year)[1]).isBefore(
+                  convertDate(i["start"])[1]
+                ) && moment(new Date()).isAfter(convertDate(i["start"])[1])
+              );
+            }
+          }
+        }
+
+        if (title === "Daily User") {
+          if (filterDateTime === "Today") {
+            return (
+              convertDate(i["createdDate"])[1] ===
+              convertDate(date.toLocaleString())[1]
+            );
+          } else if (filterDateTime === "Yesterday") {
+            let yesterday = moment();
+            yesterday.subtract(1, "days");
+            return (
+              convertDate(yesterday)[1] === convertDate(i["createdDate"])[1]
+            );
+          } else if (filterDateTime === "Week") {
+            let week = moment();
+            week.subtract(1, "weeks");
+
+            return (
+              moment(convertDate(week)[1]).isBefore(
+                convertDate(i["createdDate"])[1]
+              ) && moment(new Date()).isAfter(convertDate(i["createdDate"])[1])
+            );
+          } else if (filterDateTime === "Month") {
+            let month = moment();
+            month.subtract(1, "months");
+
+            return (
+              moment(convertDate(month)[1]).isBefore(
+                convertDate(i["createdDate"])[1]
+              ) && moment(new Date()).isAfter(convertDate(i["createdDate"])[1])
+            );
+          } else if (filterDateTime === "Year") {
+            let year = moment();
+            year.subtract(1, "years");
             return (
               moment(convertDate(year)[1]).isBefore(
                 convertDate(i["createdDate"])[1]
               ) && moment(new Date()).isAfter(convertDate(i["createdDate"])[1])
-            );
-          } else {
-            return (
-              moment(convertDate(year)[1]).isBefore(
-                convertDate(i["start"])[1]
-              ) && moment(new Date()).isAfter(convertDate(i["start"])[1])
             );
           }
         }
       })
-      ?.filter((i) =>
-        filterCollege === "All"
-          ? i
-          : filterCollege === i["userDetails.mainDepartment"]
-      )
-      ?.filter((i) =>
-        filterDepartment === "All"
-          ? i
-          : filterDepartment === i["userDetails.department"]
-      )
-      ?.filter((i) =>
-        filterYear === "All"
-          ? i
-          : filterYear === i["userDetails.yearSection"][0]
-      )
-      ?.filter((i) =>
-        filterSection === "All"
-          ? i
-          : filterSection === i["userDetails.yearSection"].slice(2)
-      )
-      ?.filter((i) =>
-        filterGender === "All" ? i : filterGender === i["userDetails.gender"]
-      )
+      ?.filter((i) => {
+        if (title === "Appointment") {
+          return filterCollege === "All"
+            ? i
+            : filterCollege === i["userDetails.mainDepartment"];
+        } else if (title === "Daily User") {
+          return filterCollege === "All"
+            ? i
+            : filterCollege === i["mainDepartment"];
+        }
+      })
+      ?.filter((i) => {
+        if (title === "Appointment") {
+          return filterDepartment === "All"
+            ? i
+            : filterDepartment === i["userDetails.department"];
+        } else if (title === "Daily User") {
+          return filterDepartment === "All"
+            ? i
+            : filterDepartment === i["department"];
+        }
+      })
+      ?.filter((i) => {
+        if (title === "Appointment") {
+          return filterYear === "All"
+            ? i
+            : filterYear === i["userDetails.yearSection"][0];
+        } else if (title === "Daily User") {
+          return filterYear === "All" ? i : filterYear === i["yearSection"][0];
+        }
+      })
+      ?.filter((i) => {
+        if (title === "Appointment") {
+          return filterSection === "All"
+            ? i
+            : filterSection === i["userDetails.yearSection"].slice(2);
+        } else if (title === "Daily User") {
+          return filterSection === "All"
+            ? i
+            : filterSection === i["yearSection"].slice(2);
+        }
+      })
+      ?.filter((i) => {
+        if (title === "Appointment") {
+          return filterGender === "All"
+            ? i
+            : filterGender === i["userDetails.gender"];
+        } else if (title === "Daily User") {
+          return filterGender === "All" ? i : filterGender === i["gender"];
+        }
+      })
       ?.filter((i) => {
         if (search?.toLowerCase().trim()) {
           if (title === "Appointment") {
@@ -290,6 +411,29 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
               i["userDetails.contactNo"]
                 .toLowerCase()
                 .includes(search.toLowerCase())
+            );
+          } else if (title === "Daily User") {
+            return (
+              convertDate(i["createdDate"])[1]
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              convertDate(i["createdDate"])[2]
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              i["idNo"].toLowerCase().includes(search.toLowerCase()) ||
+              i["name"].toLowerCase().includes(search.toLowerCase()) ||
+              i["credentials.email"]
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              i["age"]
+                .toString()
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              i["department"].toLowerCase().includes(search.toLowerCase()) ||
+              i["gender"].toLowerCase().includes(search.toLowerCase()) ||
+              i["yearSection"].toLowerCase().includes(search.toLowerCase()) ||
+              i["type"].toLowerCase().includes(search.toLowerCase()) ||
+              i["contactNo"].toLowerCase().includes(search.toLowerCase())
             );
           }
         } else {
@@ -732,6 +876,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
               </p>
             ) : null
           ) : null}
+          {console.log(reports)}
           {reports.length ? (
             filteredReports()?.map((i, k) => {
               if (title === "Appointment") {
@@ -772,6 +917,28 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                       <ReportsTd value={toHeaderCase(i["status"])} />
                       <ReportsTd value={i["notes"]} />
                       <ReportsTd value={i["userDetails.contactNo"]} />
+                    </td>
+                  </tr>
+                );
+              } else if (title === "Daily User") {
+                return (
+                  <tr key={k}>
+                    <td
+                      className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
+                        k % 2 ? "bg-[--light-green] rounded-lg" : null
+                      }`}
+                    >
+                      <ReportsTd value={convertDate(i["createdDate"])[1]} />
+                      <ReportsTd value={convertDate(i["createdDate"])[2]} />
+                      <ReportsTd value={i["idNo"]} />
+                      <ReportsTd value={i["name"]} />
+                      <ReportsTd value={i["credentials.email"]} />
+                      <ReportsTd value={i["age"]} />
+                      <ReportsTd value={i["department"]} />
+                      <ReportsTd value={i["gender"]} />
+                      <ReportsTd value={i["yearSection"]} />
+                      <ReportsTd value={i["type"]} />
+                      <ReportsTd value={i["contactNo"]} />
                     </td>
                   </tr>
                 );
