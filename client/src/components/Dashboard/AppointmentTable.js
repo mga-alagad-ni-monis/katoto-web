@@ -107,13 +107,13 @@ function AppointmentTable({ toast, auth }) {
       </div>
       <div className="h-auto w-full mt-5">
         <div className="w-full flex gap-5">
-          <div className="w-1/2 flex gap-5 items-end">
-            <div className="">
-              <div className="flex justify-between regular-calendar">
-                <p className="font-extrabold text-md flex items-center">
-                  Regular Appointments
-                </p>
-              </div>
+          <div className="w-1/2">
+            <div className="regular-calendar">
+              <p className="font-extrabold text-md flex items-center">
+                Regular Appointments
+              </p>
+            </div>
+            <div className="flex gap-5 dashboard mt-5">
               <Calendar
                 localizer={localizer}
                 startAccessor="start"
@@ -132,60 +132,60 @@ function AppointmentTable({ toast, auth }) {
                 defaultView={"agenda"}
                 onSelectEvent={(i) => {}}
               />
-            </div>
-            <div className="flex flex-col gap-3 w-auto">
-              <div className="bg-[--yellow] p-3 rounded-xl flex gap-3 shadow-lg items-center">
-                <MdOutlinePending size={42} />
-                <div className="flex flex-col justify-between">
-                  <p className="font-bold text-xl">
-                    {
-                      events.filter(
-                        (i) =>
-                          i?.data?.type === "standard" &&
-                          i?.data?.status === "pending"
-                      ).length
-                    }
-                  </p>
-                  <p className="text-md">Pending</p>
+              <div className="flex flex-col justify-between w-auto">
+                <div className="bg-[--yellow] p-3 rounded-xl flex gap-3 shadow-lg items-center">
+                  <MdOutlinePending size={42} />
+                  <div className="flex flex-col justify-between">
+                    <p className="font-bold text-xl">
+                      {
+                        events.filter(
+                          (i) =>
+                            i?.data?.type === "standard" &&
+                            i?.data?.status === "pending"
+                        ).length
+                      }
+                    </p>
+                    <p className="text-md">Pending</p>
+                  </div>
                 </div>
-              </div>
-              <div className="bg-[--light-green] p-3 rounded-xl flex gap-3 shadow-lg items-center">
-                <MdCalendarMonth size={42} />
-                <div className="flex flex-col justify-between">
-                  <p className="font-bold text-xl">
-                    {
-                      events.filter(
-                        (i) =>
-                          i?.data?.type === "standard" &&
-                          i?.data?.status === "upcoming"
-                      ).length
-                    }
-                  </p>
-                  <p className="text-md">Upcoming</p>
+                <div className="bg-[--light-green] p-3 rounded-xl flex gap-3 shadow-lg items-center">
+                  <MdCalendarMonth size={42} />
+                  <div className="flex flex-col justify-between">
+                    <p className="font-bold text-xl">
+                      {
+                        events.filter(
+                          (i) =>
+                            i?.data?.type === "standard" &&
+                            i?.data?.status === "upcoming"
+                        ).length
+                      }
+                    </p>
+                    <p className="text-md">Upcoming</p>
+                  </div>
                 </div>
-              </div>
-              <div className="bg-[--dark-green] text-[--light-brown] p-3 rounded-xl flex gap-3 shadow-lg items-center">
-                <MdOutlineCheckCircleOutline size={42} />
-                <div className="flex flex-col justify-between">
-                  <p className="font-bold text-xl">
-                    {
-                      events.filter(
-                        (i) =>
-                          i?.data?.type === "standard" &&
-                          i?.data?.status === "completed"
-                      ).length
-                    }
-                  </p>
-                  <p className="text-md">Completed</p>
+                <div className="bg-[--dark-green] text-[--light-brown] p-3 rounded-xl flex gap-3 shadow-lg items-center">
+                  <MdOutlineCheckCircleOutline size={42} />
+                  <div className="flex flex-col justify-between">
+                    <p className="font-bold text-xl">
+                      {
+                        events.filter(
+                          (i) =>
+                            i?.data?.type === "standard" &&
+                            i?.data?.status === "completed"
+                        ).length
+                      }
+                    </p>
+                    <p className="text-md">Completed</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <div className="w-1/2 flex gap-5 items-end">
-            <div className="w-full sos-calendar">
-              <p className="font-extrabold text-md flex items-center">
-                SOS Appointments
-              </p>
+          <div className="w-1/2 flex flex-col">
+            <p className="font-extrabold text-md flex items-center">
+              SOS Appointments
+            </p>
+            <div className="w-full sos-calendar flex gap-5 dashboard mt-5">
               <Calendar
                 localizer={localizer}
                 startAccessor="start"
@@ -199,38 +199,53 @@ function AppointmentTable({ toast, auth }) {
                 defaultView={"agenda"}
                 onSelectEvent={(i) => {}}
               />
-            </div>
-
-            <div className="flex flex-col gap-3 w-auto">
-              <div className="bg-[--light-green] p-3 rounded-xl flex gap-3 shadow-lg items-center">
-                <MdCalendarMonth size={42} />
-                <div className="flex flex-col justify-between">
-                  <p className="font-bold text-xl">
-                    {
-                      events.filter(
-                        (i) =>
-                          i?.data?.type === "sos" &&
-                          i?.data?.status === "upcoming"
-                      ).length
-                    }
-                  </p>
-                  <p className="text-md">Upcoming</p>
+              <div className="flex flex-col justify-between w-auto">
+                <div className="bg-[--light-green] p-3 rounded-xl flex gap-3 shadow-lg items-center">
+                  <MdCalendarMonth size={42} />
+                  <div className="flex flex-col justify-between">
+                    <p className="font-bold text-xl">
+                      {
+                        events.filter(
+                          (i) =>
+                            i?.data?.type === "sos" &&
+                            i?.data?.status === "upcoming"
+                        ).length
+                      }
+                    </p>
+                    <p className="text-md">Upcoming</p>
+                  </div>
                 </div>
-              </div>
-              <div className="bg-[--dark-green] text-[--light-brown] p-3 rounded-xl flex gap-3 shadow-lg items-center">
-                <MdOutlineCheckCircleOutline size={42} />
-                <div className="flex flex-col justify-between">
-                  <p className="font-bold text-xl">
-                    {" "}
-                    {
-                      events.filter(
-                        (i) =>
-                          i?.data?.type === "sos" &&
-                          i?.data?.status === "completed"
-                      ).length
-                    }
-                  </p>
-                  <p className="text-md">Completed</p>
+                <div className="bg-[--dark-green] text-[--light-brown] p-3 rounded-xl flex gap-3 shadow-lg items-center">
+                  <MdOutlineCheckCircleOutline size={42} />
+                  <div className="flex flex-col justify-between">
+                    <p className="font-bold text-xl">
+                      {" "}
+                      {
+                        events.filter(
+                          (i) =>
+                            i?.data?.type === "sos" &&
+                            i?.data?.status === "completed"
+                        ).length
+                      }
+                    </p>
+                    <p className="text-md">Completed</p>
+                  </div>
+                </div>
+                <div className="bg-[--dark-green] text-[--light-brown] p-3 rounded-xl flex gap-3 shadow-lg items-center opacity-0">
+                  <MdOutlineCheckCircleOutline size={42} />
+                  <div className="flex flex-col justify-between">
+                    <p className="font-bold text-xl">
+                      {" "}
+                      {
+                        events.filter(
+                          (i) =>
+                            i?.data?.type === "sos" &&
+                            i?.data?.status === "completed"
+                        ).length
+                      }
+                    </p>
+                    <p className="text-md">Completed</p>
+                  </div>
                 </div>
               </div>
             </div>

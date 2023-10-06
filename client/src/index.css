@@ -59,6 +59,10 @@ h6 {
   animation-duration: 0.5s;
 }
 
+.dashboard .rbc-toolbar {
+  margin: 0;
+}
+
 @keyframes word-anim-in {
   0% {
     opacity: 0;

@@ -27,7 +27,7 @@ function UserDemographics({ data, isGuided }) {
     getGenderData();
   }, [data, isGuided]);
 
-  const COLORS = ["#000000", "#a9e6c2", "#00000033", "#ff6961"];
+  const COLORS = ["#000000", "#a9e6c2", "#f0ad4e", "#ff6961"];
   const RADIAN = Math.PI / 180;
   const renderCustomizedLabel = ({
     cx,
@@ -190,13 +190,16 @@ function UserDemographics({ data, isGuided }) {
     }
   };
 
+  const shortDept = ["COED", "CAS", "CEIT", "CABA"];
+  const gender = ["Male", "Female", "Other"];
+
   return (
     <div>
       <div className="flex justify-between w-full items-center mb-5">
         <p className="flex text-xl font-extrabold">User Demographics</p>
       </div>
-      <div className="h-[500px] w-full">
-        <ResponsiveContainer width={"100%"} height={"100%"}>
+      <div className="h-[350px] w-full flex items-center gap-3">
+        <ResponsiveContainer width={"75%"} height={"100%"}>
           <PieChart width={400} height={400}>
             <Pie
               data={mainDeparmentData}
@@ -227,8 +230,21 @@ function UserDemographics({ data, isGuided }) {
             ></Pie>
           </PieChart>
         </ResponsiveContainer>
+        <div className="flex flex-col gap-3">
+          {shortDept.map((i, k) => {
+            return (
+              <div key={k} className="flex gap-3 items-center">
+                <div
+                  className={`w-5 h-5 rounded-lg`}
+                  style={{ backgroundColor: COLORS[k] }}
+                ></div>
+                <p className="text-[12px]">{i}</p>
+              </div>
+            );
+          })}
+        </div>
       </div>
-      <div className="h-[500px] w-full">
+      {/* <div className="h-[500px] w-full">
         <ResponsiveContainer width={"100%"} height={"100%"}>
           <BarChart
             width={500}
@@ -249,9 +265,9 @@ function UserDemographics({ data, isGuided }) {
             <Bar dataKey="value" fill="#8884d8" />
           </BarChart>
         </ResponsiveContainer>
-      </div>
-      <div className="h-[500px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
+      </div> */}
+      <div className="h-[200px] w-full flex items-center gap-3">
+        <ResponsiveContainer width="75%" height="100%">
           <PieChart width={400} height={400}>
             <Pie
               data={genderData}
@@ -272,6 +288,19 @@ function UserDemographics({ data, isGuided }) {
             </Pie>
           </PieChart>
         </ResponsiveContainer>
+        <div className="flex flex-col gap-3">
+          {gender.map((i, k) => {
+            return (
+              <div key={k} className="flex gap-3 items-center">
+                <div
+                  className={`w-5 h-5 rounded-lg`}
+                  style={{ backgroundColor: COLORS[k] }}
+                ></div>
+                <p className="text-[12px]">{i}</p>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
