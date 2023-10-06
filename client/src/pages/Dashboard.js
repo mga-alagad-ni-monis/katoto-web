@@ -5,6 +5,7 @@ import { FiChevronDown } from "react-icons/fi";
 
 import UserNumberReport from "../components/Dashboard/UserNumberReport";
 import UserDemographics from "../components/Dashboard/UserDemographics";
+import AppointmentTable from "../components/Dashboard/AppointmentTable";
 
 function Reports({ auth, toast }) {
   const [reports, setReports] = useState([]);
@@ -44,6 +45,7 @@ function Reports({ auth, toast }) {
         <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">
           Dashboard
         </p>
+        <AppointmentTable toast={toast} auth={auth}></AppointmentTable>
         <div className="flex gap-5">
           <div className="hs-dropdown relative inline-flex gap-5">
             <button

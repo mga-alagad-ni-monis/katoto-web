@@ -60,6 +60,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                     j?.userDetails.mainDepartment
                   )
                 ) {
+                  j["type"] = "SOS";
                   updatedReports.push(flatten(j));
                 }
               });
@@ -69,6 +70,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                     k?.userDetails.mainDepartment
                   )
                 ) {
+                  k["type"] = "Regular";
                   updatedReports.push(flatten(k));
                 }
               });
@@ -1011,6 +1013,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
 
           {reports.length ? (
             filteredReports()?.map((i, k) => {
+              console.log(i);
               if (title === "Appointment") {
                 return (
                   <tr key={k}>
@@ -1045,7 +1048,9 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                         }
                       />
                       <ReportsTd value={i["description"]} />
-                      <ReportsTd value={toHeaderCase(i["type"])} />
+                      <ReportsTd
+                        value={i["type"] === "standard" ? "Regular" : "SOS"}
+                      />
                       <ReportsTd value={toHeaderCase(i["status"])} />
                       <ReportsTd value={i["notes"]} />
                       <ReportsTd value={i["userDetails.contactNo"]} />
