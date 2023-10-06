@@ -7,6 +7,7 @@ import { FiChevronDown } from "react-icons/fi";
 
 import UserNumberReport from "../components/Dashboard/UserNumberReport";
 import UserDemographics from "../components/Dashboard/UserDemographics";
+import UserConcerns from "../components/Dashboard/UserConcerns";
 import AppointmentTable from "../components/Dashboard/AppointmentTable";
 
 function Reports({ auth, toast }) {
@@ -219,6 +220,12 @@ function Reports({ auth, toast }) {
             </div>
           </div>
         </div>
+        <UserConcerns
+          data={filteredReports()}
+          isGuided={isGuided}
+          auth={auth}
+          toast={toast}
+        ></UserConcerns>
       </div>
     </div>
   );

@@ -3,8 +3,6 @@ import axios from "../api/axios";
 import ReportTable from "../components/Reports/ReportTable";
 
 function Reports({ auth, toast, title, filters, tableCategories }) {
-  useEffect(() => {}, []);
-
   return (
     <div className="bg-[--light-brown] h-screen overflow-hidden">
       <div className="flex flex-col px-52">

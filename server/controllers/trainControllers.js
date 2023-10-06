@@ -2,6 +2,8 @@ const yaml = require("js-yaml");
 const fs = require("fs");
 const { spawn } = require("child_process");
 
+const db = require("../utils/firebase");
+
 const getFiles = async (req, res) => {
   try {
     res.status(200).json({
@@ -69,7 +71,46 @@ const setSpecificFile = (directory, file, data) => {
   return;
 };
 
+const setConcerns = async () => {
+  const domain = yaml.load(
+    fs.readFileSync(`${process.env.RASA_FILES_PATH}katoto-ml-cg/domain.yml`),
+    { lineWidth: -1 }
+  );
+
+  const concernsArray = domain?.responses?.utter_mga_problema[0]?.buttons?.map(
+    (i) => i?.title
+  );
+
+  const document = await db.collection("values").doc("global");
+
+  await document.update({
+    concerns: concernsArray,
+  });
+};
+
+const getConcerns = async (req, res) => {
+  try {
+    await db
+      .collection("values")
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          return res.status(404).send("Error");
+        }
+        let concerns = [];
+        querySnapshot.forEach((i) => {
+          concerns = i?.data()?.concerns;
+        });
+        res.status(200).json({ concerns: concerns });
+      });
+  } catch (err) {
+    res.status(404).send("Error");
+  }
+};
+
 module.exports = {
   getFiles,
   setFiles,
+  setConcerns,
+  getConcerns,
 };

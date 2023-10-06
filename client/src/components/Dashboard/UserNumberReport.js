@@ -46,7 +46,7 @@ function UserNumberReport({ data, isGuided, selectedMode, selectedDateTime }) {
             </p>
           </div>
         </div>
-        <ResponsiveContainer width={"100%"} height={"90%"}>
+        <ResponsiveContainer width={"100%"} height={"95%"}>
           <AreaChart
             width={500}
             height={400}

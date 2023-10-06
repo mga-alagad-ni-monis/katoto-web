@@ -21,6 +21,7 @@ const feedbackRoutes = require("./routes/feedbackRoutes");
 const appointmentRoutes = require("./routes/appointmentRoutes");
 const { createDocument } = require("./controllers/reportControllers");
 const { getUser } = require("./controllers/userAccountControllers");
+const { setConcerns } = require("./controllers/trainControllers");
 const {
   addSOSAppointment,
   addStandardAppointment,
@@ -104,7 +105,11 @@ io.on("connection", (socket) => {
     console.log(onlineUsers);
   });
 
-  socket.on("train", ({ mode, id }) => {
+  socket.on("train", async ({ mode, id }) => {
+    if (mode === "cg") {
+      await setConcerns();
+    }
+
     let port = mode === "cg" ? 8000 : 8001;
 
     if (detectOSType() === "Windows") {

@@ -196,8 +196,9 @@ function UserDemographics({ data, isGuided }) {
   return (
     <div>
       <div className="flex justify-between w-full items-center mb-5">
-        <p className="flex text-xl font-extrabold">User Demographics</p>
+        <p className="flex text-xl font-extrabold ml-5">User Demographics</p>
       </div>
+      <p className="font-bold ml-10">Colleges</p>
       <div className="h-[350px] w-full flex items-center gap-3">
         <ResponsiveContainer width={"75%"} height={"100%"}>
           <PieChart width={400} height={400}>
@@ -230,6 +231,7 @@ function UserDemographics({ data, isGuided }) {
             ></Pie>
           </PieChart>
         </ResponsiveContainer>
+
         <div className="flex flex-col gap-3">
           {shortDept.map((i, k) => {
             return (
@@ -266,6 +268,7 @@ function UserDemographics({ data, isGuided }) {
           </BarChart>
         </ResponsiveContainer>
       </div> */}
+      <p className="font-bold ml-10">Gender</p>
       <div className="h-[200px] w-full flex items-center gap-3">
         <ResponsiveContainer width="75%" height="100%">
           <PieChart width={400} height={400}>
