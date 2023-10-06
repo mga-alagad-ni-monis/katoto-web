@@ -119,10 +119,13 @@ function Reports({ auth, toast }) {
         </p>
         <AppointmentTable toast={toast} auth={auth}></AppointmentTable>
         <div className="sh rounded-xl p-8 mb-8">
-          <div className="flex justify-between w-full mb-8">
+          <div className="flex justify-between w-full mb-1">
             <div className="flex justify-between w-full">
-              <p className="flex text-xl font-extrabold">Daily Active Users</p>
+              <p className="flex text-xl font-extrabold items-center">
+                Daily Active Users
+              </p>
             </div>
+
             <div className="flex gap-5">
               <div className="flex gap-5">
                 <div className="hs-dropdown relative inline-flex gap-5">
@@ -203,6 +206,9 @@ function Reports({ auth, toast }) {
               </div>
             </div>
           </div>
+          <p className="mb-8 text-black/50">
+            The number of students who engage in {selectedMode} mode.
+          </p>
           <div className="w-full flex">
             <div className="w-2/3">
               <UserNumberReport

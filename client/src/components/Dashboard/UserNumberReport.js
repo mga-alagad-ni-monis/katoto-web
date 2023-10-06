@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HiOutlineUsers } from "react-icons/hi2";
+import { HiOutlineUsers, HiOutlineCalendarDays } from "react-icons/hi2";
 
 import {
   AreaChart,
@@ -29,21 +29,63 @@ function UserNumberReport({ data, isGuided, selectedMode, selectedDateTime }) {
     });
   }, [data, isGuided, selectedMode, selectedDateTime]);
 
+  const convertDate = (date) => {
+    const formattedDate = new Date(date);
+
+    const convertedDateTime = formattedDate.toLocaleString("en-PH", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      timeZone: "Asia/Singapore",
+    });
+
+    const convertedDate = formattedDate.toLocaleString("en-PH", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "Asia/Singapore",
+    });
+
+    const convertedTime = formattedDate.toLocaleString("en-PH", {
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      timeZone: "Asia/Singapore",
+    });
+
+    return [convertedDateTime, convertedDate, convertedTime];
+  };
+
   return (
     <div>
       <div className="h-[500px]">
-        <div className="flex bg-[--dark-green] text-[--light-brown] p-5 rounded-lg shadow-lg gap-5 w-fit mb-8 ml-10 items-center">
-          <HiOutlineUsers size={52} />
-          <div className="flex flex-col justify-between">
-            <p className="font-bold text-2xl">{dailyUsersCount}</p>
-            <p>
-              Number of{" "}
-              {selectedMode === "Friendly Conversation"
-                ? "friendly conversation"
-                : "counselor-guided"}{" "}
-              users in{" "}
-              {selectedDateTime === "Year" ? "this year" : selectedDateTime}
-            </p>
+        <div className="flex gap-5">
+          <div className="flex bg-[--dark-green] text-[--light-brown] p-5 rounded-lg shadow-lg gap-5 w-fit mb-8 ml-10 items-center">
+            <HiOutlineUsers size={52} />
+            <div className="flex flex-col justify-between">
+              <p className="font-bold text-2xl">{dailyUsersCount}</p>
+              <p className="text-sm">
+                Number of{" "}
+                {selectedMode === "Friendly Conversation"
+                  ? "friendly conversation"
+                  : "counselor-guided"}{" "}
+                users in{" "}
+                {selectedDateTime === "Year" ? "this year" : selectedDateTime}
+              </p>
+            </div>
+          </div>
+          <div className="flex bg-[--dark-green] text-[--light-brown] p-5 rounded-lg shadow-lg gap-5 w-fit mb-8 mr-10 items-center">
+            <HiOutlineCalendarDays size={52} />
+            <div className="flex flex-col justify-between">
+              <p className=" font-bold">
+                {convertDate(new Date(data[0]?.date))[1] +
+                  " to " +
+                  convertDate(new Date(data[data.length - 1]?.date))[1]}
+              </p>
+            </div>
           </div>
         </div>
         <ResponsiveContainer width={"100%"} height={"95%"}>

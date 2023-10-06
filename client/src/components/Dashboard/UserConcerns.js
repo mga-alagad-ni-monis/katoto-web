@@ -67,10 +67,12 @@ function UserConcerns({ data, isGuided, auth, toast }) {
 
   return (
     <div className="sh rounded-xl p-8 mb-8">
-      <div className="flex justify-between w-full items-center mb-8">
-        <p className="flex text-xl font-extrabold ml-5">Concerns</p>
+      <div className="flex justify-between w-full items-center mb-1">
+        <p className="flex text-xl font-extrabold">Concerns</p>
       </div>
-
+      <p className="mb-8 text-black/50 mb-8">
+        The number of students who have concerns.
+      </p>
       <div className="h-[500px] w-full">
         <ResponsiveContainer width={"100%"} height={"100%"}>
           <BarChart
