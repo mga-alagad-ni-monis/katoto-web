@@ -114,6 +114,21 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                 }
               });
             });
+          } else if (title === "Concern") {
+            res?.data?.reports.forEach((i) => {
+              i?.concerns?.forEach((j) => {
+                if (
+                  auth?.userInfo?.assignedCollege.includes(j?.mainDepartment)
+                ) {
+                  j["age"] = moment().diff(
+                    new Date(j["birthday"]),
+                    "years",
+                    false
+                  );
+                  updatedReports.push(flatten(j));
+                }
+              });
+            });
           }
           setReports(updatedReports);
         });
@@ -241,6 +256,23 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
               propA = toLowerCase(a[sortName]);
               propB = toLowerCase(b[sortName]);
             }
+          } else if (title === "Concern") {
+            if (sortName === "date") {
+              propA = new Date(convertDate(a["createdDate"])[1]);
+              propB = new Date(convertDate(b["createdDate"])[1]);
+            } else if (sortName === "time") {
+              propA = convertDate(a["createdDate"])[2];
+              propB = convertDate(b["createdDate"])[2];
+            } else if (sortName === "email") {
+              propA = toLowerCase(a["credentials.email"]);
+              propB = toLowerCase(b["credentials.email"]);
+            } else if (sortName === "phone") {
+              propA = toLowerCase(a["contactNo"]);
+              propB = toLowerCase(b["contactNo"]);
+            } else {
+              propA = toLowerCase(a[sortName]);
+              propB = toLowerCase(b[sortName]);
+            }
           }
 
           if (isAscending) {
@@ -330,7 +362,11 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
           }
         }
 
-        if (title === "Daily User" || title === "Feedback") {
+        if (
+          title === "Daily User" ||
+          title === "Feedback" ||
+          title === "Concern"
+        ) {
           if (filterDateTime === "Today") {
             return (
               convertDate(i["createdDate"])[1] ===
@@ -376,7 +412,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
           return filterCollege === "All"
             ? i
             : filterCollege === i["userDetails.mainDepartment"];
-        } else if (title === "Daily User") {
+        } else if (title === "Daily User" || title === "Concern") {
           return filterCollege === "All"
             ? i
             : filterCollege === i["mainDepartment"];
@@ -387,7 +423,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
           return filterDepartment === "All"
             ? i
             : filterDepartment === i["userDetails.department"];
-        } else if (title === "Daily User") {
+        } else if (title === "Daily User" || title === "Concern") {
           return filterDepartment === "All"
             ? i
             : filterDepartment === i["department"];
@@ -398,7 +434,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
           return filterYear === "All"
             ? i
             : filterYear === i["userDetails.yearSection"][0];
-        } else if (title === "Daily User") {
+        } else if (title === "Daily User" || title === "Concern") {
           return filterYear === "All" ? i : filterYear === i["yearSection"][0];
         }
       })
@@ -407,7 +443,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
           return filterSection === "All"
             ? i
             : filterSection === i["userDetails.yearSection"].slice(2);
-        } else if (title === "Daily User") {
+        } else if (title === "Daily User" || title === "Concern") {
           return filterSection === "All"
             ? i
             : filterSection === i["yearSection"].slice(2);
@@ -418,7 +454,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
           return filterGender === "All"
             ? i
             : filterGender === i["userDetails.gender"];
-        } else if (title === "Daily User") {
+        } else if (title === "Daily User" || title === "Concern") {
           return filterGender === "All" ? i : filterGender === i["gender"];
         }
       })
@@ -504,6 +540,29 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                 .includes(search.toLowerCase()) ||
               i["feedbackDetails"].toLowerCase().includes(search.toLowerCase())
             );
+          } else if (title === "Concern") {
+            return (
+              convertDate(i["createdDate"])[1]
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              convertDate(i["createdDate"])[2]
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              i["idNo"].toLowerCase().includes(search.toLowerCase()) ||
+              i["name"].toLowerCase().includes(search.toLowerCase()) ||
+              i["credentials.email"]
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              i["age"]
+                .toString()
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              i["department"].toLowerCase().includes(search.toLowerCase()) ||
+              i["gender"].toLowerCase().includes(search.toLowerCase()) ||
+              i["yearSection"].toLowerCase().includes(search.toLowerCase()) ||
+              i["concern"].toLowerCase().includes(search.toLowerCase()) ||
+              i["contactNo"].toLowerCase().includes(search.toLowerCase())
+            );
           }
         } else {
           return i;
@@ -547,7 +606,11 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
           setIsOpenExport(false);
         });
     } catch (err) {
-      toast.error("Error");
+      if (err.response.status === 403) {
+        toast.error("No reports available!");
+      } else {
+        toast.error("Error");
+      }
     }
   };
 
@@ -945,7 +1008,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
               </p>
             ) : null
           ) : null}
-          {console.log(reports)}
+
           {reports.length ? (
             filteredReports()?.map((i, k) => {
               if (title === "Appointment") {
@@ -1028,6 +1091,28 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                       <ReportsTd value={i["userDetails.yearSection"]} />
                       <ReportsTd value={i["rating"]} />
                       <ReportsTd value={i["feedbackDetails"]} />
+                    </td>
+                  </tr>
+                );
+              } else if (title === "Concern") {
+                return (
+                  <tr key={k}>
+                    <td
+                      className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
+                        k % 2 ? "bg-[--light-green] rounded-lg" : null
+                      }`}
+                    >
+                      <ReportsTd value={convertDate(i["createdDate"])[1]} />
+                      <ReportsTd value={convertDate(i["createdDate"])[2]} />
+                      <ReportsTd value={i["idNo"]} />
+                      <ReportsTd value={i["name"]} />
+                      <ReportsTd value={i["credentials.email"]} />
+                      <ReportsTd value={i["age"]} />
+                      <ReportsTd value={i["department"]} />
+                      <ReportsTd value={i["gender"]} />
+                      <ReportsTd value={i["yearSection"]} />
+                      <ReportsTd value={i["concern"]} />
+                      <ReportsTd value={i["contactNo"]} />
                     </td>
                   </tr>
                 );

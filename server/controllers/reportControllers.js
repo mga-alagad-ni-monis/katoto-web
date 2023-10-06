@@ -79,6 +79,7 @@ const getReports = async (req, res) => {
             feedbacks: i.data().reports.feedbacks,
             sosAppointments: i.data().reports.sosAppointments,
             standardAppointments: i.data().reports.standardAppointments,
+            concerns: i.data().reports.concerns,
           });
         });
         res.status(200).json({ reports: reportsArray });
@@ -122,6 +123,10 @@ const exportReports = async (req, res) => {
   const { reports, type, title, tableCategories } = req.body;
   try {
     let newReports = [];
+
+    if (reports.length === 0) {
+      return res.status(403).send();
+    }
 
     if (title === "Appointment") {
       reports.forEach((i) => {
@@ -205,6 +210,30 @@ const exportReports = async (req, res) => {
         });
         newReports.push(obj);
       });
+    } else if (title === "Concern") {
+      reports.forEach((i) => {
+        let obj = {};
+        Object.entries(tableCategories).map(([key, value]) => {
+          if (key === "date") {
+            obj["Date"] = convertDate(i["createdDate"])[1];
+          } else if (key === "time") {
+            obj["Time"] = convertDate(i["createdDate"])[1];
+          } else if (key === "email") {
+            obj["Email"] = i["credentials.email"];
+          } else if (key === "phone") {
+            obj["Phone"] = i["contactNo"];
+          } else if (key === "idNo") {
+            obj["Id No"] = i["idNo"];
+          } else if (key === "department") {
+            obj["Department"] = i["department"];
+          } else if (key === "yearSection") {
+            obj["Year Section"] = i["yearSection"];
+          } else {
+            obj[jsConvert.toHeaderCase(key)] = jsConvert.toHeaderCase(i[key]);
+          }
+        });
+        newReports.push(obj);
+      });
     }
 
     if (type === "Excel") {
@@ -258,7 +287,6 @@ const exportReports = async (req, res) => {
       });
     }
   } catch (err) {
-    console.log(err);
     res.status(404).send("Error");
   }
 };
