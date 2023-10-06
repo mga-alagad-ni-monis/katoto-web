@@ -106,7 +106,15 @@ function Chatbot({ toast, auth, socket }) {
   useEffect(() => {
     handleGetConversation();
     if (!isInitial) {
-      handleSubmitMessage(auth.accessToken, "hi");
+      handleSubmitMessage(
+        auth.accessToken,
+        isGuided
+          ? {
+              title: "Hi",
+              payload: "initial",
+            }
+          : "Hi"
+      );
     }
   }, [isInitial]);
 
@@ -219,7 +227,7 @@ function Chatbot({ toast, auth, socket }) {
       setGuidedButtons([]);
       setInputFriendly("");
       setIsTyping(true);
-      setMessages([...messages, { sender, message: inputMessage }]);
+      setMessages([...messages, { sender, message: inputMessage.title }]);
       setFriendlyMessages([
         ...friendlyMessages,
         { sender, message: inputMessage },
@@ -232,7 +240,7 @@ function Chatbot({ toast, auth, socket }) {
             : process.env.REACT_APP_KATOTO_FC_API_URI,
           {
             sender,
-            message: inputMessage,
+            message: isGuided ? inputMessage.title : inputMessage,
           }
         )
         .then((res) => {
@@ -243,14 +251,14 @@ function Chatbot({ toast, auth, socket }) {
 
           if (isGuided) {
             const buttons = res.data[0].buttons.map((i) => {
-              return i.title;
+              return i;
             });
 
             setKatotoMessage(res.data[0].text);
             setTimeout(() => {
               setMessages([
                 ...messages,
-                { sender, message: inputMessage },
+                { sender, message: inputMessage.title },
                 { sender: "Katoto", message: res.data[0].text },
               ]);
               setIsTyping(false);
@@ -259,16 +267,23 @@ function Chatbot({ toast, auth, socket }) {
               }, 1000);
             }, 900);
 
+            let isProblem = false;
+
+            if (inputMessage.payload === "Mga Problema") {
+              isProblem = true;
+            }
+
             return axios.post(
               "/api/logs/send",
               {
-                studentMessage: { sender, message: inputMessage },
+                studentMessage: { sender, message: inputMessage.title },
                 katotoMessage: {
                   sender: "Katoto",
                   message: res.data[0].text,
                 },
                 isGuided,
                 credentials: auth?.userInfo,
+                isProblem,
               },
               {
                 withCredentials: true,
@@ -313,6 +328,7 @@ function Chatbot({ toast, auth, socket }) {
           setKatotoMessage("");
         })
         .catch((err) => {
+          console.log(err);
           toast.error("Error");
         });
     } catch (err) {
@@ -1485,7 +1501,7 @@ border border-2 transition-all duration-300`}
                               handleSubmitMessage(auth.accessToken, i);
                             }}
                           >
-                            {i}
+                            {i.title}
                           </button>
                         </motion.li>
                       );

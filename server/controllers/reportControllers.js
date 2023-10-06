@@ -33,6 +33,7 @@ const createDocument = async () => {
         conversationLogs: [],
         sosAppointments: [],
         standardAppointments: [],
+        concerns: [],
       },
     });
   } catch (err) {
@@ -195,7 +196,7 @@ const exportReports = async (req, res) => {
           } else if (key === "department") {
             obj["Department"] = i["userDetails.department"];
           } else if (key === "yearSection") {
-            obj["Year Section"] = i["userDetails.yearSection"];
+            obj["Year Section"] = `${i["userDetails.yearSection"]}`;
           } else if (key === "feedback") {
             obj["Feedback"] = i["feedbackDetails"];
           } else {
@@ -230,6 +231,7 @@ const exportReports = async (req, res) => {
     } else if (type === "CSV") {
       const worksheet = XLSX.utils.json_to_sheet(newReports);
       const workbook = XLSX.utils.book_new();
+
       XLSX.utils.book_append_sheet(workbook, worksheet, title);
       XLSX.write(workbook, { bookType: "csv", type: "buffer" });
       XLSX.write(workbook, { bookType: "csv", type: "binary" });

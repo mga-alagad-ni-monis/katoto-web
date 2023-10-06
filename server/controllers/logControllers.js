@@ -5,7 +5,8 @@ const db = require("../utils/firebase");
 const ageCalculator = require("age-calculator");
 
 const sendConversation = async (req, res) => {
-  const { studentMessage, katotoMessage, isGuided, credentials } = req.body;
+  const { studentMessage, katotoMessage, isGuided, credentials, isProblem } =
+    req.body;
 
   try {
     const token = jwt.decode(studentMessage.sender);
@@ -123,9 +124,28 @@ const sendConversation = async (req, res) => {
         }
       }
 
+      let concernsArray = reports.data().reports.concerns;
+
+      if (isProblem) {
+        includes = false;
+
+        concernsArray?.forEach((i) => {
+          if (i.idNo === credentials.idNo) {
+            includes = true;
+          }
+        });
+
+        if (!includes) {
+          credentials["createdDate"] = new Date().toLocaleString();
+          credentials["concern"] = studentMessage.message;
+          concernsArray.push(credentials);
+        }
+      }
+
       await document.update({
         "reports.conversationLogs": conversationLogsArray,
         "reports.dailyUsers.guided": guidedArray,
+        "reports.concerns": concernsArray,
       });
     } else {
       let friendlyArray = reports.data().reports.dailyUsers.friendly;
