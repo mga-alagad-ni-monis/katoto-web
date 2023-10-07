@@ -1191,7 +1191,6 @@ function UserAccounts({ toast, auth }) {
                     setDepartment(editUser[0].department);
                     setAssignedCollege(editUser[0]?.assignedCollege);
                     setAssignedCollegeLen(editUser[0]?.assignedCollege);
-                    console.log(editUser[0]);
                   }
                   setIsOpenEditModal(true);
                 }}

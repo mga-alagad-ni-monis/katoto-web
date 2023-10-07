@@ -6,6 +6,10 @@ const {
   getFiles,
   setFiles,
   getConcerns,
+  getQuotes,
+  addQuote,
+  editQuote,
+  deleteQuotes,
 } = require("../controllers/trainControllers");
 
 const router = express.Router();
@@ -26,6 +30,30 @@ router.get(
   "/get-concerns",
   verifyRoles(["guidanceCounselor", "systemAdministrator"]),
   getConcerns
+);
+
+router.get(
+  "/get-quotes",
+  verifyRoles(["guidanceCounselor", "systemAdministrator"]),
+  getQuotes
+);
+
+router.post(
+  "/add-quote",
+  verifyRoles(["guidanceCounselor", "systemAdministrator"]),
+  addQuote
+);
+
+router.post(
+  "/edit-quote",
+  verifyRoles(["guidanceCounselor", "systemAdministrator"]),
+  editQuote
+);
+
+router.post(
+  "/delete-quotes",
+  verifyRoles(["guidanceCounselor", "systemAdministrator"]),
+  deleteQuotes
 );
 
 module.exports = router;

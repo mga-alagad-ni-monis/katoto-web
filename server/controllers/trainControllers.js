@@ -1,8 +1,11 @@
 const yaml = require("js-yaml");
 const fs = require("fs");
 const { spawn } = require("child_process");
+const uniqid = require("uniqid");
 
 const db = require("../utils/firebase");
+
+const { array } = require("../utils/quotes");
 
 const getFiles = async (req, res) => {
   try {
@@ -108,9 +111,120 @@ const getConcerns = async (req, res) => {
   }
 };
 
+const getQuotes = async (req, res) => {
+  try {
+    await db
+      .collection("values")
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          return res.status(404).send("Error");
+        }
+        let quotes = [];
+        querySnapshot.forEach((i) => {
+          quotes = i?.data()?.quotes;
+        });
+        res.status(200).json({ quotes: quotes });
+      });
+  } catch (err) {
+    res.status(404).send("Error");
+  }
+};
+
+const addQuote = async (req, res) => {
+  const { author, quote } = req.body;
+  try {
+    const document = await db.collection("values").doc("global");
+
+    let values = await document.get();
+
+    let quotesArray = values.data().quotes;
+
+    // used to import more quotes
+    // array.map((i) => {
+    //   quotesArray.push({
+    //     author: i.author,
+    //     quote: i.quote,
+    //     isActive: false,
+    //     id: uniqid.time(),
+    //   });
+    // });
+
+    quotesArray.push({ author, quote, isActive: false, id: uniqid.time() });
+
+    await document.update({
+      quotes: quotesArray,
+    });
+
+    res.status(200).send({ message: "Quote added successfully!" });
+  } catch (err) {
+    console.log(err);
+    res.status(404).send("Error");
+  }
+};
+
+const editQuote = async (req, res) => {
+  const { author, quote, id, status } = req.body;
+  try {
+    const document = await db.collection("values").doc("global");
+
+    let values = await document.get();
+
+    let quotesArray = values.data().quotes;
+
+    quotesArray = quotesArray.map((i) => {
+      if (i.id === id) {
+        i.author = author;
+        i.quote = quote;
+        i.isActive = status === null ? i.isActive : status;
+      } else {
+        if (status !== null) {
+          i.isActive = false;
+        }
+      }
+      return i;
+    });
+
+    await document.update({
+      quotes: quotesArray,
+    });
+
+    res.status(200).send({ message: "Quote edited successfully!" });
+  } catch (err) {
+    res.status(404).send("Error");
+  }
+};
+
+const deleteQuotes = async (req, res) => {
+  const { array } = req.body;
+
+  try {
+    const document = await db.collection("values").doc("global");
+
+    let values = await document.get();
+
+    let quotesArray = values.data().quotes;
+
+    quotesArray = quotesArray.filter((i) => !array.includes(i.id));
+
+    await document.update({
+      quotes: quotesArray,
+    });
+
+    res.status(200).send({ message: "Quote deleted successfully!" });
+  } catch (err) {
+    console.log(err);
+    res.status(404).send("Error");
+  }
+};
+
 module.exports = {
   getFiles,
   setFiles,
   setConcerns,
   getConcerns,
+  getQuotes,
+  addQuote,
+  editQuote,
+  deleteQuotes,
 };

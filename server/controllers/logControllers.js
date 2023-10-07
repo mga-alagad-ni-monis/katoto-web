@@ -152,8 +152,6 @@ const sendConversation = async (req, res) => {
 
       let includes = false;
 
-      console.log(credentials);
-
       friendlyArray?.forEach((i) => {
         if (i.idNo === credentials.idNo) {
           includes = true;
