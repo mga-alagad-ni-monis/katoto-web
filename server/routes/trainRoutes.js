@@ -10,6 +10,7 @@ const {
   addQuote,
   editQuote,
   deleteQuotes,
+  getQuote,
 } = require("../controllers/trainControllers");
 
 const router = express.Router();
@@ -54,6 +55,12 @@ router.post(
   "/delete-quotes",
   verifyRoles(["guidanceCounselor", "systemAdministrator"]),
   deleteQuotes
+);
+
+router.get(
+  "/get-quote",
+  verifyRoles(["guidanceCounselor", "systemAdministrator", "student"]),
+  getQuote
 );
 
 module.exports = router;

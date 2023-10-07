@@ -3,6 +3,8 @@ const fs = require("fs");
 const { spawn } = require("child_process");
 const uniqid = require("uniqid");
 
+const moment = require("moment");
+
 const db = require("../utils/firebase");
 
 const { array } = require("../utils/quotes");
@@ -131,6 +133,35 @@ const getQuotes = async (req, res) => {
   }
 };
 
+const getQuote = async (req, res) => {
+  try {
+    await db
+      .collection("values")
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          return res.status(404).send("Error");
+        }
+        let quote = [];
+        querySnapshot.forEach((i) => {
+          i?.data()?.quotes.forEach((j) => {
+            if (j.isActive) {
+              quote.push(j);
+            }
+          });
+          // console.log(moment().dayOfYear(365));
+          // if(quote.length === 0){
+          //  console.log
+          // }
+        });
+
+        res.status(200).json({ quote: quote[0] });
+      });
+  } catch (err) {
+    res.status(404).send("Error");
+  }
+};
+
 const addQuote = async (req, res) => {
   const { author, quote } = req.body;
   try {
@@ -227,4 +258,5 @@ module.exports = {
   addQuote,
   editQuote,
   deleteQuotes,
+  getQuote,
 };

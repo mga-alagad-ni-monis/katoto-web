@@ -56,6 +56,7 @@ function Chatbot({ toast, auth, socket }) {
   const [sosDetails, setSosDetails] = useState({});
   const [standardDetails, setStandardDetails] = useState({});
   const [appointmentDetails, setAppointmentDetails] = useState({});
+  const [quote, setQuote] = useState({});
 
   const [sosNo, setSosNo] = useState(0);
   const [rating, setRating] = useState(0);
@@ -68,6 +69,7 @@ function Chatbot({ toast, auth, socket }) {
   useEffect(() => {
     getBookedAppointments();
     getGCName();
+    getQuote();
   }, []);
 
   useEffect(() => {
@@ -436,6 +438,23 @@ function Chatbot({ toast, auth, socket }) {
     } else {
       toast.error("Please rate!");
     }
+  };
+
+  const getQuote = async () => {
+    await axios
+      .get("/api/train/get-quote", {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${auth?.accessToken}`,
+        },
+      })
+      .then((res) => {
+        
+        setQuote(res?.data?.quote);
+      })
+      .catch((err) => {
+        toast.error(err?.response?.data);
+      });
   };
 
   return (
@@ -1106,7 +1125,7 @@ border border-2 transition-all duration-300`}
                 Quote of the Day
               </p>
               <div className="bg-[--light-green] px-5 py-8 rounded-lg text-center font-semibold text-lg">
-                Sometimes you just need to take a deep breath.
+                {quote?.quote}
               </div>
             </div>
           </div>

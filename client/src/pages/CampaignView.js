@@ -13,16 +13,36 @@ import { IoChevronBackOutline } from "react-icons/io5";
 
 import katotoWatch from "../assets/katoto/katoto-watch.png";
 
-function CampaignView({ token, auth }) {
+function CampaignView({ token, auth, toast }) {
   const [campaigns, setCampaigns] = useState([]);
 
   const [campaignInfo, setCampaignInfo] = useState("");
 
   const [isShow, setIsShow] = useState(false);
 
+  const [quote, setQuote] = useState({});
+
   useEffect(() => {
     handleGetPublishedCampaign();
+    getQuote();
   }, []);
+
+  const getQuote = async () => {
+    await axios
+      .get("/api/train/get-quote", {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${auth?.accessToken}`,
+        },
+      })
+      .then((res) => {
+        console.log(res?.data?.quote);
+        setQuote(res?.data?.quote);
+      })
+      .catch((err) => {
+        toast.error(err?.response?.data);
+      });
+  };
 
   const handleGetPublishedCampaign = async () => {
     try {
@@ -134,7 +154,7 @@ function CampaignView({ token, auth }) {
                     Quote of the Day
                   </p>
                   <div className="bg-[--light-green] px-5 py-8 rounded-lg text-center font-semibold text-lg">
-                    Sometimes you just need to take a deep breath.
+                    {quote?.quote}
                   </div>
                 </div>
               </div>
