@@ -23,6 +23,7 @@ import Campaigns from "./pages/Campaigns";
 import CampaignView from "./pages/CampaignView";
 import Conversations from "./pages/Conversations";
 import Appointments from "./pages/Appointments";
+import Profile from "./pages/Profile";
 
 function App() {
   const { auth, setAuth } = useAuth();
@@ -92,8 +93,8 @@ function App() {
                 <RequiredAuth
                   allowedRoles={[
                     "student",
-                    "guidanceCounselor",
-                    "systemAdministrator",
+                    // "guidanceCounselor",
+                    // "systemAdministrator",
                   ]}
                 />
               }
@@ -106,6 +107,16 @@ function App() {
                 path="/view-campaigns"
                 element={<CampaignView toast={toast} auth={auth} />}
               ></Route>
+              {auth?.roles
+                ? auth?.roles[0] === "student" && (
+                    <Route
+                      path="/profile"
+                      element={
+                        <Profile toast={toast} auth={auth} socket={socket} />
+                      }
+                    ></Route>
+                  )
+                : null}
             </Route>
           </Route>
 
@@ -370,6 +381,20 @@ function App() {
               <Route
                 path="/campaigns"
                 element={<Campaigns toast={toast} auth={auth} />}
+              ></Route>
+            </Route>
+            {/* profile module */}
+
+            <Route
+              element={
+                <RequiredAuth
+                  allowedRoles={["guidanceCounselor", "systemAdministrator"]}
+                />
+              }
+            >
+              <Route
+                path="/profile"
+                element={<Profile toast={toast} auth={auth} socket={socket} />}
               ></Route>
             </Route>
           </Route>

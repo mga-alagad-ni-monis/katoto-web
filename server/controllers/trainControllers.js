@@ -149,10 +149,10 @@ const getQuote = async (req, res) => {
               quote.push(j);
             }
           });
-          // console.log(moment().dayOfYear(365));
-          // if(quote.length === 0){
-          //  console.log
-          // }
+
+          if (quote.length === 0) {
+            quote.push(i?.data()?.quotes[moment().dayOfYear()]);
+          }
         });
 
         res.status(200).json({ quote: quote[0] });

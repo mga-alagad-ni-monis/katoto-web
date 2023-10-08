@@ -449,7 +449,6 @@ function Chatbot({ toast, auth, socket }) {
         },
       })
       .then((res) => {
-        
         setQuote(res?.data?.quote);
       })
       .catch((err) => {
@@ -1124,8 +1123,9 @@ border border-2 transition-all duration-300`}
               <p className="text-2xl font-extrabold flex justify-center mb-5">
                 Quote of the Day
               </p>
-              <div className="bg-[--light-green] px-5 py-8 rounded-lg text-center font-semibold text-lg">
-                {quote?.quote}
+              <div className="bg-[--light-green] p-5 rounded-lg text-center text-base">
+                <p>{quote?.quote}</p>
+                <p className="font-semibold mt-2 italic">{quote?.author}</p>
               </div>
             </div>
           </div>

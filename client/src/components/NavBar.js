@@ -14,13 +14,17 @@ import {
   BsFillCalendar2WeekFill,
   BsCalendar4Week,
   BsClockHistory,
+  BsPersonCircle,
 } from "react-icons/bs";
+
+import { AiOutlineLogout } from "react-icons/ai";
 
 import NotificationContainer from "./NotificationContainer";
 
 function NavBar({ auth, logout, socket, toast }) {
   const [isOpenNotifications, setIsOpenNotifications] = useState(false);
   const [isOpenAppointments, setIsOpenAppointments] = useState(false);
+  const [isOpenProfile, setIsOpenProfile] = useState(false);
   const [isEditAppointment, setIsEditAppointment] = useState(false);
 
   const [notifications, setNotifications] = useState([]);
@@ -353,11 +357,12 @@ function NavBar({ auth, logout, socket, toast }) {
                       isOpenAppointments
                         ? "bg-[--light-green] text-[--dark-green]"
                         : "bg-black/20 text-black"
-                    } rounded-lg font-semibold text-sm py-2 px-3
+                    } rounded-lg font-semibold text-sm py-2.5 px-3
                     hover:bg-[--light-green] hover:text-[--dark-green] transition-all duration-300 relative`}
                     onClick={() => {
-                      setIsOpenNotifications(false);
                       setIsOpenAppointments(!isOpenAppointments);
+                      setIsOpenNotifications(false);
+                      setIsOpenProfile(false);
                     }}
                   >
                     <BsFillCalendar2WeekFill size={20} />
@@ -375,11 +380,12 @@ function NavBar({ auth, logout, socket, toast }) {
                       isOpenNotifications
                         ? "bg-[--light-green] text-[--dark-green]"
                         : "bg-black/20 text-black"
-                    } rounded-lg font-semibold text-sm py-2 px-3
+                    } rounded-lg font-semibold text-sm py-2.5 px-3
                     hover:bg-[--light-green] hover:text-[--dark-green] transition-all duration-300 relative`}
                     onClick={() => {
                       setIsOpenAppointments(false);
                       setIsOpenNotifications(!isOpenNotifications);
+                      setIsOpenProfile(false);
                     }}
                   >
                     <BsFillBellFill size={20} />
@@ -393,11 +399,26 @@ function NavBar({ auth, logout, socket, toast }) {
                     ) : null}
                   </button>
                   <button
+                    className={`${
+                      isOpenProfile
+                        ? "bg-[--light-green] text-[--dark-green]"
+                        : "bg-black/20 text-black"
+                    } rounded-lg font-semibold text-sm py-2.5 px-3
+                    hover:bg-[--light-green] hover:text-[--dark-green] transition-all duration-300 relative`}
+                    onClick={() => {
+                      setIsOpenAppointments(false);
+                      setIsOpenNotifications(false);
+                      setIsOpenProfile(!isOpenProfile);
+                    }}
+                  >
+                    <BsPersonCircle size={20} />
+                  </button>
+                  {/* <button
                     className="bg-black rounded-full font-semibold text-[--light-brown] text-sm py-2 px-8 hover:bg-transparent hover:text-black border-2 border-black transition-all duration-300"
                     onClick={logout}
                   >
                     Logout
-                  </button>
+                  </button> */}
                 </div>
               ) : null}
             </div>
@@ -711,6 +732,58 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
         isStudent={true}
       />
       <Outlet />
+      <motion.div
+        className="bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg w-auto h-auto top-[90px] right-[18.5%] fixed z-40"
+        variants={{
+          show: {
+            opacity: 1,
+            y: 0,
+            transformOrigin: "top right",
+            scale: 1,
+            transition: {
+              type: "spring",
+              stiffness: 500,
+              damping: 40,
+            },
+          },
+          hide: {
+            opacity: 0,
+            y: 0,
+            transformOrigin: "top right",
+            scale: 0,
+            transition: {
+              type: "spring",
+              stiffness: 500,
+              damping: 40,
+            },
+          },
+        }}
+        animate={isOpenProfile ? "show" : "hide"}
+        initial={{ opacity: 0, y: 0, scale: 0, transformOrigin: "top right" }}
+      >
+        <div className="h-1/6 p-1 w-[250px]">
+          <Link
+            to={"/profile"}
+            onClick={() => {
+              setIsOpenProfile(false);
+            }}
+            className="w-full font-semibold flex gap-3 items-center hover:bg-[--light-green] hover:text-[--dark-green] duration-300 px-5 py-3 rounded-xl"
+          >
+            <BsPersonCircle size={20} />
+            <p className="text-sm">{auth?.userInfo?.name}</p>
+          </Link>
+          <div className="px-3">
+            <hr className="border-[1px] border-black/5 border-top w-full my-1" />
+          </div>
+          <button
+            onClick={logout}
+            className="w-full font-semibold flex gap-3 items-center hover:bg-[--red] hover:text-[--light-brown] duration-300 px-5 py-3 rounded-xl"
+          >
+            <AiOutlineLogout size={20} />
+            <p className="text-sm">Log Out</p>
+          </button>
+        </div>
+      </motion.div>
     </>
   );
 }

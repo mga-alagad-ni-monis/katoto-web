@@ -11,6 +11,8 @@ const {
   editUser,
   getGCName,
   getStudents,
+  changePassword,
+  editProfileDetails,
 } = require("../controllers/userAccountControllers");
 
 const router = express.Router();
@@ -36,6 +38,18 @@ router.post(
   "/get-students",
   verifyRoles(["systemAdministrator", "guidanceCounselor"]),
   getStudents
+);
+
+router.post(
+  "/change-password",
+  verifyRoles(["systemAdministrator", "guidanceCounselor", "student"]),
+  changePassword
+);
+
+router.post(
+  "/edit-profile",
+  verifyRoles(["systemAdministrator", "guidanceCounselor", "student"]),
+  editProfileDetails
 );
 
 module.exports = router;

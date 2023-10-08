@@ -1,5 +1,6 @@
 import axios from "../api/axios";
 import { useState, useEffect } from "react";
+
 import { Link, Outlet } from "react-router-dom";
 
 import logo from "../assets/logo/katoto-logo.png";
@@ -16,6 +17,7 @@ import {
   BsGrid1X2,
   BsChevronUp,
   BsChevronDown,
+  BsPerson,
 } from "react-icons/bs";
 import { AiOutlineLogout } from "react-icons/ai";
 
@@ -287,6 +289,21 @@ function SideBar({ toast, logout, auth, socket }) {
           </div>
           <div className="flex justify-center">
             <div className="flex flex-col gap-7 font-medium 2xl:mt-36">
+              <div>
+                <Link
+                  to={"/profile"}
+                  className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
+                >
+                  {isHovered ? (
+                    <div className="flex gap-5 items-center">
+                      <BsPerson size={24} />
+                      <span className="word-in">Profile</span>
+                    </div>
+                  ) : (
+                    <BsPerson size={28} />
+                  )}
+                </Link>
+              </div>
               <div
                 onClick={() => {
                   setIsOpenNotifications(!isOpenNotifications);

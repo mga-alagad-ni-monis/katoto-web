@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const multer = require("multer");
 const fs = require("fs");
 const csv = require("csv-parser");
+const jwt = require("jsonwebtoken");
 // const FileType = require("file-type");
 
 const db = require("../utils/firebase");
@@ -44,7 +45,7 @@ const addUser = async (req, res) => {
       !email.trim() ||
       !/^[^@\s]+@plv.edu.ph$/i.test(email) ||
       !password.trim() ||
-      !password.trim().length > 7 ||
+      !(password.trim().length > 7) ||
       !idNo.trim() ||
       !gender.trim() ||
       !contactNo.trim() ||
@@ -569,6 +570,181 @@ const getStudents = async (req, res) => {
     res.status(404).send("Error");
   }
 };
+
+const changePassword = async (req, res) => {
+  const { currentPw, newPwF, newPwS } = req.body;
+  try {
+    if (!currentPw.trim() || !newPwF.trim() || !newPwS.trim()) {
+      return res.status(404).send("Please fill the required fields!");
+    }
+
+    if (!(newPwF.trim().length > 7) || !(newPwS.trim().length > 7)) {
+      return res.status(404).send("Minimum of 8 characters!");
+    }
+
+    if (newPwF.trim() !== newPwS.trim()) {
+      return res.status(404).send("New password does not match!");
+    }
+
+    const token = req.headers.authorization.slice(7);
+
+    await db
+      .collection("accounts")
+      .where("idNo", "==", jwt.decode(token)?.idNo)
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          return res.status(404).send("Error");
+        }
+
+        querySnapshot.forEach(async (i) => {
+          const isRight = await bcrypt.compare(
+            currentPw,
+            i.data().credentials.password
+          );
+
+          if (isRight) {
+            bcrypt.genSalt(10).then((salt) => {
+              bcrypt.hash(newPwS.trim(), salt).then(async (hashedPassword) => {
+                i.ref.update({
+                  "credentials.password": hashedPassword,
+                });
+                return res
+                  .status(200)
+                  .json({ message: "Password changed successfully!" });
+              });
+            });
+          } else {
+            return res.status(404).send("Current password does not match!");
+          }
+        });
+      });
+  } catch (err) {
+    res.status(404).send("Error");
+  }
+};
+
+const editProfileDetails = async (req, res) => {
+  const { name, yearSection, gender, birthday, contactNo, department } =
+    req.body;
+  try {
+    const token = req.headers.authorization.slice(7);
+
+    let COED = [
+      "Bachelor of Early Childhood Education (BECED)",
+      "Bachelor of Secondary Education Major in English (BSED English)",
+      "Bachelor of Secondary Education Major in Filipino (BSED Filipino)",
+      "Bachelor of Secondary Education Major in Mathematics (BSED Mathematics)",
+      "Bachelor of Secondary Education Major in Science (BSED Science)",
+      "Bachelor of Secondary Education Major in Social Studies (BSED Social Studies)",
+    ];
+
+    let CAS = [
+      "Bachelor of Arts in Communication (BAC)",
+      "Bachelor of Science in Psychology (BSP)",
+      "Bachelor of Science in Social Work (BSSW)",
+    ];
+
+    let CEIT = [
+      "Bachelor of Science in Civil Engineering (BSCE)",
+      "Bachelor of Science in Electrical Engineering (BSEE)",
+      "Bachelor of Science in Information Technology (BSIT)",
+    ];
+
+    let CABA = [
+      "Bachelor of Science in Accountancy (BSA)",
+      "Bachelor of Science in Business Administration Major in Financial Management (BSBA FM)",
+      "Bachelor of Science in Business Administration Major in Human Resource Development Management (BSBA HRDM)",
+      "Bachelor of Science in Business Administration Major in Marketing Management (BSBA MM)",
+      "Bachelor of Science in Public Administration (BSPA)",
+    ];
+
+    await db
+      .collection("accounts")
+      .where("idNo", "==", jwt.decode(token)?.idNo)
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          return res.status(404).send("Error");
+        }
+        querySnapshot.forEach(async (i) => {
+          if (i.data().credentials.privilegeType === "student") {
+            if (
+              !name.trim() ||
+              !yearSection.trim() ||
+              !gender.trim() ||
+              !contactNo.trim() ||
+              !birthday.trim() ||
+              !department.trim()
+            ) {
+              return res.status(404).send("Please fill in the fields!");
+            }
+
+            if (
+              !(yearSection[0] < 5) ||
+              !(yearSection[0] > 0) ||
+              !(yearSection.slice(2) < 15) ||
+              !(yearSection.slice(2) > 0)
+            ) {
+              return res.status(404).send("Invalid year and section!");
+            }
+
+            let mainDepartment = "";
+
+            if (COED.includes(department)) {
+              mainDepartment = "College of Education";
+            } else if (CAS.includes(department)) {
+              mainDepartment = "College of Arts and Sciences";
+            } else if (CEIT.includes(department)) {
+              mainDepartment =
+                "College of Engineering and Information Technology";
+            } else if (CABA.includes(department)) {
+              mainDepartment =
+                "College of Business Administration, Public Administration and Accountancy";
+            }
+
+            i.ref.update({
+              name: name,
+              yearSection: yearSection,
+              gender: gender,
+              birthday: birthday,
+              contactNo: contactNo,
+              department: department,
+              mainDepartment: mainDepartment,
+            });
+          }
+
+          if (
+            i.data().credentials.privilegeType === "guidanceCounselor" ||
+            i.data().credentials.privilegeType === "systemAdministrator"
+          ) {
+            if (
+              !name.trim() ||
+              !gender.trim() ||
+              !contactNo.trim() ||
+              !birthday.trim()
+            ) {
+              return res.status(404).send("Please fill in the fields!");
+            }
+            i.ref.update({
+              name: name,
+              gender: gender,
+              birthday: birthday,
+              contactNo: contactNo,
+            });
+          }
+
+          return res
+            .status(200)
+            .json({ message: "Profile details edited successfully!" });
+        });
+      });
+  } catch (err) {
+    console.log(err);
+    res.status(404).send("Error");
+  }
+};
+
 module.exports = {
   addUser,
   getUsers,
@@ -579,4 +755,6 @@ module.exports = {
   getUser,
   getGCName,
   getStudents,
+  changePassword,
+  editProfileDetails,
 };
