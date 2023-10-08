@@ -9,6 +9,7 @@ import UserNumberReport from "../components/Dashboard/UserNumberReport";
 import UserDemographics from "../components/Dashboard/UserDemographics";
 import UserConcerns from "../components/Dashboard/UserConcerns";
 import AppointmentTable from "../components/Dashboard/AppointmentTable";
+import UserFeedbacks from "../components/Dashboard/UserFeedbacks";
 
 function Reports({ auth, toast }) {
   const [reports, setReports] = useState([]);
@@ -125,7 +126,6 @@ function Reports({ auth, toast }) {
                 Daily Active Users
               </p>
             </div>
-
             <div className="flex gap-5">
               <div className="flex gap-5">
                 <div className="hs-dropdown relative inline-flex gap-5">
@@ -232,6 +232,12 @@ function Reports({ auth, toast }) {
           auth={auth}
           toast={toast}
         ></UserConcerns>
+        <UserFeedbacks
+          data={filteredReports()}
+          isGuided={isGuided}
+          auth={auth}
+          toast={toast}
+        ></UserFeedbacks>
       </div>
     </div>
   );
