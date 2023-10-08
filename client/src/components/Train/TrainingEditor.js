@@ -150,7 +150,13 @@ function TrainingEditor({
               className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
       border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
               onClick={() => {
-                handleSetFiles(updatedTrainingData, file);
+                if (
+                  window.confirm(
+                    "Do you want to proceed? This will overwrite your current chatbot data!"
+                  )
+                ) {
+                  handleSetFiles(updatedTrainingData, file);
+                }
               }}
             >
               <MdUpdate size={16} />
@@ -161,8 +167,14 @@ function TrainingEditor({
             className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
       border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
             onClick={() => {
-              handleTrain();
-              setTrain(true);
+              if (
+                window.confirm(
+                  "Do you want to proceed with the training? This will overwrite your current chatbot model!"
+                )
+              ) {
+                handleTrain();
+                setTrain(true);
+              }
             }}
           >
             <FiUploadCloud size={16} />

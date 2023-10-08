@@ -932,16 +932,22 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                   className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
                   onClick={() => {
-                    handleDeleteAppointment(
-                      appointmentDetails?.data?.id,
-                      appointmentDetails?.data?.type
-                    );
-                    setIsOpenAppointmentSidebar(false);
-                    setAppointmentDetails({});
-                    setSelectedTime("");
-                    setAppointmentMode("");
-                    setAppointmentDateStart("");
-                    setAppointmentDateEnd("");
+                    if (
+                      window.confirm(
+                        "Do you want to proceed deleting the appointment?"
+                      )
+                    ) {
+                      handleDeleteAppointment(
+                        appointmentDetails?.data?.id,
+                        appointmentDetails?.data?.type
+                      );
+                      setIsOpenAppointmentSidebar(false);
+                      setAppointmentDetails({});
+                      setSelectedTime("");
+                      setAppointmentMode("");
+                      setAppointmentDateStart("");
+                      setAppointmentDateEnd("");
+                    }
                   }}
                 >
                   Delete
@@ -956,16 +962,22 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                   className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
                   onClick={() => {
-                    handleCancelAppointment(
-                      appointmentDetails?.data?.id,
-                      appointmentDetails?.data?.type
-                    );
-                    setIsOpenAppointmentSidebar(false);
-                    setAppointmentDetails({});
-                    setSelectedTime("");
-                    setAppointmentMode("");
-                    setAppointmentDateStart("");
-                    setAppointmentDateEnd("");
+                    if (
+                      window.confirm(
+                        "Do you want to proceed cancelling the appointment?"
+                      )
+                    ) {
+                      handleCancelAppointment(
+                        appointmentDetails?.data?.id,
+                        appointmentDetails?.data?.type
+                      );
+                      setIsOpenAppointmentSidebar(false);
+                      setAppointmentDetails({});
+                      setSelectedTime("");
+                      setAppointmentMode("");
+                      setAppointmentDateStart("");
+                      setAppointmentDateEnd("");
+                    }
                   }}
                 >
                   Cancel Appointment

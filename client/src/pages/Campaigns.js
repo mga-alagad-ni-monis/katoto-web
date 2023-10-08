@@ -424,7 +424,15 @@ function Campaigns({ toast, auth }) {
                   <button
                     className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
-                    onClick={handleDeleteCampaigns}
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "Do you want to proceed deleting the appointment?"
+                        )
+                      ) {
+                        handleDeleteCampaigns();
+                      }
+                    }}
                   >
                     <BsFillTrash3Fill size={14} />
                     Delete

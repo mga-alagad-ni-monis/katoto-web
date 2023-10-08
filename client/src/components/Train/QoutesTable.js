@@ -121,7 +121,11 @@ function QoutesTable({
               className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
               onClick={() => {
-                handleDeleteQuotes(deleteQuotes);
+                if (window.confirm("Do you want to proceed with deletion?")) {
+                  handleDeleteQuotes(deleteQuotes);
+                  setEditQuotes([]);
+                  setDeleteQuotes([]);
+                }
               }}
             >
               <BsFillTrash3Fill size={14} />
