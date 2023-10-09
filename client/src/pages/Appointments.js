@@ -16,6 +16,7 @@ import { useState } from "react";
 
 import Modal from "../components/Modal";
 import CalendarComponent from "../components/Calendar/CalendarComponent";
+import Loading from "../components/Loading";
 
 const localizer = momentLocalizer(moment);
 
@@ -34,6 +35,7 @@ function Appointments({ socket, toast, auth }) {
   const [isOpenCalendar, setIsOpenCalendar] = useState(false);
   const [isOpenNotesModal, setIsOpenNotesModal] = useState(false);
   const [isViewNotes, setIsViewNotes] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [appointmentDateStart, setAppointmentDateStart] = useState("");
   const [appointmentDateEnd, setAppointmentDateEnd] = useState("");
@@ -51,10 +53,13 @@ function Appointments({ socket, toast, auth }) {
   const descRef = useRef();
 
   useEffect(() => {
-    getAppointments();
-    getBookedAppointments();
-    getGCName();
-    getStudents();
+    (async () => {
+      await getAppointments();
+      await getBookedAppointments();
+      await getGCName();
+      await getStudents();
+      setIsLoading(false);
+    })();
   }, []);
 
   useEffect(() => {
@@ -561,808 +566,844 @@ function Appointments({ socket, toast, auth }) {
 
   return (
     <>
-      {isOpenCalendar || isOpenAddAppointment || isOpenNotesModal ? (
-        <motion.div
-          className="bg-black/50 absolute w-screen h-screen z-50 overflow-hidden"
-          variants={{
-            show: {
-              opacity: 1,
-              transition: {
-                type: "spring",
-                stiffness: 500,
-                damping: 40,
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <>
+          {isOpenCalendar || isOpenAddAppointment || isOpenNotesModal ? (
+            <motion.div
+              className="bg-black/50 absolute w-screen h-screen z-50 overflow-hidden"
+              variants={{
+                show: {
+                  opacity: 1,
+                  transition: {
+                    type: "spring",
+                    stiffness: 500,
+                    damping: 40,
+                  },
+                },
+                hide: {
+                  opacity: 0,
+                  transition: {
+                    type: "spring",
+                    stiffness: 500,
+                    damping: 40,
+                  },
+                },
+              }}
+              animate={
+                isOpenCalendar || isOpenAddAppointment || isOpenNotesModal
+                  ? "show"
+                  : "hide"
+              }
+              initial={{
+                opacity: 0,
+              }}
+            ></motion.div>
+          ) : null}
+          <motion.div
+            className="fixed right-0 bg-[--light-brown] shadow-2xl h-screen p-10 z-30 w-[635px]"
+            variants={{
+              show: {
+                opacity: 1,
+                x: 0,
+                transition: {
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 40,
+                },
               },
-            },
-            hide: {
-              opacity: 0,
-              transition: {
-                type: "spring",
-                stiffness: 500,
-                damping: 40,
+              hide: {
+                opacity: 1,
+                x: 700,
+                transition: {
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 40,
+                },
               },
-            },
-          }}
-          animate={
-            isOpenCalendar || isOpenAddAppointment || isOpenNotesModal
-              ? "show"
-              : "hide"
-          }
-          initial={{
-            opacity: 0,
-          }}
-        ></motion.div>
-      ) : null}
-      <motion.div
-        className="fixed right-0 bg-[--light-brown] shadow-2xl h-screen p-10 z-30 w-[635px]"
-        variants={{
-          show: {
-            opacity: 1,
-            x: 0,
-            transition: {
-              type: "spring",
-              stiffness: 300,
-              damping: 40,
-            },
-          },
-          hide: {
-            opacity: 1,
-            x: 700,
-            transition: {
-              type: "spring",
-              stiffness: 300,
-              damping: 40,
-            },
-          },
-        }}
-        animate={isOpenAppointmentSidebar ? "show" : "hide"}
-        initial={{ opacity: 1, x: 700 }}
-      >
-        <div className="flex flex-col justify-between h-full">
-          <div>
-            <div className="flex justify-between mb-10">
-              <p className="text-2xl font-extrabold">Appointment Details</p>
+            }}
+            animate={isOpenAppointmentSidebar ? "show" : "hide"}
+            initial={{ opacity: 1, x: 700 }}
+          >
+            <div className="flex flex-col justify-between h-full">
+              <div>
+                <div className="flex justify-between mb-10">
+                  <p className="text-2xl font-extrabold">Appointment Details</p>
+                  <button
+                    onClick={() => {
+                      setIsOpenAppointmentSidebar(false);
+                      setIsEditAppointment(false);
+                      setAppointmentDetails({});
+                      setSelectedTime("");
+                      setAppointmentMode("");
+                      setAppointmentDateStart("");
+                      setAppointmentDateEnd("");
+                    }}
+                    type="button"
+                  >
+                    <FaTimes size={20} />
+                  </button>
+                </div>
+                <p className="text-lg font-bold mb-5">
+                  {appointmentDetails?.title}
+                </p>
+
+                <div className="flex items-center justify-between">
+                  <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                    {isEditAppointment
+                      ? "Change Appointment Date"
+                      : "Appointment Details"}
+                  </p>
+
+                  {(() => {
+                    if (
+                      new Date(appointmentDetails?.data?.end) < new Date() &&
+                      appointmentDetails?.data?.status === "upcoming"
+                    ) {
+                      return (
+                        <div className="w-max p-2 rounded-lg bg-black/20 text-black text-xs mb-3 font-bold">
+                          Ended
+                        </div>
+                      );
+                    } else if (appointmentDetails?.data?.status === "pending") {
+                      return (
+                        <div className="w-max p-2 rounded-lg bg-[--yellow] text-black text-xs mb-3 font-bold">
+                          Pending
+                        </div>
+                      );
+                    } else if (
+                      appointmentDetails?.data?.status === "upcoming"
+                    ) {
+                      return (
+                        <div className="w-max p-2 rounded-lg bg-[--light-green] text-black text-xs mb-3 font-bold">
+                          Upcoming
+                        </div>
+                      );
+                    } else if (
+                      appointmentDetails?.data?.status === "completed"
+                    ) {
+                      return (
+                        <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3 font-bold">
+                          Completed
+                        </div>
+                      );
+                    } else if (
+                      appointmentDetails?.data?.status === "cancelled"
+                    ) {
+                      return (
+                        <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3 font-bold">
+                          Cancelled
+                        </div>
+                      );
+                    }
+                  })()}
+                </div>
+                {isEditAppointment ? (
+                  <div>
+                    <p className="mb-3">{`Date: ${
+                      convertDate(appointmentDateStart)[0]
+                    } - ${convertDate(appointmentDateEnd)[2]}`}</p>
+                    <div className="flex justify-between mb-5">
+                      <div className="flex flex-wrap gap-5 mb-5 gap-y-3 w-[123px]">
+                        {availableTime.map((i, k) => {
+                          return bookedAppointments.some(
+                            (j) =>
+                              `${new Date(
+                                selectedTime
+                              ).toLocaleDateString()}, ${i.time}` ===
+                              new Date(j.start).toLocaleString()
+                          ) ? (
+                            <button
+                              key={k}
+                              className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+border border-2 border-[--dark-green] transition-all duration-300 opacity-50 w-full"
+                              disabled
+                            >
+                              {i.time}
+                            </button>
+                          ) : (
+                            <button
+                              key={k}
+                              className="w-full bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                              onClick={() => {
+                                setAppointmentDateStart(
+                                  convertDateAppointment(
+                                    new Date(selectedTime).toLocaleString(),
+                                    i.no,
+                                    0
+                                  )
+                                );
+                                setAppointmentDateEnd(
+                                  convertDateAppointment(
+                                    new Date(selectedTime).toLocaleString(),
+                                    i.no,
+                                    45
+                                  )
+                                );
+                              }}
+                            >
+                              {i.time}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <CalendarSmall
+                        onChange={(data) => {
+                          setSelectedTime(data);
+                        }}
+                        value={selectedTime}
+                        tileDisabled={({ date }) =>
+                          [0].includes(date.getDay()) ||
+                          holiday.isHoliday(date) ||
+                          new Date(date) < new Date()
+                        }
+                      />
+                    </div>
+                    <div>
+                      <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                        Change Mode
+                      </p>
+                      <select
+                        id="mode"
+                        className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                        value={appointmentMode}
+                        onChange={(e) => {
+                          setAppointmentMode(e.target.value);
+                        }}
+                        required
+                      >
+                        <option
+                          hidden
+                          value=""
+                          defaultValue
+                          className="text-black/30"
+                        ></option>
+                        <option value="virtual">Virtual</option>
+                        <option value="facetoface">Face-to-face</option>
+                      </select>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {appointmentDetails?.data?.type === "sos" ? (
+                      <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
+                        Anytime
+                      </div>
+                    ) : (
+                      <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
+                        <div className="flex gap-4">
+                          <BsCalendar4Week size={24} />
+                          <p>
+                            {convertDate(appointmentDetails?.data?.start)[1]}
+                          </p>
+                          {/* <div className="border-[1px] border-black/20 border-right"></div> */}
+                          <BsClockHistory size={24} />
+                          <p>{`${
+                            convertDate(appointmentDetails?.data?.start)[2]
+                          } - ${
+                            convertDate(appointmentDetails?.data?.end)[2]
+                          }`}</p>
+                          <p>45 mins</p>
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex gap-5 mb-5">
+                      <div>
+                        <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                          Guidance Counselor
+                        </p>
+                        {appointmentDetails?.data?.gc?.name}
+                      </div>
+                      <div>
+                        <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                          Mode
+                        </p>
+                        {appointmentDetails?.data?.mode === "facetoface"
+                          ? "Face-to-face"
+                          : "Virtual"}
+                      </div>
+                    </div>
+                    <div className="w-auto break-words mb-5">
+                      <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                        Concern Overview
+                      </p>
+                      {appointmentDetails?.data?.description}
+                    </div>
+                    <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
+                      Student Details
+                    </p>
+                    <table className="mb-5">
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Name</td>
+                        <td>{appointmentDetails?.data?.userDetails?.name}</td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Gender</td>
+                        <td>{appointmentDetails?.data?.userDetails?.gender}</td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Email</td>
+                        <td>{appointmentDetails?.data?.userDetails?.email}</td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">
+                          {" "}
+                          ID Number
+                        </td>
+                        <td> {appointmentDetails?.data?.userDetails?.idNo}</td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Course</td>
+                        <td>
+                          {appointmentDetails?.data?.userDetails?.department}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">
+                          Year and Section
+                        </td>
+                        <td>
+                          {appointmentDetails?.data?.userDetails?.yearSection}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">
+                          College
+                        </td>
+                        <td>
+                          {
+                            appointmentDetails?.data?.userDetails
+                              ?.mainDepartment
+                          }
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="w-[150px] flex justify-start">Phone</td>
+                        <td>
+                          {appointmentDetails?.data?.userDetails?.contactNo}
+                        </td>
+                      </tr>
+                    </table>
+                    <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
+                      Notes
+                    </p>
+                    {appointmentDetails?.data?.notes ? (
+                      <>
+                        <p className="max-h-[96px] text-ellipsis overflow-hidden">
+                          {appointmentDetails?.data?.notes}
+                        </p>
+                        <button
+                          className="font-bold text-[--dark-green] hover:underline transition-all duration-300 mt-1"
+                          onClick={() => {
+                            notesRef.current.value =
+                              appointmentDetails?.data?.notes;
+                            setIsOpenNotesModal(true);
+                            setIsViewNotes(true);
+                          }}
+                        >
+                          See more...
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
+                        onClick={() => {
+                          setIsOpenNotesModal(true);
+                        }}
+                      >
+                        <HiPlus size={16} />
+                        Add Notes
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+              {isEditAppointment ? (
+                <div className="flex gap-5 justify-end">
+                  <button
+                    className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
+                    onClick={() => {
+                      setIsEditAppointment(false);
+                      setSelectedTime("");
+                      setAppointmentMode("");
+                      setAppointmentDateStart("");
+                      setAppointmentDateEnd("");
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
+                    onClick={() => {
+                      handleSaveChangesAppointment(
+                        appointmentDetails?.data?.id,
+                        appointmentDetails?.data?.type
+                      );
+                      setIsEditAppointment(false);
+                      setIsOpenAppointmentSidebar(false);
+                      setAppointmentDetails({});
+                      setSelectedTime("");
+                      setAppointmentMode("");
+                      setAppointmentDateStart("");
+                      setAppointmentDateEnd("");
+                    }}
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-5 justify-end">
+                  {auth?.userInfo?.idNo ===
+                    appointmentDetails?.data?.gc?.idNo ||
+                  auth?.roles[0] === "systemAdministrator" ? (
+                    <button
+                      className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            "Do you want to proceed deleting the appointment?"
+                          )
+                        ) {
+                          handleDeleteAppointment(
+                            appointmentDetails?.data?.id,
+                            appointmentDetails?.data?.type
+                          );
+                          setIsOpenAppointmentSidebar(false);
+                          setAppointmentDetails({});
+                          setSelectedTime("");
+                          setAppointmentMode("");
+                          setAppointmentDateStart("");
+                          setAppointmentDateEnd("");
+                        }
+                      }}
+                    >
+                      Delete
+                    </button>
+                  ) : null}
+                  {(auth?.userInfo?.idNo ===
+                    appointmentDetails?.data?.gc?.idNo ||
+                    auth?.roles[0] === "systemAdministrator") &&
+                  (appointmentDetails?.data?.status === "pending" ||
+                    appointmentDetails?.data?.status === "upcoming") &&
+                  !(new Date(appointmentDetails?.data?.end) < new Date()) ? (
+                    <button
+                      className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            "Do you want to proceed cancelling the appointment?"
+                          )
+                        ) {
+                          handleCancelAppointment(
+                            appointmentDetails?.data?.id,
+                            appointmentDetails?.data?.type
+                          );
+                          setIsOpenAppointmentSidebar(false);
+                          setAppointmentDetails({});
+                          setSelectedTime("");
+                          setAppointmentMode("");
+                          setAppointmentDateStart("");
+                          setAppointmentDateEnd("");
+                        }
+                      }}
+                    >
+                      Cancel Appointment
+                    </button>
+                  ) : null}
+
+                  {(new Date(appointmentDetails?.data?.end) < new Date() &&
+                    appointmentDetails?.data?.status === "upcoming") ||
+                  (auth?.userInfo?.idNo ===
+                    appointmentDetails?.data?.gc?.idNo &&
+                    appointmentDetails?.data?.type === "sos" &&
+                    appointmentDetails?.data?.status === "upcoming") ? (
+                    <button
+                      className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                      onClick={() => {
+                        handleCompleteAppointment(
+                          appointmentDetails?.data?.id,
+                          appointmentDetails?.data?.type
+                        );
+                        setIsOpenAppointmentSidebar(false);
+                      }}
+                    >
+                      Mark as Complete
+                    </button>
+                  ) : null}
+
+                  {appointmentDetails?.data?.creator === auth?.userInfo?.idNo &&
+                  appointmentDetails?.data?.status === "upcoming" ? (
+                    <button
+                      className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                      onClick={() => {
+                        setIsEditAppointment(true);
+                        setSelectedTime(appointmentDetails?.data?.start);
+                        setAppointmentDateStart(
+                          appointmentDetails?.data?.start
+                        );
+                        setAppointmentDateEnd(appointmentDetails?.data?.end);
+                        setAppointmentMode(appointmentDetails?.data?.mode);
+                      }}
+                    >
+                      Edit Appointment
+                    </button>
+                  ) : null}
+                  {appointmentDetails?.data?.status === "pending" &&
+                  (auth?.userInfo?.idNo ===
+                    appointmentDetails?.data?.gc?.idNo ||
+                    auth?.roles[0] === "systemAdministrator") ? (
+                    <button
+                      className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+          border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                      onClick={() => {
+                        handleApproveAppointment(appointmentDetails?.data?.id);
+                        setIsOpenAppointmentSidebar(false);
+                        setAppointmentDetails({});
+                      }}
+                    >
+                      Approve
+                    </button>
+                  ) : null}
+                </div>
+              )}
+            </div>
+          </motion.div>
+          <Modal isOpen={isOpenCalendar} isCalendar={true}>
+            <div className="w-full justify-between flex">
+              <p className="text-2xl font-extrabold">Pick a date</p>
               <button
                 onClick={() => {
-                  setIsOpenAppointmentSidebar(false);
-                  setIsEditAppointment(false);
-                  setAppointmentDetails({});
-                  setSelectedTime("");
-                  setAppointmentMode("");
-                  setAppointmentDateStart("");
-                  setAppointmentDateEnd("");
+                  setIsOpenCalendar(false);
                 }}
                 type="button"
               >
                 <FaTimes size={20} />
               </button>
             </div>
-            <p className="text-lg font-bold mb-5">
-              {appointmentDetails?.title}
-            </p>
-
-            <div className="flex items-center justify-between">
-              <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                {isEditAppointment
-                  ? "Change Appointment Date"
-                  : "Appointment Details"}
-              </p>
-
-              {(() => {
-                if (
-                  new Date(appointmentDetails?.data?.end) < new Date() &&
-                  appointmentDetails?.data?.status === "upcoming"
-                ) {
-                  return (
-                    <div className="w-max p-2 rounded-lg bg-black/20 text-black text-xs mb-3 font-bold">
-                      Ended
-                    </div>
-                  );
-                } else if (appointmentDetails?.data?.status === "pending") {
-                  return (
-                    <div className="w-max p-2 rounded-lg bg-[--yellow] text-black text-xs mb-3 font-bold">
-                      Pending
-                    </div>
-                  );
-                } else if (appointmentDetails?.data?.status === "upcoming") {
-                  return (
-                    <div className="w-max p-2 rounded-lg bg-[--light-green] text-black text-xs mb-3 font-bold">
-                      Upcoming
-                    </div>
-                  );
-                } else if (appointmentDetails?.data?.status === "completed") {
-                  return (
-                    <div className="w-max p-2 rounded-lg bg-[--dark-green] text-[--light-brown] text-xs mb-3 font-bold">
-                      Completed
-                    </div>
-                  );
-                } else if (appointmentDetails?.data?.status === "cancelled") {
-                  return (
-                    <div className="w-max p-2 rounded-lg bg-[--red] text-[--light-brown] text-xs mb-3 font-bold">
-                      Cancelled
-                    </div>
-                  );
-                }
-              })()}
+            <div className="flex flex-col gap-4 mt-5 items-center text-center text-md">
+              <CalendarComponent
+                setIsOpenStandardAppoint={setIsOpenAddAppointment}
+                setPopUpStandard={setIsOpenCalendar}
+                setAppointmentDetails={setAppointmentDetails}
+              ></CalendarComponent>
             </div>
-            {isEditAppointment ? (
-              <div>
-                <p className="mb-3">{`Date: ${
-                  convertDate(appointmentDateStart)[0]
-                } - ${convertDate(appointmentDateEnd)[2]}`}</p>
-                <div className="flex justify-between mb-5">
-                  <div className="flex flex-wrap gap-5 mb-5 gap-y-3 w-[123px]">
-                    {availableTime.map((i, k) => {
-                      return bookedAppointments.some(
-                        (j) =>
-                          `${new Date(selectedTime).toLocaleDateString()}, ${
-                            i.time
-                          }` === new Date(j.start).toLocaleString()
-                      ) ? (
-                        <button
-                          key={k}
-                          className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
-border border-2 border-[--dark-green] transition-all duration-300 opacity-50 w-full"
-                          disabled
-                        >
-                          {i.time}
-                        </button>
-                      ) : (
-                        <button
-                          key={k}
-                          className="w-full bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
-border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-                          onClick={() => {
-                            setAppointmentDateStart(
-                              convertDateAppointment(
-                                new Date(selectedTime).toLocaleString(),
-                                i.no,
-                                0
-                              )
-                            );
-                            setAppointmentDateEnd(
-                              convertDateAppointment(
-                                new Date(selectedTime).toLocaleString(),
-                                i.no,
-                                45
-                              )
-                            );
-                          }}
-                        >
-                          {i.time}
-                        </button>
-                      );
-                    })}
+          </Modal>
+          <Modal isOpen={isOpenNotesModal} isCalendar={true}>
+            <div className="w-full justify-between flex">
+              <p className="text-2xl font-extrabold">Notes</p>
+              <button
+                onClick={() => {
+                  setIsOpenNotesModal(false);
+                  setIsViewNotes(false);
+                  setNotes("");
+                  notesRef.current.value = "";
+                }}
+                type="button"
+              >
+                <FaTimes size={20} />
+              </button>
+            </div>
+            <div className="flex flex-col gap-4 mt-5 items-center text-center text-md w-[600px] max-h-[600px]">
+              {isViewNotes && notes ? (
+                <>
+                  <div className="flex text-left w-full">
+                    <p className="w-full">{notes}</p>
                   </div>
-                  <CalendarSmall
-                    onChange={(data) => {
-                      setSelectedTime(data);
-                    }}
-                    value={selectedTime}
-                    tileDisabled={({ date }) =>
-                      [0].includes(date.getDay()) ||
-                      holiday.isHoliday(date) ||
-                      new Date(date) < new Date()
-                    }
-                  />
+                  <div className="w-full flex justify-end mt-4">
+                    <button
+                      className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+border border-2 border-[--dark-green] transition-all duration-300"
+                      onClick={() => {
+                        setIsViewNotes(false);
+                      }}
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="h-[600px] w-full">
+                    <textarea
+                      className="w-full h-full bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
+        p-3 font-semibold resize-none"
+                      placeholder="Aa..."
+                      // value={notes}
+                      ref={notesRef}
+                      // onChange={(e) => {
+                      //   setNotes(e.target.value);
+                      // }}
+                    ></textarea>
+                  </div>
+                  <div className="w-full flex justify-end mt-4">
+                    <button
+                      className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+border border-2 border-[--dark-green] transition-all duration-300"
+                      onClick={() => {
+                        handleSaveNotes();
+                        setIsViewNotes(true);
+                        setNotes("");
+                        notesRef.current.value = "";
+                        setIsOpenNotesModal(false);
+                      }}
+                    >
+                      Save
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </Modal>
+          <Modal isOpen={isOpenAddAppointment}>
+            <div className="w-full justify-between flex">
+              <p className="text-2xl font-extrabold">Regular Appointment</p>
+              <button
+                onClick={() => {
+                  setIsOpenAddAppointment(false);
+                  setIsOpenCalendar(true);
+                  setAppointmentDateStart("");
+                  setAppointmentDateEnd("");
+                  setStudentDetails({});
+                  setDescription("");
+                  descRef.current.value = "";
+                  // setIsAppointmentChecked(false);
+                }}
+                type="button"
+              >
+                <FaTimes size={20} />
+              </button>
+            </div>
+
+            <div className="mt-4">
+              <div className="flex items-center gap-5">
+                <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                  Appointment Details
+                </p>
+              </div>
+              <div className="bg-black/10 w-full h-auto p-3 rounded-lg mb-5">
+                <div className="flex gap-4">
+                  <BsCalendar4Week size={24} />
+                  <p>{convertDate(appointmentDetails?.start)[1]}</p>
+                  <div className="border-[1px] border-black/20 border-right"></div>
+                  <BsClockHistory size={24} />
+                  <p>
+                    {appointmentDateStart
+                      ? `${new Date(
+                          appointmentDateStart
+                        ).toLocaleTimeString()} - ${new Date(
+                          appointmentDateEnd
+                        ).toLocaleTimeString()}`
+                      : "00:00:00"}
+                  </p>
+                  <p>45 mins</p>
                 </div>
+              </div>
+              <div className="flex flex-wrap gap-5 mb-5 gap-y-3">
+                {availableTime.map((i, k) => {
+                  return bookedAppointments.some(
+                    (j) =>
+                      `${new Date(
+                        appointmentDetails?.start
+                      ).toLocaleDateString()}, ${i.time}` ===
+                      new Date(j.start).toLocaleString()
+                  ) ? (
+                    <button
+                      key={k}
+                      className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+border border-2 border-[--dark-green] transition-all duration-300 opacity-50"
+                      disabled
+                    >
+                      {i.time}
+                    </button>
+                  ) : (
+                    <button
+                      key={k}
+                      className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                      onClick={() => {
+                        setAppointmentDateStart(
+                          convertDateAppointment(
+                            new Date(
+                              convertDate(appointmentDetails?.start)[1]
+                            ).toLocaleString(),
+                            i.no,
+                            0
+                          )
+                        );
+                        setAppointmentDateEnd(
+                          convertDateAppointment(
+                            new Date(
+                              convertDate(appointmentDetails?.start)[1]
+                            ).toLocaleString(),
+                            i.no,
+                            45
+                          )
+                        );
+                      }}
+                    >
+                      {i.time}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex gap-5 mb-5">
+                <div>
+                  <p className="text-[--dark-green] font-bold flex items-center mb-3 justify-between  ">
+                    Concern{" "}
+                    <span className="text-[8px] text-[--red]">
+                      {200 - descRefLen} character(s) left
+                    </span>
+                  </p>
+                  <textarea
+                    className="w-auto h-[46px] bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
+              p-3 font-semibold resize-none"
+                    placeholder="Describe your concern..."
+                    maxLength={200}
+                    ref={descRef}
+                    onChange={() => {
+                      setTimeout(() => {
+                        setDescRefLen(descRef.current.value.length);
+                      }, 1000);
+                    }}
+                  ></textarea>
+                </div>
+
                 <div>
                   <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                    Change Mode
+                    Mode
                   </p>
                   <select
                     id="mode"
                     className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                    value={appointmentMode}
+                    value={preferredMode}
                     onChange={(e) => {
-                      setAppointmentMode(e.target.value);
+                      setPreferredMode(e.target.value);
                     }}
                     required
                   >
-                    <option
-                      hidden
-                      value=""
-                      defaultValue
-                      className="text-black/30"
-                    ></option>
+                    <option value="facetoface" defaultValue>
+                      Face-to-face
+                    </option>
                     <option value="virtual">Virtual</option>
-                    <option value="facetoface">Face-to-face</option>
+                  </select>
+                </div>
+
+                <div>
+                  <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
+                    Student
+                  </p>
+                  <select
+                    id="students"
+                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                    value={studentDetails.idNo ? studentDetails.idNo : ""}
+                    onChange={(e) => {
+                      setStudentDetails(
+                        students.filter((i) => i?.idNo === e.target.value)[0]
+                      );
+                    }}
+                    required
+                  >
+                    <option defaultValue hidden value="">
+                      --Select a student--
+                    </option>
+                    {students?.map((i, k) => {
+                      return (
+                        <option value={i?.idNo} key={k}>
+                          {i?.name}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
               </div>
-            ) : (
-              <>
-                {appointmentDetails?.data?.type === "sos" ? (
-                  <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
-                    Anytime
-                  </div>
-                ) : (
-                  <div className="bg-black/10 w-max h-auto p-3 rounded-lg mb-5">
-                    <div className="flex gap-4">
-                      <BsCalendar4Week size={24} />
-                      <p>{convertDate(appointmentDetails?.data?.start)[1]}</p>
-                      {/* <div className="border-[1px] border-black/20 border-right"></div> */}
-                      <BsClockHistory size={24} />
-                      <p>{`${
-                        convertDate(appointmentDetails?.data?.start)[2]
-                      } - ${convertDate(appointmentDetails?.data?.end)[2]}`}</p>
-                      <p>45 mins</p>
-                    </div>
-                  </div>
-                )}
-                <div className="flex gap-5 mb-5">
-                  <div>
-                    <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                      Guidance Counselor
-                    </p>
-                    {appointmentDetails?.data?.gc?.name}
-                  </div>
-                  <div>
-                    <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                      Mode
-                    </p>
-                    {appointmentDetails?.data?.mode === "facetoface"
-                      ? "Face-to-face"
-                      : "Virtual"}
-                  </div>
-                </div>
-                <div className="w-auto break-words mb-5">
-                  <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                    Concern Overview
+              {auth?.roles[0] === "systemAdministrator" ? (
+                <div className="mb-5">
+                  <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
+                    Guidance Counselor
                   </p>
-                  {appointmentDetails?.data?.description}
-                </div>
-                <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
-                  Student Details
-                </p>
-                <table className="mb-5">
-                  <tr>
-                    <td className="w-[150px] flex justify-start">Name</td>
-                    <td>{appointmentDetails?.data?.userDetails?.name}</td>
-                  </tr>
-                  <tr>
-                    <td className="w-[150px] flex justify-start">Gender</td>
-                    <td>{appointmentDetails?.data?.userDetails?.gender}</td>
-                  </tr>
-                  <tr>
-                    <td className="w-[150px] flex justify-start">Email</td>
-                    <td>{appointmentDetails?.data?.userDetails?.email}</td>
-                  </tr>
-                  <tr>
-                    <td className="w-[150px] flex justify-start"> ID Number</td>
-                    <td> {appointmentDetails?.data?.userDetails?.idNo}</td>
-                  </tr>
-                  <tr>
-                    <td className="w-[150px] flex justify-start">Course</td>
-                    <td>{appointmentDetails?.data?.userDetails?.department}</td>
-                  </tr>
-                  <tr>
-                    <td className="w-[150px] flex justify-start">
-                      Year and Section
-                    </td>
-                    <td>
-                      {appointmentDetails?.data?.userDetails?.yearSection}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="w-[150px] flex justify-start">College</td>
-                    <td>
-                      {appointmentDetails?.data?.userDetails?.mainDepartment}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="w-[150px] flex justify-start">Phone</td>
-                    <td>{appointmentDetails?.data?.userDetails?.contactNo}</td>
-                  </tr>
-                </table>
-                <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
-                  Notes
-                </p>
-                {appointmentDetails?.data?.notes ? (
-                  <>
-                    <p className="max-h-[96px] text-ellipsis overflow-hidden">
-                      {appointmentDetails?.data?.notes}
-                    </p>
-                    <button
-                      className="font-bold text-[--dark-green] hover:underline transition-all duration-300 mt-1"
-                      onClick={() => {
-                        notesRef.current.value =
-                          appointmentDetails?.data?.notes;
-                        setIsOpenNotesModal(true);
-                        setIsViewNotes(true);
-                      }}
-                    >
-                      See more...
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
-          border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
-                    onClick={() => {
-                      setIsOpenNotesModal(true);
+                  <select
+                    id="guidanceCounselors"
+                    className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                    value={preferredGC}
+                    onChange={(e) => {
+                      setPreferredGC(e.target.value);
                     }}
+                    required
                   >
-                    <HiPlus size={16} />
-                    Add Notes
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-          {isEditAppointment ? (
-            <div className="flex gap-5 justify-end">
-              <button
-                className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
-          border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
-                onClick={() => {
-                  setIsEditAppointment(false);
-                  setSelectedTime("");
-                  setAppointmentMode("");
-                  setAppointmentDateStart("");
-                  setAppointmentDateEnd("");
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
-          border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
-                onClick={() => {
-                  handleSaveChangesAppointment(
-                    appointmentDetails?.data?.id,
-                    appointmentDetails?.data?.type
-                  );
-                  setIsEditAppointment(false);
-                  setIsOpenAppointmentSidebar(false);
-                  setAppointmentDetails({});
-                  setSelectedTime("");
-                  setAppointmentMode("");
-                  setAppointmentDateStart("");
-                  setAppointmentDateEnd("");
-                }}
-              >
-                Save Changes
-              </button>
-            </div>
-          ) : (
-            <div className="flex gap-5 justify-end">
-              {auth?.userInfo?.idNo === appointmentDetails?.data?.gc?.idNo ||
-              auth?.roles[0] === "systemAdministrator" ? (
-                <button
-                  className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
-          border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
-                  onClick={() => {
-                    if (
-                      window.confirm(
-                        "Do you want to proceed deleting the appointment?"
-                      )
-                    ) {
-                      handleDeleteAppointment(
-                        appointmentDetails?.data?.id,
-                        appointmentDetails?.data?.type
+                    {gcNames.map((i, k) => {
+                      return (
+                        <option
+                          defaultValue={i?.assignedCollege?.includes(
+                            auth?.userInfo?.mainDepartment
+                          )}
+                          value={i.idNo}
+                          key={k}
+                        >
+                          {i.name}
+                        </option>
                       );
-                      setIsOpenAppointmentSidebar(false);
-                      setAppointmentDetails({});
-                      setSelectedTime("");
-                      setAppointmentMode("");
-                      setAppointmentDateStart("");
-                      setAppointmentDateEnd("");
-                    }
-                  }}
-                >
-                  Delete
-                </button>
+                    })}
+                  </select>
+                </div>
               ) : null}
-              {(auth?.userInfo?.idNo === appointmentDetails?.data?.gc?.idNo ||
-                auth?.roles[0] === "systemAdministrator") &&
-              (appointmentDetails?.data?.status === "pending" ||
-                appointmentDetails?.data?.status === "upcoming") &&
-              !(new Date(appointmentDetails?.data?.end) < new Date()) ? (
-                <button
-                  className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
-          border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
-                  onClick={() => {
-                    if (
-                      window.confirm(
-                        "Do you want to proceed cancelling the appointment?"
-                      )
-                    ) {
-                      handleCancelAppointment(
-                        appointmentDetails?.data?.id,
-                        appointmentDetails?.data?.type
-                      );
-                      setIsOpenAppointmentSidebar(false);
-                      setAppointmentDetails({});
-                      setSelectedTime("");
-                      setAppointmentMode("");
-                      setAppointmentDateStart("");
-                      setAppointmentDateEnd("");
-                    }
-                  }}
-                >
-                  Cancel Appointment
-                </button>
-              ) : null}
-
-              {(new Date(appointmentDetails?.data?.end) < new Date() &&
-                appointmentDetails?.data?.status === "upcoming") ||
-              (auth?.userInfo?.idNo === appointmentDetails?.data?.gc?.idNo &&
-                appointmentDetails?.data?.type === "sos" &&
-                appointmentDetails?.data?.status === "upcoming") ? (
-                <button
-                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
-          border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-                  onClick={() => {
-                    handleCompleteAppointment(
-                      appointmentDetails?.data?.id,
-                      appointmentDetails?.data?.type
-                    );
-                    setIsOpenAppointmentSidebar(false);
-                  }}
-                >
-                  Mark as Complete
-                </button>
+              {studentDetails["name"] ? (
+                <>
+                  {" "}
+                  <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
+                    Student Details
+                  </p>
+                  <table className="mb-5 text-xs">
+                    <tr>
+                      <td className="w-[150px] flex justify-start">Name</td>
+                      <td>{studentDetails?.name}</td>
+                    </tr>
+                    <tr>
+                      <td className="w-[150px] flex justify-start">Gender</td>
+                      <td>{studentDetails?.gender}</td>
+                    </tr>
+                    <tr>
+                      <td className="w-[150px] flex justify-start">Email</td>
+                      <td>{studentDetails?.email}</td>
+                    </tr>
+                    <tr>
+                      <td className="w-[150px] flex justify-start">
+                        {" "}
+                        ID Number
+                      </td>
+                      <td> {studentDetails?.idNo}</td>
+                    </tr>
+                    <tr>
+                      <td className="w-[150px] flex justify-start">Course</td>
+                      <td>{studentDetails?.department}</td>
+                    </tr>
+                    <tr>
+                      <td className="w-[150px] flex justify-start">
+                        Year and Section
+                      </td>
+                      <td>{studentDetails?.yearSection}</td>
+                    </tr>
+                    <tr>
+                      <td className="w-[150px] flex justify-start">College</td>
+                      <td>{studentDetails?.mainDepartment}</td>
+                    </tr>
+                    <tr>
+                      <td className="w-[150px] flex justify-start">Phone</td>
+                      <td>{studentDetails?.contactNo}</td>
+                    </tr>
+                  </table>
+                </>
               ) : null}
 
-              {appointmentDetails?.data?.creator === auth?.userInfo?.idNo &&
-              appointmentDetails?.data?.status === "upcoming" ? (
-                <button
-                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
-          border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-                  onClick={() => {
-                    setIsEditAppointment(true);
-                    setSelectedTime(appointmentDetails?.data?.start);
-                    setAppointmentDateStart(appointmentDetails?.data?.start);
-                    setAppointmentDateEnd(appointmentDetails?.data?.end);
-                    setAppointmentMode(appointmentDetails?.data?.mode);
-                  }}
-                >
-                  Edit Appointment
-                </button>
-              ) : null}
-              {appointmentDetails?.data?.status === "pending" &&
-              (auth?.userInfo?.idNo === appointmentDetails?.data?.gc?.idNo ||
-                auth?.roles[0] === "systemAdministrator") ? (
-                <button
-                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
-          border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-                  onClick={() => {
-                    handleApproveAppointment(appointmentDetails?.data?.id);
-                    setIsOpenAppointmentSidebar(false);
-                    setAppointmentDetails({});
-                  }}
-                >
-                  Approve
-                </button>
-              ) : null}
-            </div>
-          )}
-        </div>
-      </motion.div>
-      <Modal isOpen={isOpenCalendar} isCalendar={true}>
-        <div className="w-full justify-between flex">
-          <p className="text-2xl font-extrabold">Pick a date</p>
-          <button
-            onClick={() => {
-              setIsOpenCalendar(false);
-            }}
-            type="button"
-          >
-            <FaTimes size={20} />
-          </button>
-        </div>
-        <div className="flex flex-col gap-4 mt-5 items-center text-center text-md">
-          <CalendarComponent
-            setIsOpenStandardAppoint={setIsOpenAddAppointment}
-            setPopUpStandard={setIsOpenCalendar}
-            setAppointmentDetails={setAppointmentDetails}
-          ></CalendarComponent>
-        </div>
-      </Modal>
-      <Modal isOpen={isOpenNotesModal} isCalendar={true}>
-        <div className="w-full justify-between flex">
-          <p className="text-2xl font-extrabold">Notes</p>
-          <button
-            onClick={() => {
-              setIsOpenNotesModal(false);
-              setIsViewNotes(false);
-              setNotes("");
-              notesRef.current.value = "";
-            }}
-            type="button"
-          >
-            <FaTimes size={20} />
-          </button>
-        </div>
-        <div className="flex flex-col gap-4 mt-5 items-center text-center text-md w-[600px] max-h-[600px]">
-          {isViewNotes && notes ? (
-            <>
-              <div className="flex text-left w-full">
-                <p className="w-full">{notes}</p>
-              </div>
-              <div className="w-full flex justify-end mt-4">
-                <button
-                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
-border border-2 border-[--dark-green] transition-all duration-300"
-                  onClick={() => {
-                    setIsViewNotes(false);
-                  }}
-                >
-                  Edit
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="h-[600px] w-full">
-                <textarea
-                  className="w-full h-full bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
-        p-3 font-semibold resize-none"
-                  placeholder="Aa..."
-                  // value={notes}
-                  ref={notesRef}
-                  // onChange={(e) => {
-                  //   setNotes(e.target.value);
-                  // }}
-                ></textarea>
-              </div>
-              <div className="w-full flex justify-end mt-4">
-                <button
-                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
-border border-2 border-[--dark-green] transition-all duration-300"
-                  onClick={() => {
-                    handleSaveNotes();
-                    setIsViewNotes(true);
-                    setNotes("");
-                    notesRef.current.value = "";
-                    setIsOpenNotesModal(false);
-                  }}
-                >
-                  Save
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </Modal>
-      <Modal isOpen={isOpenAddAppointment}>
-        <div className="w-full justify-between flex">
-          <p className="text-2xl font-extrabold">Regular Appointment</p>
-          <button
-            onClick={() => {
-              setIsOpenAddAppointment(false);
-              setIsOpenCalendar(true);
-              setAppointmentDateStart("");
-              setAppointmentDateEnd("");
-              setStudentDetails({});
-              setDescription("");
-              descRef.current.value = "";
-              // setIsAppointmentChecked(false);
-            }}
-            type="button"
-          >
-            <FaTimes size={20} />
-          </button>
-        </div>
-
-        <div className="mt-4">
-          <div className="flex items-center gap-5">
-            <p className="text-[--dark-green] font-bold flex items-center mb-3">
-              Appointment Details
-            </p>
-          </div>
-          <div className="bg-black/10 w-full h-auto p-3 rounded-lg mb-5">
-            <div className="flex gap-4">
-              <BsCalendar4Week size={24} />
-              <p>{convertDate(appointmentDetails?.start)[1]}</p>
-              <div className="border-[1px] border-black/20 border-right"></div>
-              <BsClockHistory size={24} />
-              <p>
-                {appointmentDateStart
-                  ? `${new Date(
-                      appointmentDateStart
-                    ).toLocaleTimeString()} - ${new Date(
-                      appointmentDateEnd
-                    ).toLocaleTimeString()}`
-                  : "00:00:00"}
-              </p>
-              <p>45 mins</p>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-5 mb-5 gap-y-3">
-            {availableTime.map((i, k) => {
-              return bookedAppointments.some(
-                (j) =>
-                  `${new Date(
-                    appointmentDetails?.start
-                  ).toLocaleDateString()}, ${i.time}` ===
-                  new Date(j.start).toLocaleString()
-              ) ? (
-                <button
-                  key={k}
-                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
-border border-2 border-[--dark-green] transition-all duration-300 opacity-50"
-                  disabled
-                >
-                  {i.time}
-                </button>
-              ) : (
-                <button
-                  key={k}
-                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
-border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-                  onClick={() => {
-                    setAppointmentDateStart(
-                      convertDateAppointment(
-                        new Date(
-                          convertDate(appointmentDetails?.start)[1]
-                        ).toLocaleString(),
-                        i.no,
-                        0
-                      )
-                    );
-                    setAppointmentDateEnd(
-                      convertDateAppointment(
-                        new Date(
-                          convertDate(appointmentDetails?.start)[1]
-                        ).toLocaleString(),
-                        i.no,
-                        45
-                      )
-                    );
-                  }}
-                >
-                  {i.time}
-                </button>
-              );
-            })}
-          </div>
-          <div className="flex gap-5 mb-5">
-            <div>
-              <p className="text-[--dark-green] font-bold flex items-center mb-3 justify-between  ">
-                Concern{" "}
-                <span className="text-[8px] text-[--red]">
-                  {200 - descRefLen} character(s) left
-                </span>
-              </p>
-              <textarea
-                className="w-auto h-[46px] bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
-              p-3 font-semibold resize-none"
-                placeholder="Describe your concern..."
-                maxLength={200}
-                ref={descRef}
-                onChange={() => {
-                  setTimeout(() => {
-                    setDescRefLen(descRef.current.value.length);
-                  }, 1000);
-                }}
-              ></textarea>
-            </div>
-
-            <div>
-              <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                Mode
-              </p>
-              <select
-                id="mode"
-                className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                value={preferredMode}
-                onChange={(e) => {
-                  setPreferredMode(e.target.value);
-                }}
-                required
-              >
-                <option value="facetoface" defaultValue>
-                  Face-to-face
-                </option>
-                <option value="virtual">Virtual</option>
-              </select>
-            </div>
-
-            <div>
-              <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
-                Student
-              </p>
-              <select
-                id="students"
-                className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                value={studentDetails.idNo ? studentDetails.idNo : ""}
-                onChange={(e) => {
-                  setStudentDetails(
-                    students.filter((i) => i?.idNo === e.target.value)[0]
-                  );
-                }}
-                required
-              >
-                <option defaultValue hidden value="">
-                  --Select a student--
-                </option>
-                {students?.map((i, k) => {
-                  return (
-                    <option value={i?.idNo} key={k}>
-                      {i?.name}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-          </div>
-          {auth?.roles[0] === "systemAdministrator" ? (
-            <div className="mb-5">
-              <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
-                Guidance Counselor
-              </p>
-              <select
-                id="guidanceCounselors"
-                className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                value={preferredGC}
-                onChange={(e) => {
-                  setPreferredGC(e.target.value);
-                }}
-                required
-              >
-                {gcNames.map((i, k) => {
-                  return (
-                    <option
-                      defaultValue={i?.assignedCollege?.includes(
-                        auth?.userInfo?.mainDepartment
-                      )}
-                      value={i.idNo}
-                      key={k}
-                    >
-                      {i.name}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-          ) : null}
-          {studentDetails["name"] ? (
-            <>
-              {" "}
-              <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
-                Student Details
-              </p>
-              <table className="mb-5 text-xs">
-                <tr>
-                  <td className="w-[150px] flex justify-start">Name</td>
-                  <td>{studentDetails?.name}</td>
-                </tr>
-                <tr>
-                  <td className="w-[150px] flex justify-start">Gender</td>
-                  <td>{studentDetails?.gender}</td>
-                </tr>
-                <tr>
-                  <td className="w-[150px] flex justify-start">Email</td>
-                  <td>{studentDetails?.email}</td>
-                </tr>
-                <tr>
-                  <td className="w-[150px] flex justify-start"> ID Number</td>
-                  <td> {studentDetails?.idNo}</td>
-                </tr>
-                <tr>
-                  <td className="w-[150px] flex justify-start">Course</td>
-                  <td>{studentDetails?.department}</td>
-                </tr>
-                <tr>
-                  <td className="w-[150px] flex justify-start">
-                    Year and Section
-                  </td>
-                  <td>{studentDetails?.yearSection}</td>
-                </tr>
-                <tr>
-                  <td className="w-[150px] flex justify-start">College</td>
-                  <td>{studentDetails?.mainDepartment}</td>
-                </tr>
-                <tr>
-                  <td className="w-[150px] flex justify-start">Phone</td>
-                  <td>{studentDetails?.contactNo}</td>
-                </tr>
-              </table>
-            </>
-          ) : null}
-
-          {/* <div className="flex gap-5 mb-5">
+              {/* <div className="flex gap-5 mb-5">
             <input
               id="checkbox-1"
               className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 mt-1
@@ -1391,160 +1432,177 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
               mental health chatbot.
             </p>
           </div> */}
-          <div className="flex justify-end gap-5">
-            <button
-              className="bg-[--red] border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red]
+              <div className="flex justify-end gap-5">
+                <button
+                  className="bg-[--red] border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red]
                 rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
                 border border-2 transition-all duration-300"
-              onClick={() => {
-                setIsOpenAddAppointment(false);
-                setIsOpenCalendar(true);
-                setAppointmentDateStart("");
-                setAppointmentDateEnd("");
-                setStudentDetails({});
-                setDescription("");
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              className="
+                  onClick={() => {
+                    setIsOpenAddAppointment(false);
+                    setIsOpenCalendar(true);
+                    setAppointmentDateStart("");
+                    setAppointmentDateEnd("");
+                    setStudentDetails({});
+                    setDescription("");
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="
                hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green]
                bg-[--dark-green] border-[--dark-green]  rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
 border border-2 transition-all duration-300"
-              onClick={handleSetStandardAppointment}
-              // disabled={isAppointmentChecked ? false : true}
-            >
-              Submit
-            </button>
-          </div>
-        </div>
-      </Modal>
+                  onClick={handleSetStandardAppointment}
+                  // disabled={isAppointmentChecked ? false : true}
+                >
+                  Submit
+                </button>
+              </div>
+            </div>
+          </Modal>
 
-      <div className="bg-[--light-brown] h-screen">
-        <div className="flex flex-col px-52">
-          <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">
-            Appointments
-          </p>
-          <div className="flex gap-5 w-full">
-            <div className="w-3/5 flex flex-col h-[624px]">
-              <div>
-                <div className="flex justify-between regular-calendar">
-                  <p className="font-extrabold text-2xl flex items-center">
-                    Regular Appointments
-                  </p>
-                  <button
-                    className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+          <div className="bg-[--light-brown] h-screen">
+            <div className="flex flex-col px-52">
+              <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">
+                Appointments
+              </p>
+              <div className="flex gap-5 w-full">
+                <div className="w-3/5 flex flex-col h-[624px]">
+                  <div>
+                    <div className="flex justify-between regular-calendar">
+                      <p className="font-extrabold text-2xl flex items-center">
+                        Regular Appointments
+                      </p>
+                      <button
+                        className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
-                    onClick={() => {
-                      setIsOpenCalendar(true);
-                      setIsOpenAppointmentSidebar(false);
-                      setDescRefLen(0);
-                    }}
-                  >
-                    <HiPlus size={16} />
-                    Add
-                  </button>
+                        onClick={() => {
+                          setIsOpenCalendar(true);
+                          setIsOpenAppointmentSidebar(false);
+                          setDescRefLen(0);
+                        }}
+                      >
+                        <HiPlus size={16} />
+                        Add
+                      </button>
+                    </div>
+                    <Calendar
+                      localizer={localizer}
+                      startAccessor="start"
+                      endAccessor="end"
+                      className="w-full second-calendar"
+                      style={{ height: 270 }}
+                      events={events.filter(
+                        (i) =>
+                          i.data.type === "standard" &&
+                          (i.data.status === "upcoming" ||
+                            i.data.status === "pending")
+                      )}
+                      components={components}
+                      selectable={true}
+                      views={{
+                        month: true,
+                        week: false,
+                        day: false,
+                        agenda: true,
+                      }}
+                      defaultView={"agenda"}
+                      onSelectEvent={(i) => {
+                        setAppointmentDetails(i);
+                        setIsOpenAppointmentSidebar(true);
+                      }}
+                    />
+                  </div>
+                  <div className="sos-calendar">
+                    <p className="font-extrabold text-2xl flex items-center mt-5">
+                      SOS Appointments
+                    </p>
+                    <Calendar
+                      localizer={localizer}
+                      startAccessor="start"
+                      endAccessor="end"
+                      className="w-full second-calendar"
+                      style={{ height: 270 }}
+                      events={events.filter((i) => i.data.type === "sos")}
+                      components={components}
+                      selectable={true}
+                      views={{
+                        month: true,
+                        week: false,
+                        day: false,
+                        agenda: true,
+                      }}
+                      defaultView={"agenda"}
+                      onSelectEvent={(i) => {
+                        setAppointmentDetails(i);
+                        setIsOpenAppointmentSidebar(true);
+                      }}
+                    />
+                  </div>
                 </div>
-                <Calendar
-                  localizer={localizer}
-                  startAccessor="start"
-                  endAccessor="end"
-                  className="w-full second-calendar"
-                  style={{ height: 270 }}
-                  events={events.filter(
-                    (i) =>
-                      i.data.type === "standard" &&
-                      (i.data.status === "upcoming" ||
-                        i.data.status === "pending")
-                  )}
-                  components={components}
-                  selectable={true}
-                  views={{ month: true, week: false, day: false, agenda: true }}
-                  defaultView={"agenda"}
-                  onSelectEvent={(i) => {
-                    setAppointmentDetails(i);
-                    setIsOpenAppointmentSidebar(true);
-                  }}
-                />
+
+                <div className="flex">
+                  <Calendar
+                    localizer={localizer}
+                    startAccessor="start"
+                    endAccessor="end"
+                    style={{ height: 624, width: 873 }}
+                    events={events.filter((i) => i.data.type === "standard")}
+                    components={components}
+                    selectable={true}
+                    views={{
+                      month: true,
+                      week: true,
+                      day: true,
+                      agenda: false,
+                    }}
+                    onSelectSlot={(data) => {
+                      console.log(typeof data.start);
+                      if (data.start < new Date()) {
+                        return toast.error("Not a valid date!");
+                      }
+
+                      if (holiday.isHoliday(data.start)) {
+                        return toast.error("The date is a holiday!");
+                      }
+
+                      if ([0].includes(data.start.getDay())) {
+                        return toast.error("No Appointment on Sundays!");
+                      }
+
+                      // setPopUpStandard(false);
+                      // setIsOpenStandardAppoint(true);
+                      // setAppointmentDetails(data);
+                    }}
+                    onSelectEvent={(i) => {
+                      setAppointmentDetails(i);
+                      setIsOpenAppointmentSidebar(true);
+                    }}
+                    min={
+                      new Date(
+                        new Date().getFullYear(),
+                        new Date().getMonth(),
+                        new Date().getDate(),
+                        8
+                      )
+                    }
+                    max={
+                      new Date(
+                        new Date().getFullYear(),
+                        new Date().getMonth(),
+                        new Date().getDate(),
+                        15
+                      )
+                    }
+                    step={30}
+                  />
+                </div>
               </div>
-              <div className="sos-calendar">
-                <p className="font-extrabold text-2xl flex items-center mt-5">
-                  SOS Appointments
-                </p>
-                <Calendar
-                  localizer={localizer}
-                  startAccessor="start"
-                  endAccessor="end"
-                  className="w-full second-calendar"
-                  style={{ height: 270 }}
-                  events={events.filter((i) => i.data.type === "sos")}
-                  components={components}
-                  selectable={true}
-                  views={{ month: true, week: false, day: false, agenda: true }}
-                  defaultView={"agenda"}
-                  onSelectEvent={(i) => {
-                    setAppointmentDetails(i);
-                    setIsOpenAppointmentSidebar(true);
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className="flex">
-              <Calendar
-                localizer={localizer}
-                startAccessor="start"
-                endAccessor="end"
-                style={{ height: 624, width: 873 }}
-                events={events.filter((i) => i.data.type === "standard")}
-                components={components}
-                selectable={true}
-                views={{ month: true, week: true, day: true, agenda: false }}
-                onSelectSlot={(data) => {
-                  console.log(typeof data.start);
-                  if (data.start < new Date()) {
-                    return toast.error("Not a valid date!");
-                  }
-
-                  if (holiday.isHoliday(data.start)) {
-                    return toast.error("The date is a holiday!");
-                  }
-
-                  if ([0].includes(data.start.getDay())) {
-                    return toast.error("No Appointment on Sundays!");
-                  }
-
-                  // setPopUpStandard(false);
-                  // setIsOpenStandardAppoint(true);
-                  // setAppointmentDetails(data);
-                }}
-                onSelectEvent={(i) => {
-                  setAppointmentDetails(i);
-                  setIsOpenAppointmentSidebar(true);
-                }}
-                min={
-                  new Date(
-                    new Date().getFullYear(),
-                    new Date().getMonth(),
-                    new Date().getDate(),
-                    8
-                  )
-                }
-                max={
-                  new Date(
-                    new Date().getFullYear(),
-                    new Date().getMonth(),
-                    new Date().getDate(),
-                    15
-                  )
-                }
-                step={30}
-              />
             </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </>
   );
 }

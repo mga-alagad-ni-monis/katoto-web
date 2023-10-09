@@ -19,6 +19,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
   const [isOpenGenderButton, setIsOpenGenderButton] = useState(false);
   const [isOpenExport, setIsOpenExport] = useState(false);
   const [isAscending, setIsAscending] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [sortString, setSortString] = useState({});
   const [sortName, setSortName] = useState("");
@@ -33,12 +34,15 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
   const [reports, setReports] = useState([]);
 
   useEffect(() => {
-    let newSortString = {};
-    Object.entries(tableCategories).forEach(([key, value]) => {
-      newSortString[key] = value;
-    });
-    setSortString(newSortString);
-    getReports();
+    (async () => {
+      let newSortString = {};
+      Object.entries(tableCategories).forEach(([key, value]) => {
+        newSortString[key] = value;
+      });
+      setSortString(newSortString);
+      await getReports();
+      setIsLoading(false);
+    })();
   }, []);
 
   const getReports = async () => {
@@ -650,485 +654,514 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
   const genders = ["All", "Male", "Female", "Other"];
 
   return (
-    <div className="flex flex-col gap-5 w-full">
-      <div className="flex justify-between w-full">
-        <div className="flex gap-10">
-          <div>
-            <p className="mb-3 font-bold text-xs">What are you looking for?</p>
-            <input
-              type="text"
-              placeholder="Search..."
-              className="py-2 px-5 bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-              }}
-            />
-          </div>
-          <div>
-            <p className="mb-3 font-bold text-xs">Date/Time</p>
-            {filters.dateTime ? (
-              <div className="relative">
-                <button
-                  type="button"
-                  className="w-[120px] flex justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+    <>
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <div className="bg-[--light-brown] h-screen overflow-hidden">
+          <div className="flex flex-col px-52">
+            <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">
+              {`${title} Reports`}
+            </p>
+            <div className="flex flex-col gap-5 w-full">
+              <div className="flex justify-between w-full">
+                <div className="flex gap-10">
+                  <div>
+                    <p className="mb-3 font-bold text-xs">
+                      What are you looking for?
+                    </p>
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      className="py-2 px-5 bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                      value={search}
+                      onChange={(e) => {
+                        setSearch(e.target.value);
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <p className="mb-3 font-bold text-xs">Date/Time</p>
+                    {filters.dateTime ? (
+                      <div className="relative">
+                        <button
+                          type="button"
+                          className="w-[120px] flex justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
               border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-                  onClick={() => {
-                    setIsOpenDateTimeButton(!isOpenDateTimeButton);
-                  }}
-                >
-                  {filterDateTime}
-                  <FiChevronDown size={16} />
-                </button>
-                <div
-                  className={`${
-                    isOpenDateTimeButton ? "visible" : "hidden"
-                  } absolute top-9 transition-all duration-100 w-[120px]
+                          onClick={() => {
+                            setIsOpenDateTimeButton(!isOpenDateTimeButton);
+                          }}
+                        >
+                          {filterDateTime}
+                          <FiChevronDown size={16} />
+                        </button>
+                        <div
+                          className={`${
+                            isOpenDateTimeButton ? "visible" : "hidden"
+                          } absolute top-9 transition-all duration-100 w-[120px]
               z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
-                >
-                  {dateTime.map((i, k) => {
-                    return (
-                      <button
-                        key={k}
-                        className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                        onClick={() => {
-                          setFilterDateTime(i);
-                          setIsOpenDateTimeButton(false);
-                        }}
-                      >
-                        {i}
-                      </button>
-                    );
-                  })}
+                        >
+                          {dateTime.map((i, k) => {
+                            return (
+                              <button
+                                key={k}
+                                className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                                onClick={() => {
+                                  setFilterDateTime(i);
+                                  setIsOpenDateTimeButton(false);
+                                }}
+                              >
+                                {i}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
-              </div>
-            ) : null}
-          </div>
-        </div>
-        <div className="flex gap-5">
-          <div>
-            <p className="mb-3 font-bold text-xs">College</p>
-            {filters.college ? (
-              <div className="relative">
-                <button
-                  type="button"
-                  className="w-[200px] flex justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+                <div className="flex gap-5">
+                  <div>
+                    <p className="mb-3 font-bold text-xs">College</p>
+                    {filters.college ? (
+                      <div className="relative">
+                        <button
+                          type="button"
+                          className="w-[200px] flex justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
               border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-                  onClick={() => {
-                    setIsOpenCollegeButton(!isOpenCollegeButton);
-                  }}
-                >
-                  <span class="truncate w-[130px] text-left">
-                    {filterCollege}
-                  </span>
-                  <FiChevronDown size={16} />
-                </button>
-                <div
-                  className={`${
-                    isOpenCollegeButton ? "visible" : "hidden"
-                  } absolute top-9 transition-all duration-100 w-[570px]
+                          onClick={() => {
+                            setIsOpenCollegeButton(!isOpenCollegeButton);
+                          }}
+                        >
+                          <span class="truncate w-[130px] text-left">
+                            {filterCollege}
+                          </span>
+                          <FiChevronDown size={16} />
+                        </button>
+                        <div
+                          className={`${
+                            isOpenCollegeButton ? "visible" : "hidden"
+                          } absolute top-9 transition-all duration-100 w-[570px]
               z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
-                >
-                  {colleges.map((i, k) => {
-                    return (
-                      <button
-                        key={k}
-                        className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                        onClick={() => {
-                          setFilterCollege(i);
-                          setIsOpenCollegeButton(false);
-                        }}
-                      >
-                        {i}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
-          </div>
-          <div>
-            <p className="mb-3 font-bold text-xs">Department</p>
-            {filters.department ? (
-              <div className="relative">
-                <button
-                  type="button"
-                  className="w-[150px] flex justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+                        >
+                          {colleges.map((i, k) => {
+                            return (
+                              <button
+                                key={k}
+                                className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                                onClick={() => {
+                                  setFilterCollege(i);
+                                  setIsOpenCollegeButton(false);
+                                }}
+                              >
+                                {i}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                  <div>
+                    <p className="mb-3 font-bold text-xs">Department</p>
+                    {filters.department ? (
+                      <div className="relative">
+                        <button
+                          type="button"
+                          className="w-[150px] flex justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
               border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-                  onClick={() => {
-                    setIsOpenDepartmentButton(!isOpenDepartmentButton);
-                  }}
-                >
-                  <span class="truncate w-[80px] text-left">
-                    {filterDepartment === "All"
-                      ? "All"
-                      : JSON.stringify(
-                          filterDepartment.match(/\(([^)]+)\)/g)
-                        ).slice(3, -3)}
-                  </span>
-                  <FiChevronDown size={16} />
-                </button>
-                <div
-                  className={`${
-                    isOpenDepartmentButton ? "visible" : "hidden"
-                  } absolute top-9 transition-all duration-100 w-[190px]
+                          onClick={() => {
+                            setIsOpenDepartmentButton(!isOpenDepartmentButton);
+                          }}
+                        >
+                          <span class="truncate w-[80px] text-left">
+                            {filterDepartment === "All"
+                              ? "All"
+                              : JSON.stringify(
+                                  filterDepartment.match(/\(([^)]+)\)/g)
+                                ).slice(3, -3)}
+                          </span>
+                          <FiChevronDown size={16} />
+                        </button>
+                        <div
+                          className={`${
+                            isOpenDepartmentButton ? "visible" : "hidden"
+                          } absolute top-9 transition-all duration-100 w-[190px]
               z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
-                >
-                  {departments.map((i, k) => {
-                    return (
-                      <button
-                        key={k}
-                        className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                        onClick={() => {
-                          setFilterDepartment(i);
-                          setIsOpenDepartmentButton(false);
-                        }}
-                      >
-                        {i === "All"
-                          ? "All"
-                          : JSON.stringify(i.match(/\(([^)]+)\)/g)).slice(
-                              3,
-                              -3
-                            )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
-          </div>
-          <div>
-            <p className="mb-3 font-bold text-xs">Year</p>
-            {filters.year ? (
-              <div className="relative">
-                <button
-                  type="button"
-                  className="w-[71px] bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+                        >
+                          {departments.map((i, k) => {
+                            return (
+                              <button
+                                key={k}
+                                className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                                onClick={() => {
+                                  setFilterDepartment(i);
+                                  setIsOpenDepartmentButton(false);
+                                }}
+                              >
+                                {i === "All"
+                                  ? "All"
+                                  : JSON.stringify(
+                                      i.match(/\(([^)]+)\)/g)
+                                    ).slice(3, -3)}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                  <div>
+                    <p className="mb-3 font-bold text-xs">Year</p>
+                    {filters.year ? (
+                      <div className="relative">
+                        <button
+                          type="button"
+                          className="w-[71px] bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
               border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-                  onClick={() => {
-                    setIsOpenYearButton(!isOpenYearButton);
-                  }}
-                >
-                  {filterYear}
-                  <FiChevronDown size={16} />
-                </button>
-                <div
-                  className={`${
-                    isOpenYearButton ? "visible" : "hidden"
-                  } absolute top-9 transition-all duration-100 w-[71px]
+                          onClick={() => {
+                            setIsOpenYearButton(!isOpenYearButton);
+                          }}
+                        >
+                          {filterYear}
+                          <FiChevronDown size={16} />
+                        </button>
+                        <div
+                          className={`${
+                            isOpenYearButton ? "visible" : "hidden"
+                          } absolute top-9 transition-all duration-100 w-[71px]
               z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
-                >
-                  {["All", "1", "2", "3", "4"].map((i, k) => {
-                    return (
-                      <button
-                        key={k}
-                        className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                        onClick={() => {
-                          setFilterYear(i);
-                          setIsOpenYearButton(false);
-                        }}
-                      >
-                        {i}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
-          </div>
-          <div>
-            <p className="mb-3 font-bold text-xs">Section</p>
-            {filters.section ? (
-              <div className="relative">
-                <button
-                  type="button"
-                  className="w-[71px] bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+                        >
+                          {["All", "1", "2", "3", "4"].map((i, k) => {
+                            return (
+                              <button
+                                key={k}
+                                className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                                onClick={() => {
+                                  setFilterYear(i);
+                                  setIsOpenYearButton(false);
+                                }}
+                              >
+                                {i}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                  <div>
+                    <p className="mb-3 font-bold text-xs">Section</p>
+                    {filters.section ? (
+                      <div className="relative">
+                        <button
+                          type="button"
+                          className="w-[71px] bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
               border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-                  onClick={() => {
-                    setIsOpenSectionButton(!isOpenSectionButton);
-                  }}
-                >
-                  {filterSection}
-                  <FiChevronDown size={16} />
-                </button>
-                <div
-                  className={`${
-                    isOpenSectionButton ? "visible" : "hidden"
-                  } absolute top-9 transition-all duration-100 w-[71px]
+                          onClick={() => {
+                            setIsOpenSectionButton(!isOpenSectionButton);
+                          }}
+                        >
+                          {filterSection}
+                          <FiChevronDown size={16} />
+                        </button>
+                        <div
+                          className={`${
+                            isOpenSectionButton ? "visible" : "hidden"
+                          } absolute top-9 transition-all duration-100 w-[71px]
               z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
-                >
-                  {[
-                    "All",
-                    "1",
-                    "2",
-                    "3",
-                    "4",
-                    "5",
-                    "6",
-                    "7",
-                    "8",
-                    "9",
-                    "10",
-                    "11",
-                    "12",
-                  ].map((i, k) => {
-                    return (
-                      <button
-                        key={k}
-                        className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                        onClick={() => {
-                          setFilterSection(i);
-                          setIsOpenSectionButton(false);
-                        }}
-                      >
-                        {i}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
-          </div>
-          <div>
-            <p className="mb-3 font-bold text-xs">Gender</p>
-            {filters.gender ? (
-              <div className="relative">
-                <button
-                  type="button"
-                  className="flex justify-between w-[102px] bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+                        >
+                          {[
+                            "All",
+                            "1",
+                            "2",
+                            "3",
+                            "4",
+                            "5",
+                            "6",
+                            "7",
+                            "8",
+                            "9",
+                            "10",
+                            "11",
+                            "12",
+                          ].map((i, k) => {
+                            return (
+                              <button
+                                key={k}
+                                className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                                onClick={() => {
+                                  setFilterSection(i);
+                                  setIsOpenSectionButton(false);
+                                }}
+                              >
+                                {i}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                  <div>
+                    <p className="mb-3 font-bold text-xs">Gender</p>
+                    {filters.gender ? (
+                      <div className="relative">
+                        <button
+                          type="button"
+                          className="flex justify-between w-[102px] bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
               border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-                  onClick={() => {
-                    setIsOpenGenderButton(!isOpenGenderButton);
-                  }}
-                >
-                  {filterGender}
-                  <FiChevronDown size={16} />
-                </button>
-                <div
-                  className={`${
-                    isOpenGenderButton ? "visible" : "hidden"
-                  } absolute top-9 transition-all duration-100 w-[102px]
+                          onClick={() => {
+                            setIsOpenGenderButton(!isOpenGenderButton);
+                          }}
+                        >
+                          {filterGender}
+                          <FiChevronDown size={16} />
+                        </button>
+                        <div
+                          className={`${
+                            isOpenGenderButton ? "visible" : "hidden"
+                          } absolute top-9 transition-all duration-100 w-[102px]
               z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
-                >
-                  {genders.map((i, k) => {
-                    return (
-                      <button
-                        key={k}
-                        className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                        onClick={() => {
-                          setFilterGender(i);
-                          setIsOpenGenderButton(false);
-                        }}
-                      >
-                        {i}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
-          </div>
-          <div className="flex items-end relative">
-            <button
-              className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+                        >
+                          {genders.map((i, k) => {
+                            return (
+                              <button
+                                key={k}
+                                className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                                onClick={() => {
+                                  setFilterGender(i);
+                                  setIsOpenGenderButton(false);
+                                }}
+                              >
+                                {i}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="flex items-end relative">
+                    <button
+                      className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
       border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300 ml-10"
-              onClick={() => {
-                setIsOpenExport(!isOpenExport);
-              }}
-            >
-              <RiDownloadCloud2Line size={16} />
-              Export
-            </button>
-            <div
-              className={`${
-                isOpenExport ? "visible" : "hidden"
-              } w-[105px] absolute top-16 right-0 transition-all duration-100
+                      onClick={() => {
+                        setIsOpenExport(!isOpenExport);
+                      }}
+                    >
+                      <RiDownloadCloud2Line size={16} />
+                      Export
+                    </button>
+                    <div
+                      className={`${
+                        isOpenExport ? "visible" : "hidden"
+                      } w-[105px] absolute top-16 right-0 transition-all duration-100
               z-10 mt-2 shadow-md rounded-lg p-2 bg-black`}
-            >
-              {["Excel", "CSV"].map((i, k) => {
-                return (
-                  <button
-                    key={k}
-                    className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-black"
-                    onClick={() => {
-                      exportReports(i);
-                    }}
-                  >
-                    {i}
-                  </button>
-                );
-              })}
+                    >
+                      {["Excel", "CSV"].map((i, k) => {
+                        return (
+                          <button
+                            key={k}
+                            className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-black"
+                            onClick={() => {
+                              exportReports(i);
+                            }}
+                          >
+                            {i}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <table
+                className="w-full rounded-lg shadow-lg bg-[--light-green] relative"
+                style={{ backgroundColor: "rgba(169, 230, 194, 0.2)" }}
+              >
+                <thead className="flex px-5 py-3 text-sm text-[--light-brown] font-bold bg-[--dark-green] rounded-lg m-1">
+                  {Object.entries(tableCategories).map(([key, value]) => {
+                    return (
+                      <p className="min-w-[100px] max-w-[100px] mr-[20px] flex justify-between truncate text-ellipsis">
+                        <span className="truncate w-[70%]">
+                          {toHeaderCase(key)}
+                        </span>
+                        {sortString[key] ? (
+                          <button
+                            onClick={() => {
+                              setSortString((prevSortString) => ({
+                                ...prevSortString,
+                                [key]: !prevSortString[key],
+                              }));
+                              setSortName(key);
+                              setIsAscending(false);
+                            }}
+                          >
+                            <FaLongArrowAltUp />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setSortString((prevSortString) => ({
+                                ...prevSortString,
+                                [key]: !prevSortString[key],
+                              }));
+                              setSortName(key);
+                              setIsAscending(true);
+                            }}
+                          >
+                            <FaLongArrowAltDown />
+                          </button>
+                        )}
+                      </p>
+                    );
+                  })}
+                </thead>
+                <tbody className="flex flex-col max-h-[624px] overflow-y-auto">
+                  {filteredReports()?.length === 0 ? (
+                    <p className="font-bold flex justify-center items-center min-h-[624px]">
+                      No data...
+                    </p>
+                  ) : null}
+                  {filteredReports()?.map((i, k) => {
+                    console.log(i);
+                    if (title === "Appointment") {
+                      return (
+                        <tr key={k}>
+                          <td
+                            className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
+                              k % 2 ? "bg-[--light-green] rounded-lg" : null
+                            }`}
+                          >
+                            <ReportsTd
+                              value={
+                                convertDate(
+                                  i["scheduledDate"]
+                                    ? i["createdDate"]
+                                    : i["start"]
+                                )[1]
+                              }
+                            />
+                            <ReportsTd
+                              value={
+                                convertDate(
+                                  i["scheduledDate"]
+                                    ? i["createdDate"]
+                                    : i["start"]
+                                )[2]
+                              }
+                            />
+                            <ReportsTd value={i["userDetails.idNo"]} />
+                            <ReportsTd value={i["userDetails.name"]} />
+                            <ReportsTd value={i["userDetails.email"]} />
+                            <ReportsTd value={i["gc.name"]} />
+                            <ReportsTd
+                              value={
+                                i["mode"] === "facetoface"
+                                  ? "Face-to-face"
+                                  : "Virtual"
+                              }
+                            />
+                            <ReportsTd value={i["description"]} />
+                            <ReportsTd
+                              value={
+                                i["type"] === "standard" ? "Regular" : "SOS"
+                              }
+                            />
+                            <ReportsTd value={toHeaderCase(i["status"])} />
+                            <ReportsTd value={i["notes"]} />
+                            <ReportsTd value={i["userDetails.contactNo"]} />
+                          </td>
+                        </tr>
+                      );
+                    } else if (title === "Daily User") {
+                      return (
+                        <tr key={k}>
+                          <td
+                            className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
+                              k % 2 ? "bg-[--light-green] rounded-lg" : null
+                            }`}
+                          >
+                            <ReportsTd
+                              value={convertDate(i["createdDate"])[1]}
+                            />
+                            <ReportsTd
+                              value={convertDate(i["createdDate"])[2]}
+                            />
+                            <ReportsTd value={i["idNo"]} />
+                            <ReportsTd value={i["name"]} />
+                            <ReportsTd value={i["credentials.email"]} />
+                            <ReportsTd value={i["age"]} />
+                            <ReportsTd value={i["department"]} />
+                            <ReportsTd value={i["gender"]} />
+                            <ReportsTd value={i["yearSection"]} />
+                            <ReportsTd value={i["type"]} />
+                            <ReportsTd value={i["contactNo"]} />
+                          </td>
+                        </tr>
+                      );
+                    } else if (title === "Feedback") {
+                      return (
+                        <tr key={k}>
+                          <td
+                            className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
+                              k % 2 ? "bg-[--light-green] rounded-lg" : null
+                            }`}
+                          >
+                            <ReportsTd
+                              value={convertDate(i["createdDate"])[1]}
+                            />
+                            <ReportsTd
+                              value={convertDate(i["createdDate"])[2]}
+                            />
+                            <ReportsTd value={i["userDetails.idNo"]} />
+                            <ReportsTd value={i["userDetails.name"]} />
+                            <ReportsTd
+                              value={i["userDetails.credentials.email"]}
+                            />
+                            <ReportsTd value={i["userDetails.department"]} />
+                            <ReportsTd value={i["userDetails.yearSection"]} />
+                            <ReportsTd value={i["rating"]} />
+                            <ReportsTd value={i["feedbackDetails"]} />
+                          </td>
+                        </tr>
+                      );
+                    } else if (title === "Concern") {
+                      return (
+                        <tr key={k}>
+                          <td
+                            className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
+                              k % 2 ? "bg-[--light-green] rounded-lg" : null
+                            }`}
+                          >
+                            <ReportsTd
+                              value={convertDate(i["createdDate"])[1]}
+                            />
+                            <ReportsTd
+                              value={convertDate(i["createdDate"])[2]}
+                            />
+                            <ReportsTd value={i["idNo"]} />
+                            <ReportsTd value={i["name"]} />
+                            <ReportsTd value={i["credentials.email"]} />
+                            <ReportsTd value={i["age"]} />
+                            <ReportsTd value={i["department"]} />
+                            <ReportsTd value={i["gender"]} />
+                            <ReportsTd value={i["yearSection"]} />
+                            <ReportsTd value={i["concern"]} />
+                            <ReportsTd value={i["contactNo"]} />
+                          </td>
+                        </tr>
+                      );
+                    }
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
-      </div>
-      <table
-        className="w-full rounded-lg shadow-lg bg-[--light-green] relative"
-        style={{ backgroundColor: "rgba(169, 230, 194, 0.2)" }}
-      >
-        <thead className="flex px-5 py-3 text-sm text-[--light-brown] font-bold bg-[--dark-green] rounded-lg m-1">
-          {Object.entries(tableCategories).map(([key, value]) => {
-            return (
-              <p className="min-w-[100px] max-w-[100px] mr-[20px] flex justify-between truncate text-ellipsis">
-                <span className="truncate w-[70%]">{toHeaderCase(key)}</span>
-                {sortString[key] ? (
-                  <button
-                    onClick={() => {
-                      setSortString((prevSortString) => ({
-                        ...prevSortString,
-                        [key]: !prevSortString[key],
-                      }));
-                      setSortName(key);
-                      setIsAscending(false);
-                    }}
-                  >
-                    <FaLongArrowAltUp />
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => {
-                      setSortString((prevSortString) => ({
-                        ...prevSortString,
-                        [key]: !prevSortString[key],
-                      }));
-                      setSortName(key);
-                      setIsAscending(true);
-                    }}
-                  >
-                    <FaLongArrowAltDown />
-                  </button>
-                )}
-              </p>
-            );
-          })}
-        </thead>
-        <tbody className="flex flex-col max-h-[624px] overflow-y-auto">
-          {reports.length ? (
-            filteredReports()?.length === 0 ? (
-              <p className="font-bold flex justify-center items-center min-h-[624px]">
-                No data...
-              </p>
-            ) : null
-          ) : null}
-
-          {reports.length ? (
-            filteredReports()?.map((i, k) => {
-              console.log(i);
-              if (title === "Appointment") {
-                return (
-                  <tr key={k}>
-                    <td
-                      className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
-                        k % 2 ? "bg-[--light-green] rounded-lg" : null
-                      }`}
-                    >
-                      <ReportsTd
-                        value={
-                          convertDate(
-                            i["scheduledDate"] ? i["createdDate"] : i["start"]
-                          )[1]
-                        }
-                      />
-                      <ReportsTd
-                        value={
-                          convertDate(
-                            i["scheduledDate"] ? i["createdDate"] : i["start"]
-                          )[2]
-                        }
-                      />
-                      <ReportsTd value={i["userDetails.idNo"]} />
-                      <ReportsTd value={i["userDetails.name"]} />
-                      <ReportsTd value={i["userDetails.email"]} />
-                      <ReportsTd value={i["gc.name"]} />
-                      <ReportsTd
-                        value={
-                          i["mode"] === "facetoface"
-                            ? "Face-to-face"
-                            : "Virtual"
-                        }
-                      />
-                      <ReportsTd value={i["description"]} />
-                      <ReportsTd
-                        value={i["type"] === "standard" ? "Regular" : "SOS"}
-                      />
-                      <ReportsTd value={toHeaderCase(i["status"])} />
-                      <ReportsTd value={i["notes"]} />
-                      <ReportsTd value={i["userDetails.contactNo"]} />
-                    </td>
-                  </tr>
-                );
-              } else if (title === "Daily User") {
-                return (
-                  <tr key={k}>
-                    <td
-                      className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
-                        k % 2 ? "bg-[--light-green] rounded-lg" : null
-                      }`}
-                    >
-                      <ReportsTd value={convertDate(i["createdDate"])[1]} />
-                      <ReportsTd value={convertDate(i["createdDate"])[2]} />
-                      <ReportsTd value={i["idNo"]} />
-                      <ReportsTd value={i["name"]} />
-                      <ReportsTd value={i["credentials.email"]} />
-                      <ReportsTd value={i["age"]} />
-                      <ReportsTd value={i["department"]} />
-                      <ReportsTd value={i["gender"]} />
-                      <ReportsTd value={i["yearSection"]} />
-                      <ReportsTd value={i["type"]} />
-                      <ReportsTd value={i["contactNo"]} />
-                    </td>
-                  </tr>
-                );
-              } else if (title === "Feedback") {
-                return (
-                  <tr key={k}>
-                    <td
-                      className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
-                        k % 2 ? "bg-[--light-green] rounded-lg" : null
-                      }`}
-                    >
-                      <ReportsTd value={convertDate(i["createdDate"])[1]} />
-                      <ReportsTd value={convertDate(i["createdDate"])[2]} />
-                      <ReportsTd value={i["userDetails.idNo"]} />
-                      <ReportsTd value={i["userDetails.name"]} />
-                      <ReportsTd value={i["userDetails.credentials.email"]} />
-                      <ReportsTd value={i["userDetails.department"]} />
-                      <ReportsTd value={i["userDetails.yearSection"]} />
-                      <ReportsTd value={i["rating"]} />
-                      <ReportsTd value={i["feedbackDetails"]} />
-                    </td>
-                  </tr>
-                );
-              } else if (title === "Concern") {
-                return (
-                  <tr key={k}>
-                    <td
-                      className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
-                        k % 2 ? "bg-[--light-green] rounded-lg" : null
-                      }`}
-                    >
-                      <ReportsTd value={convertDate(i["createdDate"])[1]} />
-                      <ReportsTd value={convertDate(i["createdDate"])[2]} />
-                      <ReportsTd value={i["idNo"]} />
-                      <ReportsTd value={i["name"]} />
-                      <ReportsTd value={i["credentials.email"]} />
-                      <ReportsTd value={i["age"]} />
-                      <ReportsTd value={i["department"]} />
-                      <ReportsTd value={i["gender"]} />
-                      <ReportsTd value={i["yearSection"]} />
-                      <ReportsTd value={i["concern"]} />
-                      <ReportsTd value={i["contactNo"]} />
-                    </td>
-                  </tr>
-                );
-              }
-            })
-          ) : (
-            <Loading />
-          )}
-        </tbody>
-      </table>
-    </div>
+      )}
+    </>
   );
 }
 

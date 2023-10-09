@@ -10,12 +10,17 @@ import UserDemographics from "../components/Dashboard/UserDemographics";
 import UserConcerns from "../components/Dashboard/UserConcerns";
 import AppointmentTable from "../components/Dashboard/AppointmentTable";
 import UserFeedbacks from "../components/Dashboard/UserFeedbacks";
+import Loading from "../components/Loading";
 
 function Reports({ auth, toast }) {
   const [reports, setReports] = useState([]);
+  const [concerns, setConcerns] = useState([]);
+
   const [isGuided, setIsGuided] = useState(true);
   const [isOpenModeDropDown, setIsOpenModeDropDown] = useState(false);
   const [isOpenDateTimeDropDown, setIsOpenDateTimeDropDown] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
   const [selectedMode, setSelectedMode] = useState("Counselor-Guided");
   const [selectedDateTime, setSelectedDateTime] = useState("Last 7d");
 
@@ -23,8 +28,32 @@ function Reports({ auth, toast }) {
   const dateTime = ["Last 7d", "Last 30d", "Year"];
 
   useEffect(() => {
-    handleGetReports();
+    (async () => {
+      await handleGetConcerns();
+      await handleGetReports();
+      setIsLoading(false);
+    })();
   }, []);
+
+  const handleGetConcerns = async () => {
+    try {
+      await axios
+        .get("/api/train/get-concerns", {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${auth?.accessToken}`,
+          },
+        })
+        .then((res) => {
+          setConcerns(res?.data?.concerns);
+        })
+        .catch((err) => {
+          toast.error(err?.response?.data);
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
 
   const handleGetReports = async () => {
     try {
@@ -83,7 +112,7 @@ function Reports({ auth, toast }) {
   };
 
   const filteredReports = () => {
-    const newReports = reports.filter((i) => {
+    const newReports = reports?.filter((i) => {
       if (selectedDateTime === "Last 7d") {
         let week = moment();
         week.subtract(1, "weeks");
@@ -113,133 +142,142 @@ function Reports({ auth, toast }) {
   };
 
   return (
-    <div className="bg-[--light-brown] h-full">
-      <div className="flex flex-col px-52">
-        <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">
-          Dashboard
-        </p>
-        <AppointmentTable toast={toast} auth={auth}></AppointmentTable>
-        <div className="sh rounded-xl p-8 mb-8">
-          <div className="flex justify-between w-full mb-1">
-            <div className="flex justify-between w-full">
-              <p className="flex text-xl font-extrabold items-center">
-                Daily Active Users
+    <>
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <div className="bg-[--light-brown] h-full">
+          <div className="flex flex-col px-52">
+            <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">
+              Dashboard
+            </p>
+            <AppointmentTable toast={toast} auth={auth}></AppointmentTable>
+            <div className="sh rounded-xl p-8 mb-8">
+              <div className="flex justify-between w-full mb-1">
+                <div className="flex justify-between w-full">
+                  <p className="flex text-xl font-extrabold items-center">
+                    Daily Active Users
+                  </p>
+                </div>
+                <div className="flex gap-5">
+                  <div className="flex gap-5">
+                    <div className="hs-dropdown relative inline-flex gap-5">
+                      <button
+                        type="button"
+                        className="w-[203px] justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center
+          border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                        onClick={() => {
+                          setIsOpenModeDropDown(!isOpenModeDropDown);
+                        }}
+                      >
+                        {selectedMode}
+                        <FiChevronDown size={16} />
+                      </button>
+                      <div
+                        className={`${
+                          isOpenModeDropDown ? "visible" : "hidden"
+                        } absolute top-9 right-0 transition-all duration-100 w-[12.6rem]
+          z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                      >
+                        {mode.map((i, k) => {
+                          return (
+                            <button
+                              key={k}
+                              className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                              onClick={() => {
+                                if (i === "Counselor-Guided") {
+                                  setIsGuided(true);
+                                } else {
+                                  setIsGuided(false);
+                                }
+                                setIsOpenModeDropDown(!isOpenModeDropDown);
+                                setSelectedMode(i);
+                              }}
+                            >
+                              {i}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-5">
+                    <div className="hs-dropdown relative inline-flex gap-5">
+                      <button
+                        type="button"
+                        className="w-[120px] justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center
+          border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                        onClick={() => {
+                          setIsOpenDateTimeDropDown(!isOpenDateTimeDropDown);
+                        }}
+                      >
+                        {selectedDateTime}
+                        <FiChevronDown size={16} />
+                      </button>
+                      <div
+                        className={`${
+                          isOpenDateTimeDropDown ? "visible" : "hidden"
+                        } absolute top-9 right-0 transition-all duration-100 w-[12.6rem]
+          z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                      >
+                        {dateTime.map((i, k) => {
+                          return (
+                            <button
+                              key={k}
+                              className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                              onClick={() => {
+                                setIsOpenDateTimeDropDown(
+                                  !isOpenDateTimeDropDown
+                                );
+                                setSelectedDateTime(i);
+                              }}
+                            >
+                              {i}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p className="mb-8 text-black/50">
+                The number of students who engage in {selectedMode} mode.
               </p>
-            </div>
-            <div className="flex gap-5">
-              <div className="flex gap-5">
-                <div className="hs-dropdown relative inline-flex gap-5">
-                  <button
-                    type="button"
-                    className="w-[203px] justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center
-              border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-                    onClick={() => {
-                      setIsOpenModeDropDown(!isOpenModeDropDown);
-                    }}
-                  >
-                    {selectedMode}
-                    <FiChevronDown size={16} />
-                  </button>
-                  <div
-                    className={`${
-                      isOpenModeDropDown ? "visible" : "hidden"
-                    } absolute top-9 right-0 transition-all duration-100 w-[12.6rem]
-              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
-                  >
-                    {mode.map((i, k) => {
-                      return (
-                        <button
-                          key={k}
-                          className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                          onClick={() => {
-                            if (i === "Counselor-Guided") {
-                              setIsGuided(true);
-                            } else {
-                              setIsGuided(false);
-                            }
-                            setIsOpenModeDropDown(!isOpenModeDropDown);
-                            setSelectedMode(i);
-                          }}
-                        >
-                          {i}
-                        </button>
-                      );
-                    })}
-                  </div>
+              <div className="w-full flex">
+                <div className="w-2/3">
+                  <UserNumberReport
+                    data={filteredReports()}
+                    isGuided={isGuided}
+                    selectedMode={selectedMode}
+                    selectedDateTime={selectedDateTime}
+                  ></UserNumberReport>
                 </div>
-              </div>
-              <div className="flex gap-5">
-                <div className="hs-dropdown relative inline-flex gap-5">
-                  <button
-                    type="button"
-                    className="w-[120px] justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center
-              border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-                    onClick={() => {
-                      setIsOpenDateTimeDropDown(!isOpenDateTimeDropDown);
-                    }}
-                  >
-                    {selectedDateTime}
-                    <FiChevronDown size={16} />
-                  </button>
-                  <div
-                    className={`${
-                      isOpenDateTimeDropDown ? "visible" : "hidden"
-                    } absolute top-9 right-0 transition-all duration-100 w-[12.6rem]
-              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
-                  >
-                    {dateTime.map((i, k) => {
-                      return (
-                        <button
-                          key={k}
-                          className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                          onClick={() => {
-                            setIsOpenDateTimeDropDown(!isOpenDateTimeDropDown);
-                            setSelectedDateTime(i);
-                          }}
-                        >
-                          {i}
-                        </button>
-                      );
-                    })}
-                  </div>
+                <div className="w-1/3">
+                  <UserDemographics
+                    data={filteredReports()}
+                    isGuided={isGuided}
+                  ></UserDemographics>
                 </div>
               </div>
             </div>
-          </div>
-          <p className="mb-8 text-black/50">
-            The number of students who engage in {selectedMode} mode.
-          </p>
-          <div className="w-full flex">
-            <div className="w-2/3">
-              <UserNumberReport
-                data={filteredReports()}
-                isGuided={isGuided}
-                selectedMode={selectedMode}
-                selectedDateTime={selectedDateTime}
-              ></UserNumberReport>
-            </div>
-            <div className="w-1/3">
-              <UserDemographics
-                data={filteredReports()}
-                isGuided={isGuided}
-              ></UserDemographics>
-            </div>
+            <UserConcerns
+              data={filteredReports()}
+              isGuided={isGuided}
+              auth={auth}
+              toast={toast}
+              concerns={concerns}
+            ></UserConcerns>
+            <UserFeedbacks
+              data={filteredReports()}
+              isGuided={isGuided}
+              auth={auth}
+              toast={toast}
+            ></UserFeedbacks>
           </div>
         </div>
-        <UserConcerns
-          data={filteredReports()}
-          isGuided={isGuided}
-          auth={auth}
-          toast={toast}
-        ></UserConcerns>
-        <UserFeedbacks
-          data={filteredReports()}
-          isGuided={isGuided}
-          auth={auth}
-          toast={toast}
-        ></UserFeedbacks>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
 

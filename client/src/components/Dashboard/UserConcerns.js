@@ -12,14 +12,11 @@ import {
   Legend,
   Bar,
 } from "recharts";
-import axios from "../../api/axios";
 
-function UserConcerns({ data, isGuided, auth, toast }) {
+function UserConcerns({ data, isGuided, auth, toast, concerns }) {
   const [concernData, setConcernData] = useState([]);
-  const [concerns, setConcerns] = useState([]);
 
   useEffect(() => {
-    handleGetConcerns();
     getConcernData();
   }, [data]);
 
@@ -27,7 +24,7 @@ function UserConcerns({ data, isGuided, auth, toast }) {
     if (data !== undefined && concerns) {
       let concern = [];
 
-      concerns.map((i) => concern.push({ name: i, "Number of students": 0 }));
+      concerns?.map((i) => concern.push({ name: i, "Number of students": 0 }));
 
       data.forEach((i) => {
         i?.concerns?.forEach((j) => {
@@ -42,26 +39,6 @@ function UserConcerns({ data, isGuided, auth, toast }) {
       });
 
       setConcernData(concern);
-    }
-  };
-
-  const handleGetConcerns = async () => {
-    try {
-      await axios
-        .get("/api/train/get-concerns", {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${auth?.accessToken}`,
-          },
-        })
-        .then((res) => {
-          setConcerns(res?.data?.concerns);
-        })
-        .catch((err) => {
-          toast.error(err?.response?.data);
-        });
-    } catch (err) {
-      toast.error("Error");
     }
   };
 
