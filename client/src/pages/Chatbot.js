@@ -38,6 +38,8 @@ function Chatbot({ toast, auth, socket }) {
   const [isOpenNotificationModal, setIsOpenNotificationModal] = useState(false);
   const [isAppointmentChecked, setIsAppointmentChecked] = useState(false);
   const [isOpenFeedbackModal, setIsOpenFeedbackModal] = useState(false);
+  const [isOpenPolicyModal, setIsOpenPolicyModal] = useState(false);
+  const [isAcceptedPolicy, setIsAcceptedPolicy] = useState(false);
 
   const [katotoMessage, setKatotoMessage] = useState("");
   const [inputFriendly, setInputFriendly] = useState("");
@@ -462,7 +464,8 @@ function Chatbot({ toast, auth, socket }) {
       popUpSOS ||
       popUpStandard ||
       isOpenStandardAppoint ||
-      isOpenFeedbackModal ? (
+      isOpenFeedbackModal ||
+      isOpenPolicyModal ? (
         <motion.div
           className="bg-black/50 absolute w-screen h-screen z-50 overflow-hidden"
           variants={{
@@ -488,7 +491,8 @@ function Chatbot({ toast, auth, socket }) {
             popUpSOS ||
             popUpStandard ||
             isOpenStandardAppoint ||
-            isOpenFeedbackModal
+            isOpenFeedbackModal ||
+            isOpenPolicyModal
               ? "show"
               : "hide"
           }
@@ -1111,6 +1115,116 @@ border border-2 transition-all duration-300`}
           </div>
         </div>
       </Modal>
+      <Modal isOpen={isOpenPolicyModal}>
+        <div className="w-full justify-between flex">
+          <p className="text-2xl font-extrabold">Privacy Policy</p>
+
+          <button
+            onClick={() => {
+              setIsOpenPolicyModal(false);
+              setIsAcceptedPolicy(false);
+              setIsGuided(false);
+              setIsFriendly(false);
+            }}
+            type="button"
+          >
+            <FaTimes size={20} />
+          </button>
+        </div>
+        <div className="text-sm mt-5 flex flex-col gap-3">
+          <p className="indent-10">
+            This Privacy Policy outlines the practices and procedures for
+            collecting, using, and safeguarding personal data in the context of
+            our mental health assessment for students using Katoto. By checking
+            the box below, you provide your consent for us to collect and
+            process certain categories of personal data.
+          </p>
+          <p className="indent-10">
+            We collect various profile details, including full names, dates of
+            birth, contact information (such as email addresses and phone
+            numbers), educational institution details, academic history, and
+            other relevant profile information. Additionally, we collect data
+            related to mental health, including counselor-guided conversations,
+            note records of sessions or interactions with mental health
+            advocate/guidance counselors, and any additional information
+            voluntarily provided concerning mental health concerns.
+          </p>
+          <p className="indent-10">
+            The primary purposes of collecting and processing this data are to
+            provide mental health assessment for students, identify potential
+            mental health concerns, improve our services, and satisfy the need
+            of PLV Guidance and Counselling Center. We may share this
+            information with mental health professionals and counselors, and our
+            institution.
+          </p>
+          <p className="indent-10">
+            Ensuring the security of your data is of utmost importance to us. We
+            implement reasonable safeguards to protect the collected data from
+            unauthorized access, disclosure, alteration, or destruction.
+          </p>
+          <p className="indent-10">
+            You have certain rights regarding your data, including the right to
+            access, correct, or delete your personal data, the right to withdraw
+            consent for data processing (if applicable), the right to object to
+            data processing, and the right to lodge a complaint with a data
+            protection authority.
+          </p>
+          <p className="indent-10">
+            If you have any questions or concerns regarding this Privacy Policy
+            or the data we collect, please do not hesitate to leave a feedback.
+          </p>
+        </div>
+        {isGuided || isFriendly ? (
+          <>
+            <div className="flex gap-5 mb-3 text-sm mt-5">
+              <input
+                id="checkbox-1"
+                className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 mt-1
+   checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
+   float-left cursor-pointer appearance-none border border-solid border-2  border-[--light-gray] checked:border-[--light-gray] checked:border-2 bg-[--light-gray] 
+   bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
+   after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-['✔'] 
+   checked:bg-[--dark-green] checked:after:opacity-100"
+                type="checkbox"
+                style={{
+                  fontFamily: "FontAwesome",
+                }}
+                checked={isAcceptedPolicy ? true : false}
+                onChange={() => {
+                  setIsAcceptedPolicy(!isAcceptedPolicy);
+                }}
+              />
+              <p
+                className="w-fit cursor-pointer text-left"
+                onClick={() => {
+                  setIsAcceptedPolicy(!isAcceptedPolicy);
+                }}
+              >
+                By ticking the box, you acknowledge that you have read and
+                understood this Privacy Policy and consent to the collection and
+                processing of your personal data as described herein.
+              </p>
+            </div>
+            <div className="w-full flex justify-end">
+              <button
+                className={`${
+                  isAcceptedPolicy
+                    ? "hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green]"
+                    : "opacity-50"
+                } bg-[--dark-green] border-[--dark-green]  rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+border border-2 transition-all duration-300`}
+                disabled={isAcceptedPolicy ? false : true}
+                onClick={() => {
+                  setIsOpenPolicyModal(false);
+                  setIsInitial(false);
+                }}
+              >
+                Submit
+              </button>
+            </div>
+          </>
+        ) : null}
+      </Modal>
       <div className="flex items-center bg-[--light-brown] justify-center h-screen">
         <div className="flex items-center gap-32">
           <div className="relative">
@@ -1237,9 +1351,10 @@ border border-2 transition-all duration-300`}
                       text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green] transition-all duration-300"
                         onClick={() => {
                           handleGetConversation();
+                          setIsOpenPolicyModal(true);
+                          setIsAcceptedPolicy(false);
                           setIsGuided(true);
                           setIsFriendly(false);
-                          setIsInitial(false);
                         }}
                       >
                         Counselor-Guided Mode
@@ -1258,9 +1373,10 @@ border border-2 transition-all duration-300`}
                         className="text-sm px-5 py-2 rounded-full w-max font-medium cursor-pointer bg-[--dark-green] border-2 border-[--dark-green] 
                       text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green] transition-all duration-300"
                         onClick={() => {
+                          setIsOpenPolicyModal(true);
+                          setIsAcceptedPolicy(false);
                           setIsGuided(false);
                           setIsFriendly(true);
-                          setIsInitial(false);
                         }}
                       >
                         Friendly Conversation Mode
@@ -1277,7 +1393,12 @@ border border-2 transition-all duration-300`}
                     >
                       <p className="text-xs">
                         {"Learn more about our "}
-                        <span className="font-bold text-[--dark-green] hover:underline transition-all cursor-pointer">
+                        <span
+                          onClick={() => {
+                            setIsOpenPolicyModal(true);
+                          }}
+                          className="font-bold text-[--dark-green] hover:underline transition-all cursor-pointer"
+                        >
                           Privacy Policy
                         </span>
                         .
@@ -1308,7 +1429,7 @@ border border-2 transition-all duration-300`}
                 </div>
               ) : (
                 <div className="px-5 mb-1 flex flex-col overflow-y-auto gap-3 pt-10">
-                  {isGuided
+                  {isGuided && isAcceptedPolicy
                     ? messages.map((i, k) => {
                         return i.sender === "Katoto" ? (
                           <motion.div
@@ -1484,7 +1605,7 @@ border border-2 transition-all duration-300`}
               )}
 
               <div className="w-full">
-                {isGuided ? (
+                {isGuided && isAcceptedPolicy ? (
                   <motion.div
                     variants={{
                       hidden: { opacity: 1, scale: 0 },
@@ -1527,7 +1648,7 @@ border border-2 transition-all duration-300`}
                     })}
                   </motion.div>
                 ) : null}
-                {isFriendly ? (
+                {isFriendly && isAcceptedPolicy ? (
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
