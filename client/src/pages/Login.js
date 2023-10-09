@@ -12,7 +12,11 @@ function Login({ toast, loading, setLoading }) {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
+  const [forgotEmail, setForgotEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [forgotMessage, setForgotMessage] = useState("");
+
+  const [isForgotPw, setIsForgotPw] = useState(false);
 
   const login = async (e) => {
     e.preventDefault();
@@ -67,61 +71,153 @@ function Login({ toast, loading, setLoading }) {
     }
   };
 
+  const forgotPassword = async (e) => {
+    e.preventDefault();
+    try {
+      await axios
+        .post(
+          `/api/forgot`,
+          {
+            forgotEmail,
+          },
+          {
+            headers: { "Content-Type": "application/json" },
+            withCredentials: true,
+          }
+        )
+        .then((res) => {
+          setForgotMessage(res?.data?.message);
+        })
+        .catch((err) => {
+          console.log(err?.response?.data?.message);
+          setForgotMessage(err?.response?.data?.message);
+        });
+    } catch (err) {
+      toast.error("Error");
+    }
+  };
+
   return (
     <div className="flex bg-[--light-green] h-screen items-center">
       <div className="w-1/2 flex justify-end">
         <img src={plvImage} alt="" className="w-max h-max" />
       </div>
       <div className="w-1/2 bg-[--light-brown] h-full flex items-center pl-28">
-        <div className="w-max">
-          <p className="text-4xl font-extrabold mb-5">Login</p>
-          <p className="font-bold mb-14">
-            See your growth and get consulting support!
-          </p>
-          <div className="relative w-full mb-14">
-            <hr className="bg-[--light-gray] h-[2px] w-[420px]" />
-            <p className="absolute -bottom-2 w-max left-[16.5%] text-[--light-gray] font-bold text-sm bg-[--light-brown] px-5">
-              Sign in with PLV institutional email
-            </p>
+        {isForgotPw ? (
+          <div className="w-max">
+            <p className="text-4xl font-extrabold mb-14">Forgot Password</p>
+            <div className="relative w-full mb-5">
+              <hr className="bg-[--light-gray] h-[2px] w-[420px]" />
+              <p className="absolute -bottom-2 w-max left-[16.5%] text-[--light-gray] font-bold text-sm bg-[--light-brown] px-5">
+                Enter your PLV institutional email
+              </p>
+            </div>
+
+            <form className="flex flex-col" onSubmit={forgotPassword}>
+              <p
+                className={`w-[420px] mb-5 mt-4 text-sm font-semibold ${
+                  forgotMessage.includes("not find")
+                    ? "text-[--red]"
+                    : "text-[--dark-green]"
+                }`}
+              >
+                {forgotMessage}
+              </p>
+              <label htmlFor="email" className="text-sm font-bold">
+                Email *
+              </label>
+              <input
+                id="email"
+                type="email"
+                className="rounded-full border border-[--light-gray] bg-transparent w-full px-5 py-2 mt-4 mb-6"
+                onChange={(e) => {
+                  setForgotEmail(e.target.value);
+                }}
+                value={forgotEmail}
+                required
+              />
+              <div className="flex gap-2 justify-end">
+                <p className="text-sm">Already have an account?</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPassword("");
+                    setEmail("");
+                    setIsForgotPw(false);
+                  }}
+                  className="text-sm font-bold text-[--dark-green] flex justify-end mb-4 hover:underline"
+                >
+                  Sign in
+                </button>
+              </div>
+              <button
+                type="submit"
+                className="font-semibold text-sm w-full rounded-full bg-black text-[--light-brown] py-[10px]"
+              >
+                Submit
+              </button>
+            </form>
           </div>
-          <form className="flex flex-col" onSubmit={login}>
-            <label htmlFor="email" className="text-sm font-bold">
-              Email *
-            </label>
-            <input
-              id="email"
-              type="email"
-              className="rounded-full border border-[--light-gray] bg-transparent w-full px-5 py-2 mt-4 mb-6"
-              onChange={(e) => {
-                setEmail(e.target.value);
-              }}
-              value={email}
-              required
-            />
-            <label htmlFor="password" className="text-sm font-bold">
-              Password *
-            </label>
-            <input
-              id="password"
-              type="password"
-              className="rounded-full border border-[--light-gray] bg-transparent w-full px-5 py-2 mt-4 mb-4"
-              onChange={(e) => {
-                setPassword(e.target.value);
-              }}
-              value={password}
-              required
-            />
-            <p className="text-sm font-bold text-[--dark-green] flex justify-end mb-4">
-              Forgot Password?
+        ) : (
+          <div className="w-max">
+            <p className="text-4xl font-extrabold mb-5">Login</p>
+            <p className="font-bold mb-14">
+              See your growth and get consulting support!
             </p>
-            <button
-              type="submit"
-              className="font-semibold text-sm w-full rounded-full bg-black text-[--light-brown] py-[10px]"
-            >
-              Login
-            </button>
-          </form>
-        </div>
+            <div className="relative w-full mb-14">
+              <hr className="bg-[--light-gray] h-[2px] w-[420px]" />
+              <p className="absolute -bottom-2 w-max left-[16.5%] text-[--light-gray] font-bold text-sm bg-[--light-brown] px-5">
+                Sign in with PLV institutional email
+              </p>
+            </div>
+
+            <form className="flex flex-col" onSubmit={login}>
+              <label htmlFor="email" className="text-sm font-bold">
+                Email *
+              </label>
+              <input
+                id="email"
+                type="email"
+                className="rounded-full border border-[--light-gray] bg-transparent w-full px-5 py-2 mt-4 mb-6"
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                }}
+                value={email}
+                required
+              />
+              <label htmlFor="password" className="text-sm font-bold">
+                Password *
+              </label>
+              <input
+                id="password"
+                type="password"
+                className="rounded-full border border-[--light-gray] bg-transparent w-full px-5 py-2 mt-4 mb-4"
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                }}
+                value={password}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setForgotEmail("");
+                  setForgotMessage("");
+                  setIsForgotPw(true);
+                }}
+                className="text-sm font-bold text-[--dark-green] flex justify-end mb-4 hover:underline"
+              >
+                Forgot Password?
+              </button>
+              <button
+                type="submit"
+                className="font-semibold text-sm w-full rounded-full bg-black text-[--light-brown] py-[10px]"
+              >
+                Login
+              </button>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );

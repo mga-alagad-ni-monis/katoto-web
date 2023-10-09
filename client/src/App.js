@@ -24,6 +24,7 @@ import CampaignView from "./pages/CampaignView";
 import Conversations from "./pages/Conversations";
 import Appointments from "./pages/Appointments";
 import Profile from "./pages/Profile";
+import ForgotPassword from "./pages/ForgotPassword";
 
 function App() {
   const { auth, setAuth } = useAuth();
@@ -70,6 +71,19 @@ function App() {
             path="/login"
             element={
               <Login toast={toast} loading={loading} setLoading={setLoading} />
+            }
+          ></Route>
+        </Route>
+        <Route element={<NavBar socket={socket} />}>
+          <Route
+            path="/forgot/:resetToken"
+            element={
+              <ForgotPassword
+                auth={auth}
+                toast={toast}
+                loading={loading}
+                setLoading={setLoading}
+              />
             }
           ></Route>
         </Route>
