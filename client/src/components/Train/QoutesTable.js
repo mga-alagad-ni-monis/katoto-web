@@ -190,8 +190,8 @@ border border-2 border-black hover:border-black hover:border-2 hover:bg-transpar
         style={{ backgroundColor: "rgba(169, 230, 194, 0.2)" }}
       >
         <thead className="flex px-5 py-3 text-sm text-[--light-brown] font-bold bg-[--dark-green] rounded-lg m-1">
-          <tr className="w-1/5">
-            <td className="flex gap-5 items-center">
+          <tr>
+            <td className="w-[275px] flex gap-5 items-center">
               <input
                 id="checkbox-1"
                 className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
@@ -207,23 +207,23 @@ checked:bg-[--dark-green] checked:after:opacity-100"
                 checked={isAllChecked ? true : false}
                 onChange={handleAllChecked}
               />
-              <p className="mr-5 flex justify-start truncate text-ellipsis">
+              <p className=" flex justify-start truncate text-ellipsis">
                 Author
               </p>
             </td>
           </tr>
-          <tr className="w-[600px]">
-            <td className="mr-5 flex justify-start truncate text-ellipsis">
+          <tr>
+            <td className="w-[600px] mr-5 flex justify-start truncate text-ellipsis">
               Qoute
             </td>
           </tr>
-          <tr className="w-1/5">
-            <td className="mr-5 flex justify-start truncate text-ellipsis">
+          <tr>
+            <td className="w-[275px] mr-5 flex justify-start truncate text-ellipsis">
               Status
             </td>
           </tr>
-          <tr className="w-1/5">
-            <td className="mr-5 flex justify-start truncate text-ellipsis">
+          <tr>
+            <td className="w-[275px] flex justify-start truncate text-ellipsis">
               Options
             </td>
           </tr>
@@ -233,19 +233,13 @@ checked:bg-[--dark-green] checked:after:opacity-100"
             quotes
               ?.filter((i) => {
                 if (search?.toLowerCase().trim()) {
-                  return i?.author
-                    .toLowerCase()
-                    .includes(search.toLowerCase()) ||
+                  return (
+                    i?.author.toLowerCase().includes(search.toLowerCase()) ||
                     i?.quote.toLowerCase().includes(search.toLowerCase()) ||
-                    i?.isActive === true
-                    ? "active"
-                        .toString()
-                        .toLowerCase()
-                        .includes(search.toLowerCase())
-                    : ""
-                        .toString()
-                        .toLowerCase()
-                        .includes(search.toLowerCase());
+                    i?.isActiveString
+                      .toLowerCase()
+                      .includes(search.toLowerCase())
+                  );
                 } else {
                   return i;
                 }
@@ -268,7 +262,7 @@ checked:bg-[--dark-green] checked:after:opacity-100"
                       {i.isChecked ? (
                         <div className="absolute w-[8px] h-full bg-[--dark-green] left-0 top-0 rounded-tl-lg rounded-bl-lg"></div>
                       ) : null}
-                      <p className="w-1/5 flex gap-5 items-center ">
+                      <p className="w-[275px] flex gap-5 items-center ">
                         <input
                           id="checkbox-1"
                           className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
@@ -304,13 +298,13 @@ checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:af
                         </div>
                         {i?.quote}
                       </p>
-                      <p className="w-1/5 mr-5 flex justify-start truncate text-ellipsis tooltip-div">
+                      <p className="w-[275px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
                         <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
                           {i?.isActive ? "Active" : ""}
                         </div>
                         {i?.isActive ? "Active" : ""}
                       </p>
-                      <p className="w-1/5 mr-5 flex justify-start truncate text-ellipsis tooltip-div">
+                      <p className="w-[275px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
                         <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
                           {i?.isActive ? "Deactivate" : "Activate"}
                         </div>

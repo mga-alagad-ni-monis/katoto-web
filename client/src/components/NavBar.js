@@ -426,7 +426,7 @@ function NavBar({ auth, logout, socket, toast }) {
         </div>
       ) : null}
       <motion.div
-        className="bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg w-auto h-auto top-[90px] right-[22%] fixed z-40"
+        className="bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg w-auto h-auto top-[90px] right-[18.3%] fixed z-40"
         variants={{
           show: {
             opacity: 1,
@@ -733,7 +733,7 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
       />
       <Outlet />
       <motion.div
-        className="bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg w-auto h-auto top-[90px] right-[18.5%] fixed z-40"
+        className="bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg w-auto h-auto top-[90px] right-[11.5%] fixed z-40"
         variants={{
           show: {
             opacity: 1,

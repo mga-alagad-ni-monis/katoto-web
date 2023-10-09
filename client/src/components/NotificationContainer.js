@@ -552,7 +552,7 @@ function NotificationContainer({
       )}
       {isStudent ? (
         <motion.div
-          className="bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg w-1/5 h-[526px] top-[90px] right-[18.7%] fixed z-40"
+          className="bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg w-1/5 h-[526px] top-[90px] right-[15%] fixed z-40"
           variants={{
             show: {
               opacity: 1,

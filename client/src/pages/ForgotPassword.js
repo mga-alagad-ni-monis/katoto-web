@@ -93,7 +93,7 @@ function ForgotPassword({ toast, auth }) {
           </button> */}
           <button
             type="submit"
-            className="font-semibold text-sm w-full rounded-full bg-black text-[--light-brown] py-[10px] mt-4"
+            className="font-semibold text-sm w-full rounded-full bg-black text-[--light-brown] py-[10px] mt-4 border-black border border-2 hover:bg-transparent hover:text-black duration-300"
           >
             Submit
           </button>

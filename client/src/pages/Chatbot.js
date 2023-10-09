@@ -1161,47 +1161,44 @@ border border-2 transition-all duration-300`}
             <div className="text-sm mt-5 flex flex-col gap-3">
               <p className="indent-10">
                 This Privacy Policy outlines the practices and procedures for
-                collecting, using, and safeguarding personal data in the context
-                of our mental health assessment for students using Katoto. By
-                checking the box below, you provide your consent for us to
-                collect and process certain categories of personal data.
+                collecting, using, and safeguarding data in the context of our
+                mental health assessment for students using Katoto. By checking
+                the box below, you provide your consent for us to collect and
+                process certain categories of personal data.
               </p>
               <p className="indent-10">
-                We collect various profile details, including full names, dates
-                of birth, contact information (such as email addresses and phone
-                numbers), educational institution details, academic history, and
-                other relevant profile information. Additionally, we collect
-                data related to mental health, including counselor-guided
-                conversations, note records of sessions or interactions with
-                mental health advocate/guidance counselors, and any additional
-                information voluntarily provided concerning mental health
-                concerns.
+                We collect various details, including names, dates of birth,
+                contact information (such as email addresses and phone numbers),
+                educational institution details, and other relevant profile
+                information. Additionally, we gather data related to mental
+                health, including counselor-guided conversations, session notes
+                with mental health advocates/guidance counselors, and any
+                additional information voluntarily provided concerning mental
+                health concerns.
               </p>
               <p className="indent-10">
                 The primary purposes of collecting and processing this data are
-                to provide mental health assessment for students, identify
-                potential mental health concerns, improve our services, and
-                satisfy the need of PLV Guidance and Counselling Center. We may
-                share this information with mental health professionals and
-                counselors, and our institution.
+                to provide improved mental health assessments for students,
+                identify potential mental health concerns, and enhance our
+                services. This valuable information is only accessible to our
+                team of guidance counselors at PLV.
               </p>
               <p className="indent-10">
                 Ensuring the security of your data is of utmost importance to
-                us. We implement reasonable safeguards to protect the collected
-                data from unauthorized access, disclosure, alteration, or
-                destruction.
+                us. We have implemented up-to-date security measures to ensure
+                the safety of your data.
               </p>
               <p className="indent-10">
                 You have certain rights regarding your data, including the right
                 to access, correct, or delete your personal data, the right to
                 withdraw consent for data processing (if applicable), the right
-                to object to data processing, and the right to lodge a complaint
+                to object to data processing, and the right to file a complaint
                 with a data protection authority.
               </p>
               <p className="indent-10">
                 If you have any questions or concerns regarding this Privacy
-                Policy or the data we collect, please do not hesitate to leave a
-                feedback.
+                Policy or the data we collect, please do not hesitate to provide
+                a feedback.
               </p>
             </div>
             {isGuided || isFriendly ? (
