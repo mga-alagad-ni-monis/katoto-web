@@ -1064,11 +1064,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                               }
                             />
                             <ReportsTd value={i["description"]} />
-                            <ReportsTd
-                              value={
-                                i["type"] === "standard" ? "Regular" : "SOS"
-                              }
-                            />
+                            <ReportsTd value={i["type"]} />
                             <ReportsTd value={toHeaderCase(i["status"])} />
                             <ReportsTd value={i["notes"]} />
                             <ReportsTd value={i["userDetails.contactNo"]} />
