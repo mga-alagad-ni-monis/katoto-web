@@ -87,6 +87,55 @@ function Conversations({ auth, toast }) {
     });
   };
 
+  const filteredConversations = () => {
+    const newConversations = tempConversations?.filter((i) => {
+      if (search?.toLowerCase().trim()) {
+        return (
+          i?.email.toLowerCase().includes(search.toLowerCase()) ||
+          new Date(
+            new Date(
+              i?.conversation[i?.conversation.length - 1].dateTime?._seconds *
+                1000 +
+                i?.conversation[i?.conversation.length - 1].dateTime
+                  ?._nanoseconds /
+                  1000000
+            )
+              .toLocaleDateString()
+              .split("/")[2],
+            new Date(
+              i?.conversation[i?.conversation.length - 1].dateTime?._seconds *
+                1000 +
+                i?.conversation[i?.conversation.length - 1].dateTime
+                  ?._nanoseconds /
+                  1000000
+            )
+              .toLocaleDateString()
+              .split("/")[0] - 1,
+            new Date(
+              i?.conversation[i?.conversation.length - 1].dateTime?._seconds *
+                1000 +
+                i?.conversation[i?.conversation.length - 1].dateTime
+                  ?._nanoseconds /
+                  1000000
+            )
+              .toLocaleDateString()
+              .split("/")[1]
+          )
+            .toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            })
+            .toLowerCase()
+            .includes(search.toLowerCase())
+        );
+      } else {
+        return i;
+      }
+    });
+    return newConversations;
+  };
+
   return (
     <>
       {isLoading ? (
@@ -117,144 +166,134 @@ function Conversations({ auth, toast }) {
                   style={{ backgroundColor: "rgba(169, 230, 194, 0.2)" }}
                 >
                   <tbody className="flex flex-col max-h-[624px] overflow-y-auto">
-                    {tempConversations
-                      ?.filter((i) => {
-                        if (search?.toLowerCase().trim()) {
-                          return i?.email
-                            .toLowerCase()
-                            .includes(search.toLowerCase());
-                        } else {
-                          return i;
-                        }
-                      })
-                      .map((i, k) => {
-                        return (
-                          <tr key={k}>
-                            <td
-                              className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
-                                k % 2 ? "bg-[--light-green] rounded-lg" : null
-                              }`}
-                            >
-                              <div className="w-full flex truncate text-ellipsis">
-                                <div className="flex justify-between w-full">
-                                  <div className="flex flex-col gap-2">
-                                    <p className="text-sm font-bold">
-                                      {i?.email}
-                                    </p>
-                                    <p className="font-semibold text-xs flex gap-2">
-                                      Last message:
-                                      <span>
-                                        {new Date(
+                    {filteredConversations()?.map((i, k) => {
+                      return (
+                        <tr key={k}>
+                          <td
+                            className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
+                              k % 2 ? "bg-[--light-green] rounded-lg" : null
+                            }`}
+                          >
+                            <div className="w-full flex truncate text-ellipsis">
+                              <div className="flex justify-between w-full">
+                                <div className="flex flex-col gap-2">
+                                  <p className="text-sm font-bold">
+                                    {i?.email}
+                                  </p>
+                                  <p className="font-semibold text-xs flex gap-2">
+                                    Last message:
+                                    <span>
+                                      {new Date(
+                                        new Date(
+                                          i?.conversation[
+                                            i?.conversation.length - 1
+                                          ].dateTime?._seconds *
+                                            1000 +
+                                            i?.conversation[
+                                              i?.conversation.length - 1
+                                            ].dateTime?._nanoseconds /
+                                              1000000
+                                        )
+                                          .toLocaleDateString()
+                                          .split("/")[2],
+                                        new Date(
+                                          i?.conversation[
+                                            i?.conversation.length - 1
+                                          ].dateTime?._seconds *
+                                            1000 +
+                                            i?.conversation[
+                                              i?.conversation.length - 1
+                                            ].dateTime?._nanoseconds /
+                                              1000000
+                                        )
+                                          .toLocaleDateString()
+                                          .split("/")[0] - 1,
+                                        new Date(
+                                          i?.conversation[
+                                            i?.conversation.length - 1
+                                          ].dateTime?._seconds *
+                                            1000 +
+                                            i?.conversation[
+                                              i?.conversation.length - 1
+                                            ].dateTime?._nanoseconds /
+                                              1000000
+                                        )
+                                          .toLocaleDateString()
+                                          .split("/")[1]
+                                      ).toLocaleDateString("en-US", {
+                                        month: "long",
+                                        day: "numeric",
+                                        year: "numeric",
+                                      })}
+                                    </span>
+                                    <span>
+                                      {new Date(
+                                        i?.conversation[
+                                          i?.conversation.length - 1
+                                        ].dateTime?._seconds * 1000
+                                      ).getHours() %
+                                        12 ===
+                                      0
+                                        ? new Date(
+                                            i?.conversation[
+                                              i?.conversation.length - 1
+                                            ].dateTime?._seconds * 1000
+                                          ).getHours()
+                                        : new Date(
+                                            i?.conversation[
+                                              i?.conversation.length - 1
+                                            ].dateTime?._seconds * 1000
+                                          ).getHours() % 12}
+                                      :
+                                      {new Date(
+                                        i?.conversation[
+                                          i?.conversation.length - 1
+                                        ].dateTime?._seconds * 1000
+                                      ).getMinutes() < 10
+                                        ? "0" +
                                           new Date(
                                             i?.conversation[
                                               i?.conversation.length - 1
-                                            ].dateTime?._seconds *
-                                              1000 +
-                                              i?.conversation[
-                                                i?.conversation.length - 1
-                                              ].dateTime?._nanoseconds /
-                                                1000000
-                                          )
-                                            .toLocaleDateString()
-                                            .split("/")[2],
-                                          new Date(
+                                            ].dateTime?._seconds * 1000
+                                          ).getMinutes()
+                                        : new Date(
                                             i?.conversation[
                                               i?.conversation.length - 1
-                                            ].dateTime?._seconds *
-                                              1000 +
-                                              i?.conversation[
-                                                i?.conversation.length - 1
-                                              ].dateTime?._nanoseconds /
-                                                1000000
-                                          )
-                                            .toLocaleDateString()
-                                            .split("/")[0] - 1,
-                                          new Date(
-                                            i?.conversation[
-                                              i?.conversation.length - 1
-                                            ].dateTime?._seconds *
-                                              1000 +
-                                              i?.conversation[
-                                                i?.conversation.length - 1
-                                              ].dateTime?._nanoseconds /
-                                                1000000
-                                          )
-                                            .toLocaleDateString()
-                                            .split("/")[1]
-                                        ).toLocaleDateString("en-US", {
-                                          month: "long",
-                                          day: "numeric",
-                                          year: "numeric",
-                                        })}
-                                      </span>
-                                      <span>
-                                        {new Date(
-                                          i?.conversation[
-                                            i?.conversation.length - 1
-                                          ].dateTime?._seconds * 1000
-                                        ).getHours() %
-                                          12 ===
-                                        0
-                                          ? new Date(
-                                              i?.conversation[
-                                                i?.conversation.length - 1
-                                              ].dateTime?._seconds * 1000
-                                            ).getHours()
-                                          : new Date(
-                                              i?.conversation[
-                                                i?.conversation.length - 1
-                                              ].dateTime?._seconds * 1000
-                                            ).getHours() % 12}
-                                        :
-                                        {new Date(
-                                          i?.conversation[
-                                            i?.conversation.length - 1
-                                          ].dateTime?._seconds * 1000
-                                        ).getMinutes() < 10
-                                          ? "0" +
-                                            new Date(
-                                              i?.conversation[
-                                                i?.conversation.length - 1
-                                              ].dateTime?._seconds * 1000
-                                            ).getMinutes()
-                                          : new Date(
-                                              i?.conversation[
-                                                i?.conversation.length - 1
-                                              ].dateTime?._seconds * 1000
-                                            ).getMinutes()}
-                                        &nbsp;
-                                        {new Date(
-                                          i?.conversation[
-                                            i?.conversation.length - 1
-                                          ].dateTime?._seconds * 1000
-                                        ).getHours() <= 12
-                                          ? "A.M."
-                                          : "P.M."}
-                                      </span>
-                                    </p>
-                                  </div>
-                                  <div className="flex h-full items-end">
-                                    <button
-                                      className="font-semibold text-xs flex gap-2 items-center bg-[--dark-green] text-[--light-brown] border-2 border border-[--dark-green] hover:bg-transparent p-1 rounded-md hover:text-[--dark-green] transition-all duration-300"
-                                      onClick={() => {
-                                        handleViewConversation(
-                                          i?.email,
-                                          i?.conversation[
-                                            i?.conversation.length - 1
-                                          ].dateTime
-                                        );
-                                      }}
-                                    >
-                                      View Conversation
-                                      <HiOutlineArrowLongRight />
-                                    </button>
-                                  </div>
+                                            ].dateTime?._seconds * 1000
+                                          ).getMinutes()}
+                                      &nbsp;
+                                      {new Date(
+                                        i?.conversation[
+                                          i?.conversation.length - 1
+                                        ].dateTime?._seconds * 1000
+                                      ).getHours() <= 12
+                                        ? "A.M."
+                                        : "P.M."}
+                                    </span>
+                                  </p>
+                                </div>
+                                <div className="flex h-full items-end">
+                                  <button
+                                    className="font-semibold text-xs flex gap-2 items-center bg-[--dark-green] text-[--light-brown] border-2 border border-[--dark-green] hover:bg-transparent p-1 rounded-md hover:text-[--dark-green] transition-all duration-300"
+                                    onClick={() => {
+                                      handleViewConversation(
+                                        i?.email,
+                                        i?.conversation[
+                                          i?.conversation.length - 1
+                                        ].dateTime
+                                      );
+                                    }}
+                                  >
+                                    View Conversation
+                                    <HiOutlineArrowLongRight />
+                                  </button>
                                 </div>
                               </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
