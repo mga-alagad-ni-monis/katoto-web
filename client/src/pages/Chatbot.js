@@ -69,6 +69,7 @@ function Chatbot({ toast, auth, socket }) {
   const bottomRef = useRef(null);
   const descRef = useRef();
   const feedbackRef = useRef();
+  const friendlyMsgRef = useRef();
 
   useEffect(() => {
     (async () => {
@@ -233,13 +234,18 @@ function Chatbot({ toast, auth, socket }) {
 
   const handleSubmitMessage = async (sender, inputMessage) => {
     try {
+      let msg = friendlyMsgRef.current.value;
+      friendlyMsgRef.current.value = "";
       setGuidedButtons([]);
       setInputFriendly("");
       setIsTyping(true);
       setMessages([...messages, { sender, message: inputMessage.title }]);
       setFriendlyMessages([
         ...friendlyMessages,
-        { sender, message: inputMessage },
+        {
+          sender,
+          message: msg ? msg : inputMessage,
+        },
       ]);
 
       axios
@@ -249,7 +255,7 @@ function Chatbot({ toast, auth, socket }) {
             : process.env.REACT_APP_KATOTO_FC_API_URI,
           {
             sender,
-            message: isGuided ? inputMessage.title : inputMessage,
+            message: isGuided ? inputMessage.title : msg ? msg : inputMessage,
           }
         )
         .then(async (res) => {
@@ -314,7 +320,10 @@ function Chatbot({ toast, auth, socket }) {
             setTimeout(() => {
               setFriendlyMessages([
                 ...friendlyMessages,
-                { sender, message: inputMessage },
+                {
+                  sender,
+                  message: msg ? msg : inputMessage,
+                },
                 { sender: "Katoto", message: res.data[0].text },
               ]);
               setIsTyping(false);
@@ -1734,10 +1743,7 @@ border border-2 transition-all duration-300`}
                               className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-none placeholder-black/30 font-semibold w-full"
                               type="text"
                               placeholder="Aa..."
-                              value={inputFriendly}
-                              onChange={(e) => {
-                                setInputFriendly(e.target.value);
-                              }}
+                              ref={friendlyMsgRef}
                               required
                             />
                           </motion.li>
