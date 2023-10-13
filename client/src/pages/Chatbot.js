@@ -242,7 +242,7 @@ function Chatbot({ toast, auth, socket }) {
         { sender, message: inputMessage },
       ]);
 
-      axiosDef
+      axios
         .post(
           isGuided
             ? process.env.REACT_APP_KATOTO_CG_API_URI
@@ -252,7 +252,7 @@ function Chatbot({ toast, auth, socket }) {
             message: isGuided ? inputMessage.title : inputMessage,
           }
         )
-        .then((res) => {
+        .then(async (res) => {
           res.data[0].text =
             res.data[0].custom !== undefined
               ? res.data[0].custom.text
@@ -282,25 +282,33 @@ function Chatbot({ toast, auth, socket }) {
               isProblem = true;
             }
 
-            return axios.post(
-              "/api/logs/send",
-              {
-                studentMessage: { sender, message: inputMessage.title },
-                katotoMessage: {
-                  sender: "Katoto",
-                  message: res.data[0].text,
+            await axios
+              .post(
+                "/api/logs/send",
+                {
+                  studentMessage: { sender, message: inputMessage.title },
+                  katotoMessage: {
+                    sender: "Katoto",
+                    message: res.data[0].text,
+                  },
+                  isGuided,
+                  credentials: auth?.userInfo,
+                  isProblem,
                 },
-                isGuided,
-                credentials: auth?.userInfo,
-                isProblem,
-              },
-              {
-                withCredentials: true,
-                headers: {
-                  Authorization: `Bearer ${auth?.accessToken}`,
-                },
-              }
-            );
+                {
+                  withCredentials: true,
+                  headers: {
+                    Authorization: `Bearer ${auth?.accessToken}`,
+                  },
+                }
+              )
+              .then((res) => {
+                setKatotoMessage("");
+                return;
+              })
+              .catch((err) => {
+                console.log(err);
+              });
           } else {
             setKatotoMessage(res.data[0].text);
             setTimeout(() => {
@@ -317,24 +325,29 @@ function Chatbot({ toast, auth, socket }) {
               }
             }, 900);
 
-            return axios.post(
-              "/api/logs/send",
-              {
-                studentMessage: { sender },
-                isGuided,
-                credentials: auth?.userInfo,
-              },
-              {
-                withCredentials: true,
-                headers: {
-                  Authorization: `Bearer ${auth?.accessToken}`,
+            await axios
+              .post(
+                "/api/logs/send",
+                {
+                  studentMessage: { sender },
+                  isGuided,
+                  credentials: auth?.userInfo,
                 },
-              }
-            );
+                {
+                  withCredentials: true,
+                  headers: {
+                    Authorization: `Bearer ${auth?.accessToken}`,
+                  },
+                }
+              )
+              .then((res) => {
+                setKatotoMessage("");
+                return;
+              })
+              .catch((err) => {
+                console.log(err);
+              });
           }
-        })
-        .then((res) => {
-          setKatotoMessage("");
         })
         .catch((err) => {
           console.log(err);
