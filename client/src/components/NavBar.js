@@ -1,8 +1,7 @@
 import axios from "../api/axios";
 
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 
 import moment from "moment";
@@ -20,6 +19,8 @@ import {
 import { AiOutlineLogout } from "react-icons/ai";
 
 import NotificationContainer from "./NotificationContainer";
+
+import logo from "../assets/logo/katoto-logo.png";
 
 function NavBar({ auth, logout, socket, toast }) {
   const [isOpenNotifications, setIsOpenNotifications] = useState(false);
@@ -329,25 +330,51 @@ function NavBar({ auth, logout, socket, toast }) {
         <div
           className={`fixed w-full z-40 ${
             location.pathname === "/login"
-              ? "bg-transparent"
-              : "bg-[--light-brown]"
+              ? "bg-[--light-brown] shadow-md"
+              : "bg-[--light-brown] shadow-md"
           } `}
         >
           <nav
             className={`flex ${
               location.pathname === "/login"
-                ? "justify-between bg-transparent"
-                : "justify-end bg-[--light-brown]"
-            } py-10 items-center container mx-auto 2xl:px-[2rem]`}
+                ? "bg-transparent ml-[20rem]"
+                : "bg-[--light-brown]"
+            } justify-start py-5 items-center container mx-auto 2xl:px-[2rem] w-full gap-28`}
           >
-            <p className="text-4xl font-extrabold w-1/2 z-50">Katoto</p>
-            <div className="flex pl-28 justify-between w-1/2 items-center z-50">
-              <li className="flex gap-10 font-bold">
+            <Link
+              to={"/"}
+              className="text-4xl font-extrabold z-50 flex gap-7 items-center"
+            >
+              <img
+                src={logo}
+                alt="logo"
+                className="h-[50px] z-20 bg-[--light-green] rounded-full"
+              />
+              <span>Katoto</span>
+            </Link>
+            <div className="flex justify-between items-center z-50 w-full">
+              <li className="flex gap-10 font-medium">
                 <ul>
-                  <Link to={"/chat"}>Chatbot</Link>
+                  <Link
+                    to={"/chat"}
+                    className={`hover:text-[--dark-green] ${
+                      location.pathname === "/chat" ? "font-extrabold" : null
+                    }`}
+                  >
+                    Chatbot
+                  </Link>
                 </ul>
                 <ul>
-                  <Link to={"/view-campaigns"}>Campaigns</Link>
+                  <Link
+                    to={"/view-campaigns"}
+                    className={`hover:text-[--dark-green] ${
+                      location.pathname === "/view-campaigns"
+                        ? "font-extrabold"
+                        : null
+                    }`}
+                  >
+                    Campaigns
+                  </Link>
                 </ul>
               </li>
               {auth ? (

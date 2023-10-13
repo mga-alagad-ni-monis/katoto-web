@@ -99,8 +99,10 @@ function Login({ toast, loading, setLoading }) {
 
   return (
     <div className="flex bg-[--light-green] h-screen items-center">
-      <div className="w-1/2 flex justify-end">
-        <img src={plvImage} alt="" className="w-max h-max" />
+      <div className="w-1/2 h-full bg-gradient-to-r from-[--light-green] to-[--light-brown]">
+        <div className="w-full h-full flex justify-end items-center">
+          <img src={plvImage} alt="" className="w-max h-max" />
+        </div>
       </div>
       <div className="w-1/2 bg-[--light-brown] h-full flex items-center pl-28">
         {isForgotPw ? (

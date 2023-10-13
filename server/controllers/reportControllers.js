@@ -177,7 +177,7 @@ const exportReports = async (req, res) => {
           } else if (key === "department") {
             obj["Department"] = i["department"];
           } else if (key === "yearSection") {
-            obj["Year Section"] = i["yearSection"];
+            obj["Year Section"] = ` ${i["yearSection"]}`;
           } else {
             obj[jsConvert.toHeaderCase(key)] = jsConvert.toHeaderCase(i[key]);
           }
@@ -201,7 +201,7 @@ const exportReports = async (req, res) => {
           } else if (key === "department") {
             obj["Department"] = i["userDetails.department"];
           } else if (key === "yearSection") {
-            obj["Year Section"] = `${i["userDetails.yearSection"]}`;
+            obj["Year Section"] = ` ${i["userDetails.yearSection"]}`;
           } else if (key === "feedback") {
             obj["Feedback"] = i["feedbackDetails"];
           } else {
@@ -227,7 +227,7 @@ const exportReports = async (req, res) => {
           } else if (key === "department") {
             obj["Department"] = i["department"];
           } else if (key === "yearSection") {
-            obj["Year Section"] = i["yearSection"];
+            obj["Year Section"] = ` ${i["yearSection"]}`;
           } else {
             obj[jsConvert.toHeaderCase(key)] = jsConvert.toHeaderCase(i[key]);
           }

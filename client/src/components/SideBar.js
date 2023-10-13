@@ -1,10 +1,12 @@
 import axios from "../api/axios";
 import { useState, useEffect } from "react";
 
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 
 import logo from "../assets/logo/katoto-logo.png";
 import NotificationContainer from "./NotificationContainer";
+
+import { toHeaderCase } from "js-convert-case";
 
 import {
   BsCardList,
@@ -29,6 +31,8 @@ function SideBar({ toast, logout, auth, socket }) {
   const [notifications, setNotifications] = useState([]);
 
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  const location = useLocation();
 
   useEffect(() => {
     getNotification();
@@ -98,6 +102,8 @@ function SideBar({ toast, logout, auth, socket }) {
     });
   };
 
+  const reportsPath = ["appointments", "users", "concerns", "feedbacks"];
+
   return (
     <>
       <div
@@ -112,7 +118,19 @@ function SideBar({ toast, logout, auth, socket }) {
         <div className="flex justify-between flex-col h-full py-12">
           <div>
             <div className="flex justify-center">
-              <img src={logo} alt="logo" className="w-[80px] h-[80px]" />
+              {isHovered ? (
+                <img
+                  src={logo}
+                  alt="logo"
+                  className="h-[70px] z-20 bg-[--light-green] rounded-full"
+                />
+              ) : (
+                <img
+                  src={logo}
+                  alt="logo"
+                  className="h-[50px] z-20 bg-[--light-green] rounded-full"
+                />
+              )}
             </div>
             <div className="flex justify-center">
               <ul
@@ -123,7 +141,11 @@ function SideBar({ toast, logout, auth, socket }) {
                 <li>
                   <Link
                     to={"/dashboard"}
-                    className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
+                    className={`flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200 ${
+                      location.pathname === "/dashboard"
+                        ? "font-extrabold text-[--dark-green]"
+                        : null
+                    }`}
                   >
                     {isHovered ? (
                       <div className="flex gap-5 items-center">
@@ -140,7 +162,14 @@ function SideBar({ toast, logout, auth, socket }) {
                     onClick={() => {
                       setIsOpenReportsModal(!isOpenReportsModal);
                     }}
-                    className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
+                    className={`flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200 ${
+                      location.pathname === "/reports/appointments" ||
+                      location.pathname === "/reports/concerns" ||
+                      location.pathname === "/reports/users" ||
+                      location.pathname === "/reports/feedbacks"
+                        ? "font-extrabold text-[--dark-green]"
+                        : null
+                    }`}
                   >
                     {isHovered ? (
                       <div className="flex gap-5 items-center">
@@ -164,46 +193,28 @@ function SideBar({ toast, logout, auth, socket }) {
                           isHovered ? "gap-5" : "gap-5"
                         } font-medium`}
                       >
-                        <li>
-                          <Link
-                            to={"/reports/appointments"}
-                            className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
-                          >
-                            <div className="flex gap-5 items-center">
-                              <span className="word-in">Appointments</span>
-                            </div>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            to={"/reports/concerns"}
-                            className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
-                          >
-                            <div className="flex gap-5 items-center">
-                              <span className="word-in">Concerns</span>
-                            </div>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            to={"/reports/users"}
-                            className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
-                          >
-                            <div className="flex gap-5 items-center">
-                              <span className="word-in">Users</span>
-                            </div>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            to={"/reports/feedbacks"}
-                            className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
-                          >
-                            <div className="flex gap-5 items-center">
-                              <span className="word-in">Feedbacks</span>
-                            </div>
-                          </Link>
-                        </li>
+                        {reportsPath.map((i, k) => {
+                          return (
+                            <li key={k}>
+                              <Link
+                                to={`/reports/${i}`}
+                                className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
+                              >
+                                <div className="flex gap-5 items-center">
+                                  <span
+                                    className={`word-in ${
+                                      location.pathname === `/reports/${i}`
+                                        ? "text-[--dark-green] font-bold"
+                                        : null
+                                    }`}
+                                  >
+                                    {toHeaderCase(i)}
+                                  </span>
+                                </div>
+                              </Link>
+                            </li>
+                          );
+                        })}
                       </ul>
                     </div>
                   ) : null}
@@ -211,7 +222,11 @@ function SideBar({ toast, logout, auth, socket }) {
                 <li>
                   <Link
                     to={"/train"}
-                    className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
+                    className={`flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200 ${
+                      location.pathname === "/train"
+                        ? "font-extrabold text-[--dark-green]"
+                        : null
+                    }`}
                   >
                     {isHovered ? (
                       <div className="flex gap-5 items-center">
@@ -226,7 +241,11 @@ function SideBar({ toast, logout, auth, socket }) {
                 <li>
                   <Link
                     to={"/appointments"}
-                    className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
+                    className={`flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200 ${
+                      location.pathname === "/appointments"
+                        ? "font-extrabold text-[--dark-green]"
+                        : null
+                    }`}
                   >
                     {isHovered ? (
                       <div className="flex gap-5 items-center">
@@ -241,7 +260,11 @@ function SideBar({ toast, logout, auth, socket }) {
                 <li>
                   <Link
                     to={"/logs"}
-                    className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
+                    className={`flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200 ${
+                      location.pathname === "/logs"
+                        ? "font-extrabold text-[--dark-green]"
+                        : null
+                    }`}
                   >
                     {isHovered ? (
                       <div className="flex gap-5 items-center">
@@ -254,7 +277,14 @@ function SideBar({ toast, logout, auth, socket }) {
                   </Link>
                 </li>
                 <li>
-                  <Link to={"/campaigns"}>
+                  <Link
+                    to={"/campaigns"}
+                    className={`flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200 ${
+                      location.pathname === "/campaigns"
+                        ? "font-extrabold text-[--dark-green]"
+                        : null
+                    }`}
+                  >
                     {isHovered ? (
                       <div className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200">
                         <BsMegaphone size={20} />
@@ -292,7 +322,11 @@ function SideBar({ toast, logout, auth, socket }) {
               <div>
                 <Link
                   to={"/profile"}
-                  className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
+                  className={`flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200 ${
+                    location.pathname === "/profile"
+                      ? "font-extrabold text-[--dark-green]"
+                      : null
+                  }`}
                 >
                   {isHovered ? (
                     <div className="flex gap-5 items-center">
