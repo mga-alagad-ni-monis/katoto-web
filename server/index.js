@@ -1,11 +1,5 @@
 require("dotenv").config();
 const express = require("express");
-const cluster = require("node:cluster");
-const numCPUs = require("node:os").availableParallelism();
-const process = require("node:process");
-const { setupMaster, setupWorker } = require("@socket.io/sticky");
-const { createAdapter, setupPrimary } = require("@socket.io/cluster-adapter");
-
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const cron = require("node-cron");
@@ -38,410 +32,371 @@ const {
 } = require("./controllers/notificationControllers");
 const { detectOSType } = require("./utils/utils");
 
+const app = express();
+
 //newly added
-if (cluster.isPrimary) {
-  console.log(`Master ${process.pid} is running`);
+const http = require("http");
 
-  const app = express();
+const server = http.createServer(app);
 
-  const http = require("http");
+const io = require("socket.io")(server, {
+  cors: {
+    origin: process.env.CLIENT_URI,
+    credentials: true,
+  },
+});
+//
 
-  const server = http.createServer(app);
+// app.listen
+server.listen(process.env.PORT, () => {
+  console.log("Server running");
+});
 
-  // setup sticky sessions
-  setupMaster(server, {
-    loadBalancingMethod: "least-connection",
+//middlewares
+
+app.use("/tmp", express.static(process.env.FILE_STORAGE_PATH));
+
+app.use(cors({ origin: process.env.CLIENT_URI, credentials: true }));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use(cookieParser());
+
+app.use((req, res, next) => {
+  console.log(req.method, req.path);
+  next();
+});
+
+//newly added
+let onlineUsers = [];
+
+const addNewUser = (email, role, idNo, socketId) => {
+  !onlineUsers.some((user) => user.email === email) &&
+    onlineUsers.push({ email, role, idNo, socketId });
+};
+
+const getOnlineUser = (email) => {
+  return onlineUsers.find((user) => user.email === email);
+};
+
+const getGCnSA = () => {
+  return onlineUsers.filter(
+    (user) =>
+      user.role === "systemAdministrator" || user.role === "guidanceCounselor"
+  );
+};
+
+const removeUser = (socketId) => {
+  onlineUsers = onlineUsers.filter((user) => user.socketId !== socketId);
+};
+
+io.on("connection", (socket) => {
+  socket.on("newUser", (token) => {
+    const isPresent = onlineUsers.some((i) => i.socketId === socket.id);
+    if (!isPresent) {
+      addNewUser(
+        jwt.decode(token)?.email,
+        jwt.decode(token)?.role,
+        jwt.decode(token)?.idNo,
+        socket.id
+      );
+    }
+    console.log(onlineUsers);
   });
 
-  // setup connections between the workers
-  setupPrimary();
+  socket.on("train", async ({ mode, id }) => {
+    if (mode === "cg") {
+      await setConcerns();
+    }
 
-  // needed for packets containing buffers (you can ignore it if you only send plaintext objects)
-  // Node.js < 16.0.0
-  cluster.setupMaster({
-    serialization: "advanced",
+    let port = mode === "cg" ? 8000 : 8001;
+
+    if (detectOSType() === "Windows") {
+      console.log("Windows");
+      const trainData = spawn(
+        `echo Training has started, Please wait and do not close the window. && conda activate katoto-ml-${mode} && rasa train --config config.yml && rasa run --enable-api --cors \"*\" -p ${port} --debug`,
+        {
+          shell: true,
+          cwd: `${process.env.RASA_FILES_PATH}katoto-ml-${mode}`,
+        }
+      );
+
+      trainData.stdout.on("data", (data) => {
+        console.log(`stdout: ${data}`);
+        io.to(id).emit("displayData", {
+          data: data,
+        });
+      });
+      trainData.stderr.on("data", (data) => {
+        console.error(`stderr: ${data}`);
+        io.to(id).emit("displayData", {
+          data: data,
+        });
+      });
+      trainData.on("close", (code) => {
+        console.log(`child process exited with code ${code}`);
+        io.to(id).emit("displayData", {
+          data: code,
+        });
+      });
+    } else if (detectOSType() === "Linux") {
+      console.log("Linux");
+      const trainData = spawn(
+        `echo Training has started, Please wait and do not close the window. && eval "$(conda shell.bash hook)" && conda activate katoto-env && rasa train --config config.yml && pm2 delete "${mode}" && pm2 start ../../katoto-ml/katoto-ml-${mode}/${mode}.sh --attach`,
+        {
+          shell: true,
+          cwd: `${process.env.RASA_FILES_PATH}katoto-ml-${mode}`,
+        }
+      );
+
+      trainData.stdout.on("data", (data) => {
+        console.log(`stdout: ${data}`);
+        io.to(id).emit("displayData", {
+          data: data,
+        });
+      });
+      trainData.stderr.on("data", (data) => {
+        console.error(`stderr: ${data}`);
+        io.to(id).emit("displayData", {
+          data: data,
+        });
+      });
+      trainData.on("close", (code) => {
+        console.log(`child process exited with code ${code}`);
+        io.to(id).emit("displayData", {
+          data: code,
+        });
+      });
+    }
   });
 
-  // Fork workers.
-  for (let i = 0; i < numCPUs; i++) {
-    cluster.fork();
-  }
+  socket.on(
+    "scheduleRequest",
+    async ({
+      id,
+      token,
+      type,
+      start,
+      end,
+      gc,
+      mode,
+      creator,
+      description,
+      studentId,
+    }) => {
+      if (
+        jwt.decode(token)?.role === "student" ||
+        jwt.decode(token)?.role === "guidanceCounselor" ||
+        jwt.decode(token)?.role === "systemAdministrator"
+      ) {
+        const counselorAdmin = getGCnSA();
+        let idNo = "";
+        let userDetails = {};
 
-  cluster.on("exit", (worker, code, signal) => {
-    console.log(`worker ${worker.process.pid} died`);
-  });
-} else {
-  const app = express();
+        if (jwt.decode(token)?.role === "student") {
+          idNo = jwt.decode(token)?.idNo;
+          userDetails = await getUser(idNo);
+        }
 
-  const http = require("http");
-
-  const server = http.createServer(app);
-
-  const io = require("socket.io")(server, {
-    cors: {
-      origin: process.env.CLIENT_URI,
-      credentials: true,
-    },
-  });
-
-  // app.listen
-  server.listen(process.env.PORT, () => {
-    console.log("Server running");
-  });
-
-  //middlewares
-
-  app.use("/tmp", express.static(process.env.FILE_STORAGE_PATH));
-
-  app.use(cors({ origin: process.env.CLIENT_URI, credentials: true }));
-
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
-
-  app.use(cookieParser());
-
-  app.use((req, res, next) => {
-    console.log(req.method, req.path);
-    next();
-  });
-
-  //newly added
-  let onlineUsers = [];
-
-  const addNewUser = (email, role, idNo, socketId) => {
-    !onlineUsers.some((user) => user.email === email) &&
-      onlineUsers.push({ email, role, idNo, socketId });
-  };
-
-  const getOnlineUser = (email) => {
-    return onlineUsers.find((user) => user.email === email);
-  };
-
-  const getGCnSA = () => {
-    return onlineUsers.filter(
-      (user) =>
-        user.role === "systemAdministrator" || user.role === "guidanceCounselor"
-    );
-  };
-
-  const removeUser = (socketId) => {
-    onlineUsers = onlineUsers.filter((user) => user.socketId !== socketId);
-  };
-
-  io.adapter(createAdapter());
-
-  // setup connection with the primary process
-  setupWorker(io);
-
-  io.on("connection", (socket) => {
-    socket.on("newUser", (token) => {
-      const isPresent = onlineUsers.some((i) => i.socketId === socket.id);
-      if (!isPresent) {
-        addNewUser(
-          jwt.decode(token)?.email,
-          jwt.decode(token)?.role,
-          jwt.decode(token)?.idNo,
-          socket.id
-        );
-      }
-      console.log(onlineUsers);
-    });
-
-    socket.on("train", async ({ mode, id }) => {
-      if (mode === "cg") {
-        await setConcerns();
-      }
-
-      let port = mode === "cg" ? 8000 : 8001;
-
-      if (detectOSType() === "Windows") {
-        console.log("Windows");
-        const trainData = spawn(
-          `echo Training has started, Please wait and do not close the window. && conda activate katoto-ml-${mode} && rasa train --config config.yml && rasa run --enable-api --cors \"*\" -p ${port} --debug`,
-          {
-            shell: true,
-            cwd: `${process.env.RASA_FILES_PATH}katoto-ml-${mode}`,
-          }
-        );
-
-        trainData.stdout.on("data", (data) => {
-          console.log(`stdout: ${data}`);
-          io.to(id).emit("displayData", {
-            data: data,
-          });
-        });
-        trainData.stderr.on("data", (data) => {
-          console.error(`stderr: ${data}`);
-          io.to(id).emit("displayData", {
-            data: data,
-          });
-        });
-        trainData.on("close", (code) => {
-          console.log(`child process exited with code ${code}`);
-          io.to(id).emit("displayData", {
-            data: code,
-          });
-        });
-      } else if (detectOSType() === "Linux") {
-        console.log("Linux");
-        const trainData = spawn(
-          `echo Training has started, Please wait and do not close the window. && eval "$(conda shell.bash hook)" && conda activate katoto-env && rasa train --config config.yml && pm2 delete "${mode}" && pm2 start ../../katoto-ml/katoto-ml-${mode}/${mode}.sh --attach`,
-          {
-            shell: true,
-            cwd: `${process.env.RASA_FILES_PATH}katoto-ml-${mode}`,
-          }
-        );
-
-        trainData.stdout.on("data", (data) => {
-          console.log(`stdout: ${data}`);
-          io.to(id).emit("displayData", {
-            data: data,
-          });
-        });
-        trainData.stderr.on("data", (data) => {
-          console.error(`stderr: ${data}`);
-          io.to(id).emit("displayData", {
-            data: data,
-          });
-        });
-        trainData.on("close", (code) => {
-          console.log(`child process exited with code ${code}`);
-          io.to(id).emit("displayData", {
-            data: code,
-          });
-        });
-      }
-    });
-
-    socket.on(
-      "scheduleRequest",
-      async ({
-        id,
-        token,
-        type,
-        start,
-        end,
-        gc,
-        mode,
-        creator,
-        description,
-        studentId,
-      }) => {
         if (
-          jwt.decode(token)?.role === "student" ||
           jwt.decode(token)?.role === "guidanceCounselor" ||
           jwt.decode(token)?.role === "systemAdministrator"
         ) {
-          const counselorAdmin = getGCnSA();
-          let idNo = "";
-          let userDetails = {};
+          idNo = studentId;
+          userDetails = await getUser(idNo);
+        }
+        //adding SOS appointment to appointment
+        //adding to guidance counselors and system admin
+        //sending notifs to guidance counselors and system admin
+        let appointmentDetails = {};
+        if (type === "sos") {
+          appointmentDetails = await addSOSAppointment(
+            userDetails,
+            gc,
+            mode,
+            creator,
+            description
+          );
+        } else if (type === "standard") {
+          appointmentDetails = await addStandardAppointment(
+            userDetails,
+            start,
+            end,
+            gc,
+            mode,
+            creator,
+            description
+          );
+        }
 
-          if (jwt.decode(token)?.role === "student") {
-            idNo = jwt.decode(token)?.idNo;
-            userDetails = await getUser(idNo);
-          }
-
-          if (
-            jwt.decode(token)?.role === "guidanceCounselor" ||
-            jwt.decode(token)?.role === "systemAdministrator"
-          ) {
-            idNo = studentId;
-            userDetails = await getUser(idNo);
-          }
-          //adding SOS appointment to appointment
-          //adding to guidance counselors and system admin
-          //sending notifs to guidance counselors and system admin
-          let appointmentDetails = {};
-          if (type === "sos") {
-            appointmentDetails = await addSOSAppointment(
-              userDetails,
-              gc,
-              mode,
-              creator,
-              description
-            );
-          } else if (type === "standard") {
-            appointmentDetails = await addStandardAppointment(
-              userDetails,
-              start,
-              end,
-              gc,
-              mode,
-              creator,
-              description
-            );
-          }
-
-          if (typeof appointmentDetails === "string") {
-            if (creator === userDetails.idNo) {
-              onlineUsers.forEach((user) => {
-                if (user.idNo === creator) {
-                  io.to(user.socketId).emit("hasPending", {
-                    appointmentDetails,
-                  });
-                }
-              });
-            } else {
-              counselorAdmin.forEach((user) => {
-                if (user.idNo === creator)
-                  io.to(user.socketId).emit("hasPendingGC", {
-                    appointmentDetails,
-                  });
-              });
-            }
-
-            return;
-          }
-
-          await addNotificationGcSa(appointmentDetails);
-          if (counselorAdmin.length > 0) {
-            counselorAdmin.forEach((user) => {
-              io.to(user.socketId).emit("scheduleResponse", {
-                id: id,
-                type: type,
-              });
-            });
-          }
-
-          await addNotificationStudent(appointmentDetails, idNo);
+        if (typeof appointmentDetails === "string") {
           if (creator === userDetails.idNo) {
             onlineUsers.forEach((user) => {
-              if (idNo === user.idNo) {
-                io.to(user.socketId).emit("studentScheduleResponse", {
+              if (user.idNo === creator) {
+                io.to(user.socketId).emit("hasPending", {
                   appointmentDetails,
                 });
               }
             });
+          } else {
+            counselorAdmin.forEach((user) => {
+              if (user.idNo === creator)
+                io.to(user.socketId).emit("hasPendingGC", {
+                  appointmentDetails,
+                });
+            });
           }
-        }
-      }
-    );
 
-    socket.on(
-      "cancelAppointmentRequest",
-      async ({ appointmentDetails, token }) => {
-        if (
-          jwt.decode(token)?.role === "guidanceCounselor" ||
-          jwt.decode(token)?.role === "systemAdministrator"
-        ) {
-          let idNo = appointmentDetails.userDetails.idNo;
-          await addNotificationStudent(appointmentDetails, idNo);
-          onlineUsers.forEach((user) => {
-            if (idNo === user.idNo) {
-              console.log("adasdda");
-              io.to(user.socketId).emit("cancelAppointmentResponse", {
-                appointmentDetails,
-              });
-            }
+          return;
+        }
+
+        await addNotificationGcSa(appointmentDetails);
+        if (counselorAdmin.length > 0) {
+          counselorAdmin.forEach((user) => {
+            io.to(user.socketId).emit("scheduleResponse", {
+              id: id,
+              type: type,
+            });
           });
-        } else if (jwt.decode(token)?.role === "student") {
-          let idNo = appointmentDetails.gc.idNo;
-          await addNotificationGcSa(appointmentDetails, idNo);
+        }
+
+        await addNotificationStudent(appointmentDetails, idNo);
+        if (creator === userDetails.idNo) {
           onlineUsers.forEach((user) => {
             if (idNo === user.idNo) {
-              io.to(user.socketId).emit("cancelAppointmentResponse", {
+              io.to(user.socketId).emit("studentScheduleResponse", {
                 appointmentDetails,
               });
             }
           });
         }
       }
-    );
+    }
+  );
 
-    socket.on(
-      "approveAppointmentRequest",
-      async ({ appointmentDetails, token }) => {
-        if (
-          jwt.decode(token)?.role === "guidanceCounselor" ||
-          jwt.decode(token)?.role === "systemAdministrator"
-        ) {
-          let idNo = appointmentDetails.userDetails.idNo;
-          await addNotificationStudent(appointmentDetails, idNo);
-          onlineUsers.forEach((user) => {
-            if (idNo === user.idNo) {
-              io.to(user.socketId).emit("approveAppointmentResponse", {
-                appointmentDetails,
-              });
-            }
+  socket.on(
+    "cancelAppointmentRequest",
+    async ({ appointmentDetails, token }) => {
+      if (
+        jwt.decode(token)?.role === "guidanceCounselor" ||
+        jwt.decode(token)?.role === "systemAdministrator"
+      ) {
+        let idNo = appointmentDetails.userDetails.idNo;
+        await addNotificationStudent(appointmentDetails, idNo);
+        onlineUsers.forEach((user) => {
+          if (idNo === user.idNo) {
+            console.log("adasdda");
+            io.to(user.socketId).emit("cancelAppointmentResponse", {
+              appointmentDetails,
+            });
+          }
+        });
+      } else if (jwt.decode(token)?.role === "student") {
+        let idNo = appointmentDetails.gc.idNo;
+        await addNotificationGcSa(appointmentDetails, idNo);
+        onlineUsers.forEach((user) => {
+          if (idNo === user.idNo) {
+            io.to(user.socketId).emit("cancelAppointmentResponse", {
+              appointmentDetails,
+            });
+          }
+        });
+      }
+    }
+  );
+
+  socket.on(
+    "approveAppointmentRequest",
+    async ({ appointmentDetails, token }) => {
+      if (
+        jwt.decode(token)?.role === "guidanceCounselor" ||
+        jwt.decode(token)?.role === "systemAdministrator"
+      ) {
+        let idNo = appointmentDetails.userDetails.idNo;
+        await addNotificationStudent(appointmentDetails, idNo);
+        onlineUsers.forEach((user) => {
+          if (idNo === user.idNo) {
+            io.to(user.socketId).emit("approveAppointmentResponse", {
+              appointmentDetails,
+            });
+          }
+        });
+      }
+    }
+  );
+
+  socket.on(
+    "completeAppointmentRequest",
+    async ({ appointmentDetails, token }) => {
+      if (
+        jwt.decode(token)?.role === "guidanceCounselor" ||
+        jwt.decode(token)?.role === "systemAdministrator"
+      ) {
+        let idNo = appointmentDetails.userDetails.idNo;
+        await addNotificationStudent(appointmentDetails, idNo);
+        onlineUsers.forEach((user) => {
+          if (idNo === user.idNo) {
+            io.to(user.socketId).emit("completeAppointmentResponse", {
+              appointmentDetails,
+            });
+          }
+        });
+      }
+    }
+  );
+
+  socket.on("editAppointmentRequest", async ({ appointmentDetails, token }) => {
+    if (
+      jwt.decode(token)?.role === "guidanceCounselor" ||
+      jwt.decode(token)?.role === "systemAdministrator"
+    ) {
+      let idNo = appointmentDetails.old.userDetails.idNo;
+      appointmentDetails["type"] = "edited";
+      await addNotificationStudent(appointmentDetails, idNo);
+      onlineUsers.forEach((user) => {
+        if (idNo === user.idNo) {
+          io.to(user.socketId).emit("editAppointmentResponse", {
+            appointmentDetails,
           });
         }
-      }
-    );
-
-    socket.on(
-      "completeAppointmentRequest",
-      async ({ appointmentDetails, token }) => {
-        if (
-          jwt.decode(token)?.role === "guidanceCounselor" ||
-          jwt.decode(token)?.role === "systemAdministrator"
-        ) {
-          let idNo = appointmentDetails.userDetails.idNo;
-          await addNotificationStudent(appointmentDetails, idNo);
-          onlineUsers.forEach((user) => {
-            if (idNo === user.idNo) {
-              io.to(user.socketId).emit("completeAppointmentResponse", {
-                appointmentDetails,
-              });
-            }
+      });
+    } else if (jwt.decode(token)?.role === "student") {
+      let idNo = appointmentDetails.old.gc.idNo;
+      appointmentDetails["type"] = "edited";
+      await addNotificationGcSa(appointmentDetails, idNo);
+      onlineUsers.forEach((user) => {
+        if (idNo === user.idNo) {
+          io.to(user.socketId).emit("editAppointmentResponse", {
+            appointmentDetails,
           });
         }
-      }
-    );
-
-    socket.on(
-      "editAppointmentRequest",
-      async ({ appointmentDetails, token }) => {
-        if (
-          jwt.decode(token)?.role === "guidanceCounselor" ||
-          jwt.decode(token)?.role === "systemAdministrator"
-        ) {
-          let idNo = appointmentDetails.old.userDetails.idNo;
-          appointmentDetails["type"] = "edited";
-          await addNotificationStudent(appointmentDetails, idNo);
-          onlineUsers.forEach((user) => {
-            if (idNo === user.idNo) {
-              io.to(user.socketId).emit("editAppointmentResponse", {
-                appointmentDetails,
-              });
-            }
-          });
-        } else if (jwt.decode(token)?.role === "student") {
-          let idNo = appointmentDetails.old.gc.idNo;
-          appointmentDetails["type"] = "edited";
-          await addNotificationGcSa(appointmentDetails, idNo);
-          onlineUsers.forEach((user) => {
-            if (idNo === user.idNo) {
-              io.to(user.socketId).emit("editAppointmentResponse", {
-                appointmentDetails,
-              });
-            }
-          });
-        }
-      }
-    );
-
-    socket.on("logout", () => {
-      removeUser(socket.id);
-      console.log(onlineUsers);
-    });
+      });
+    }
   });
-  //
 
-  //routes
-  app.use("/api", accountRoutes);
-
-  app.use(verifyJwt);
-
-  app.use("/api/accounts", userAccountRoutes);
-  app.use("/api/campaigns", campaignRoutes);
-  app.use("/api/logs", logRoutes);
-  app.use("/api/reports", reportRoutes);
-  app.use("/api/train", trainRoutes);
-  app.use("/api/notifications", notificationRoutes);
-  app.use("/api/appointments", appointmentRoutes);
-  app.use("/api/feedbacks", feedbackRoutes);
-
-  cron.schedule("0 0 * * *", () => {
-    createDocument();
+  socket.on("logout", () => {
+    removeUser(socket.id);
+    console.log(onlineUsers);
   });
-}
+});
+//
+
+//routes
+
+app.use("/api", accountRoutes);
+
+app.use(verifyJwt);
+
+app.use("/api/accounts", userAccountRoutes);
+app.use("/api/campaigns", campaignRoutes);
+app.use("/api/logs", logRoutes);
+app.use("/api/reports", reportRoutes);
+app.use("/api/train", trainRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/appointments", appointmentRoutes);
+app.use("/api/feedbacks", feedbackRoutes);
+
+cron.schedule("0 0 * * *", () => {
+  createDocument();
+});
