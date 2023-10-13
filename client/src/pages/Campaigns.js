@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import axios from "../api/axios";
 import { Markup } from "interweave";
+import moment from "moment";
 
-import { GoKebabVertical } from "react-icons/go";
+import { VscEdit, VscRocket } from "react-icons/vsc";
 import { HiPlus } from "react-icons/hi";
 import { BsFillTrash3Fill } from "react-icons/bs";
 import TextEditor from "../components/TextEditor";
@@ -12,12 +13,13 @@ function Campaigns({ toast, auth }) {
   const [addCampaignInfo, setAddCampaignInfo] = useState("");
   const [effectivityDate, setEffectivityDate] = useState("");
   const [title, setTitle] = useState("");
-  const [campaignType, setCampaignType] = useState("");
+  const [campaignType, setCampaignType] = useState("announcement");
   const [imageHeader, setImageHeader] = useState("");
   const [search, setSearch] = useState("");
   const [description, setDescription] = useState("");
   const [id, setId] = useState(null);
 
+  const [isAllChecked, setIsAllChecked] = useState(false);
   const [isAdd, setIsAdd] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
@@ -35,6 +37,36 @@ function Campaigns({ toast, auth }) {
     }, 500);
   }, [reload]);
 
+  const convertDate = (date) => {
+    const formattedDate = new Date(date);
+
+    const convertedDateTime = formattedDate.toLocaleString("en-PH", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      timeZone: "Asia/Singapore",
+    });
+
+    const convertedDate = formattedDate.toLocaleString("en-PH", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "Asia/Singapore",
+    });
+
+    const convertedTime = formattedDate.toLocaleString("en-PH", {
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      timeZone: "Asia/Singapore",
+    });
+
+    return [convertedDateTime, convertedDate, convertedTime];
+  };
+
   const handleGetCampaigns = async () => {
     try {
       await axios
@@ -45,9 +77,22 @@ function Campaigns({ toast, auth }) {
           },
         })
         .then((res) => {
-          setCampaigns(res?.data?.campaigns);
+          const newCampaigns = res?.data?.campaigns.map((i) => {
+            if (i.isPublished) {
+              i["status"] = "published";
+            } else {
+              i["status"] = "draft";
+            }
+            i["createDate"] = convertDate(i["createDate"])[1];
+            i["effectivityDate"] = convertDate(i["effectivityDate"])[1];
+            return i;
+          });
+          setCampaigns(newCampaigns);
         });
-    } catch (err) {}
+    } catch (err) {
+      toast.error(err?.response?.data);
+      setCampaigns([]);
+    }
   };
 
   const handleAddCampaign = async (isPublishedParam) => {
@@ -104,14 +149,25 @@ function Campaigns({ toast, auth }) {
     }
   };
 
-  const handleOpenKebab = (id, openKebab) => {
+  const handleAllChecked = () => {
     setCampaigns(
-      campaigns.map((i, k) => {
-        return id === i.id
-          ? { ...i, openKebab: !openKebab }
-          : { ...i, openKebab: false };
+      campaigns.map((i) => {
+        if (!isAllChecked) {
+          setIsAllChecked(true);
+          return { ...i, isChecked: true };
+        } else {
+          setIsAllChecked(false);
+          return { ...i, isChecked: false };
+        }
       })
     );
+
+    if (!isAllChecked) {
+      const ids = campaigns.map((i) => i.id);
+      setDeleteCampaigns(ids);
+    } else {
+      setDeleteCampaigns([]);
+    }
   };
 
   const handleDeleteCampaigns = async () => {
@@ -130,7 +186,7 @@ function Campaigns({ toast, auth }) {
         .then((res) => {
           toast.success(res?.data?.message);
           setDeleteCampaigns([]);
-          // setIsAllChecked(false);
+          setIsAllChecked(false);
           setReload(!reload);
         })
         .catch((err) => {
@@ -164,6 +220,23 @@ function Campaigns({ toast, auth }) {
     } catch (err) {
       toast.error("Error");
     }
+  };
+
+  const filteredCampaigns = () => {
+    const newCampaigns = campaigns?.filter((i) => {
+      if (search?.toLowerCase().trim()) {
+        return (
+          i?.title.toLowerCase().includes(search.toLowerCase()) ||
+          i?.description.toLowerCase().includes(search.toLowerCase()) ||
+          i?.status.toLowerCase().includes(search.toLowerCase()) ||
+          i["createDate"].toLowerCase().includes(search.toLowerCase()) ||
+          i["effectivityDate"].toLowerCase().includes(search.toLowerCase())
+        );
+      } else {
+        return i;
+      }
+    });
+    return newCampaigns;
   };
 
   return (
@@ -387,6 +460,12 @@ function Campaigns({ toast, auth }) {
                         id="date"
                         className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
                         value={effectivityDate}
+                        min={moment(moment(new Date()).add(1, "days")).format(
+                          "YYYY-MM-DD"
+                        )}
+                        max={moment(moment(new Date()).add(1, "years")).format(
+                          "YYYY-MM-DD"
+                        )}
                         onChange={(e) => {
                           setEffectivityDate(e.target.value);
                         }}
@@ -488,6 +567,8 @@ function Campaigns({ toast, auth }) {
                           style={{
                             fontFamily: "FontAwesome",
                           }}
+                          checked={isAllChecked ? true : false}
+                          onChange={handleAllChecked}
                         />
                         <p className="mr-5 flex justify-start truncate text-ellipsis">
                           Campaign Information
@@ -507,256 +588,163 @@ function Campaigns({ toast, auth }) {
                   </thead>
                   <tbody className="flex flex-col max-h-[624px] overflow-y-auto">
                     <tr>
-                      {campaigns
-                        ?.filter((i) => {
-                          if (search?.toLowerCase().trim()) {
-                            return i?.title
-                              .toLowerCase()
-                              .includes(search.toLowerCase());
-                          } else {
-                            return i;
-                          }
-                        })
-                        ?.map((i, k) => {
-                          return (
-                            <td
-                              key={k}
-                              className={`flex font-medium mx-1 px-5 mb-1 py-3 text-sm ${
-                                k % 2 ? "bg-[--light-green] rounded-lg" : null
-                              }`}
-                            >
-                              <div className="flex gap-5 items-center w-1/3">
-                                <div className="w-5 h-5">
-                                  <input
-                                    id="checkbox-1"
-                                    className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
+                      {filteredCampaigns()?.length === 0 ? (
+                        <p className="font-bold flex justify-center items-center min-h-[624px]">
+                          No campaigns...
+                        </p>
+                      ) : null}
+                      {filteredCampaigns()?.map((i, k) => {
+                        return (
+                          <td
+                            key={k}
+                            className={`flex font-medium mx-1 px-5 mb-1 py-3 text-sm ${
+                              k % 2 ? "bg-[--light-green] rounded-lg" : null
+                            }`}
+                          >
+                            <div className="flex gap-5 items-center w-1/3">
+                              <div className="w-5 h-5">
+                                <input
+                                  id="checkbox-1"
+                                  className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
 checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
 float-left cursor-pointer appearance-none border border-solid border-2  border-[--dark-green] bg-[--light-green] 
 bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
 after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-['✔'] 
 checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100 mr-1"
-                                    type="checkbox"
-                                    onChange={() => {
-                                      handleChecked(k, i.isChecked, i?.id);
-                                    }}
-                                    checked={i.isChecked ? true : false}
-                                  />
+                                  type="checkbox"
+                                  onChange={() => {
+                                    handleChecked(k, i.isChecked, i?.id);
+                                  }}
+                                  checked={i.isChecked ? true : false}
+                                />
+                              </div>
+                              {i?.imageHeader ? (
+                                <img
+                                  src={i?.imageHeader}
+                                  alt=""
+                                  className="w-[60px] h-[60px] rounded-lg"
+                                />
+                              ) : (
+                                <div className="w-[60px] h-[60px] rounded-lg bg-[--dark-green] flex justify-center items-center text-3xl font-extrabold text-white">
+                                  {i?.title[0].toUpperCase()}
                                 </div>
-                                {i?.imageHeader ? (
-                                  <img
-                                    src={i?.imageHeader}
-                                    alt=""
-                                    className="w-[60px] h-[60px] rounded-lg"
-                                  />
+                              )}
+                              <div className="w-[320px] flex flex-col justify-between h-full py-1">
+                                <p className="text-ellipsis truncate font-bold">
+                                  {i?.title}
+                                </p>
+                                <p className="text-ellipsis truncate text-sm">
+                                  {i?.description}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="pl-12 flex gap-5 w-2/3 items-center ">
+                              <div className="w-1/5">
+                                {i?.isPublished ? (
+                                  <p className="flex gap-2 items-center">
+                                    <div className="w-[12px] h-[12px] bg-[--dark-green] rounded-full"></div>
+                                    Published
+                                  </p>
                                 ) : (
-                                  <div className="w-[60px] h-[60px] rounded-lg bg-[--dark-green] flex justify-center items-center text-3xl font-extrabold text-white">
-                                    {i?.title[0].toUpperCase()}
-                                  </div>
+                                  <p className="flex gap-2 items-center">
+                                    <div className="w-[12px] h-[12px] bg-[--red] rounded-full"></div>
+                                    Draft
+                                  </p>
                                 )}
-                                <div className="w-[320px] flex flex-col justify-between h-full py-1">
-                                  <p className="text-ellipsis truncate font-bold">
-                                    {i?.title}
+                              </div>
+                              <div className="w-2/5 text-sm flex flex-col justify-between h-full py-2">
+                                <p className=" text-sm">
+                                  Created:&nbsp;
+                                  {convertDate(i?.createDate)[1]}
+                                </p>
+                                <p className="font-bold text-sm">
+                                  Until:&nbsp;
+                                  {convertDate(i?.effectivityDate)[1]}
+                                </p>
+                              </div>
+                              <div className="w-2/5 flex flex-col justify-center gap-2">
+                                <div className="flex justify-between w-full text-sm">
+                                  <p>Remaining</p>
+                                  <p>
+                                    {moment(
+                                      convertDate(i?.effectivityDate)[1]
+                                    ).diff(convertDate(new Date())[1], "days")}
+                                    d
                                   </p>
-                                  <p className="text-ellipsis truncate text-sm">
-                                    {i?.description}
-                                  </p>
+                                </div>
+                                <div className="w-full">
+                                  <div className="rounded-lg h-2 bg-black/20">
+                                    {console.log(
+                                      moment(
+                                        convertDate(i?.effectivityDate)[1]
+                                      ).diff(new Date(), "minutes"),
+
+                                      moment(
+                                        convertDate(i?.effectivityDate)[1]
+                                      ).diff(
+                                        convertDate(i?.createDate)[1],
+                                        "minutes"
+                                      )
+                                    )}
+                                    <div
+                                      className="rounded-lg h-2"
+                                      style={{
+                                        background:
+                                          "linear-gradient(90deg, rgba(45,117,124,1) 0%, rgba(0,0,0,1) 100%)",
+                                        width: `${
+                                          (1 -
+                                            moment(
+                                              convertDate(i?.effectivityDate)[1]
+                                            ).diff(new Date(), "minutes") /
+                                              moment(
+                                                convertDate(
+                                                  i?.effectivityDate
+                                                )[1]
+                                              ).diff(
+                                                convertDate(i?.createDate)[1],
+                                                "minutes"
+                                              )) *
+                                          100
+                                        }%`,
+                                      }}
+                                    ></div>
+                                  </div>
                                 </div>
                               </div>
-                              <div className="pl-12 flex gap-5 w-2/3 items-center ">
-                                <div className="w-1/5">
-                                  {i?.isPublished ? (
-                                    <p className="flex gap-2 items-center">
-                                      <div className="w-[12px] h-[12px] bg-[--dark-green] rounded-full"></div>
-                                      Published
-                                    </p>
-                                  ) : (
-                                    <p className="flex gap-2 items-center">
-                                      <div className="w-[12px] h-[12px] bg-[--red] rounded-full"></div>
-                                      Draft
-                                    </p>
-                                  )}
-                                </div>
-                                <div className="w-2/5 text-sm flex flex-col justify-between h-full py-2">
-                                  <p className=" text-sm">
-                                    Created:&nbsp;
-                                    {new Date(
-                                      new Date(
-                                        i?.createDate?._seconds * 1000 +
-                                          i?.createDate?._nanoseconds / 1000000
-                                      )
-                                        .toLocaleDateString()
-                                        .split("/")[2],
-                                      new Date(
-                                        i?.createDate?._seconds * 1000 +
-                                          i?.createDate?._nanoseconds / 1000000
-                                      )
-                                        .toLocaleDateString()
-                                        .split("/")[0] - 1,
-                                      new Date(
-                                        i?.createDate?._seconds * 1000 +
-                                          i?.createDate?._nanoseconds / 1000000
-                                      )
-                                        .toLocaleDateString()
-                                        .split("/")[1]
-                                    ).toLocaleDateString("en-US", {
-                                      month: "long",
-                                      day: "numeric",
-                                      year: "numeric",
-                                    })}
-                                  </p>
-                                  <p className="font-bold text-sm">
-                                    Until:&nbsp;
-                                    {new Date(
-                                      new Date(i?.effectivityDate)
-                                        .toLocaleDateString()
-                                        .split("/")[2],
-                                      new Date(i?.effectivityDate)
-                                        .toLocaleDateString()
-                                        .split("/")[0] - 1,
-                                      new Date(i?.effectivityDate)
-                                        .toLocaleDateString()
-                                        .split("/")[1]
-                                    ).toLocaleDateString("en-US", {
-                                      month: "long",
-                                      day: "numeric",
-                                      year: "numeric",
-                                    })}
-                                  </p>
-                                </div>
-                                <div className="w-2/5 flex flex-col justify-center gap-2">
-                                  <div className="flex justify-between w-full text-sm">
-                                    <p>Remaining</p>
-                                    <p>
-                                      {Math.ceil(
-                                        (new Date(
-                                          i?.effectivityDate
-                                        ).getTime() -
-                                          new Date().getTime()) /
-                                          (1000 * 60 * 60 * 24)
-                                      ) < 0
-                                        ? 0
-                                        : Math.ceil(
-                                            (new Date(
-                                              i?.effectivityDate
-                                            ).getTime() -
-                                              new Date().getTime()) /
-                                              (1000 * 60 * 60 * 24)
-                                          )}
-                                      d
-                                    </p>
-                                  </div>
-                                  <div className="w-full">
-                                    <div className="rounded-lg h-2 bg-black/20">
-                                      <div
-                                        className="rounded-lg h-2"
-                                        style={{
-                                          background:
-                                            "linear-gradient(90deg, rgba(45,117,124,1) 0%, rgba(0,0,0,1) 100%)",
-                                          width: `${
-                                            (1 -
-                                              Math.ceil(
-                                                (new Date(
-                                                  i?.effectivityDate
-                                                ).getTime() -
-                                                  new Date().getTime()) /
-                                                  (1000 * 60 * 60 * 24)
-                                              ) /
-                                                Math.ceil(
-                                                  (new Date(
-                                                    i?.effectivityDate
-                                                  ).getTime() -
-                                                    new Date(
-                                                      new Date(
-                                                        i?.createDate
-                                                          ?._seconds *
-                                                          1000 +
-                                                          i?.createDate
-                                                            ?._nanoseconds /
-                                                            1000000
-                                                      ).toLocaleDateString()
-                                                    ).getTime()) /
-                                                    (1000 * 60 * 60 * 24)
-                                                )) *
-                                              100 <=
-                                            100
-                                              ? (1 -
-                                                  Math.ceil(
-                                                    (new Date(
-                                                      i?.effectivityDate
-                                                    ).getTime() -
-                                                      new Date().getTime()) /
-                                                      (1000 * 60 * 60 * 24)
-                                                  ) /
-                                                    Math.ceil(
-                                                      (new Date(
-                                                        i?.effectivityDate
-                                                      ).getTime() -
-                                                        new Date(
-                                                          new Date(
-                                                            i?.createDate
-                                                              ?._seconds *
-                                                              1000 +
-                                                              i?.createDate
-                                                                ?._nanoseconds /
-                                                                1000000
-                                                          ).toLocaleDateString()
-                                                        ).getTime()) /
-                                                        (1000 * 60 * 60 * 24)
-                                                    )) *
-                                                100
-                                              : 100
-                                          }%`,
-                                        }}
-                                      ></div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="w-1/5 flex justify-end relative">
+                              <div className="w-1/5 flex justify-start">
+                                {i.isPublished ? null : (
                                   <button
-                                    className="pointer"
+                                    className="w-1/2 flex items-center justify-center rounded-md text-sm font-semibold text-[--dark-green] 
+                                    hover:underline hover:font-bold"
                                     onClick={() => {
-                                      handleOpenKebab(i?.id, i?.openKebab);
+                                      handlePublish(i?.id);
                                     }}
                                   >
-                                    <GoKebabVertical size={24} />
+                                    <VscRocket size="24" />
                                   </button>
-                                  <div
-                                    className={`${
-                                      i?.openKebab ? "visible" : "hidden"
-                                    } w-max h-max bg-[--dark-green] rounded-lg absolute top-7 p-2 z-30`}
-                                  >
-                                    {i.isPublished ? null : (
-                                      <button
-                                        className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] 
-                                  hover:bg-[--light-brown] hover:text-[--dark-green]"
-                                        onClick={() => {
-                                          handlePublish(i?.id);
-                                        }}
-                                      >
-                                        Publish
-                                      </button>
-                                    )}
-                                    <button
-                                      className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] 
-                                  hover:bg-[--light-brown] hover:text-[--dark-green]"
-                                      onClick={() => {
-                                        setIsAdd(true);
-                                        setId(i?.id);
-                                        setTitle(i?.title);
-                                        setEffectivityDate(i?.effectivityDate);
-                                        setCampaignType(i?.campaignType);
-                                        setAddCampaignInfo(i?.campaignInfo);
-                                        setImageHeader(i?.imageHeader);
-                                      }}
-                                    >
-                                      Edit
-                                    </button>
-                                  </div>
-                                </div>
+                                )}
+                                <button
+                                  className="w-1/2 flex items-center justify-center rounded-md text-sm font-semibold text-[--dark-green] 
+                                   hover:underline hover:font-bold"
+                                  onClick={() => {
+                                    setIsAdd(true);
+                                    setId(i?.id);
+                                    setTitle(i?.title);
+                                    setEffectivityDate(i?.effectivityDate);
+                                    setCampaignType(i?.campaignType);
+                                    setAddCampaignInfo(i?.campaignInfo);
+                                    setImageHeader(i?.imageHeader);
+                                  }}
+                                >
+                                  <span>
+                                    <VscEdit size="24" />
+                                  </span>
+                                </button>
                               </div>
-                            </td>
-                          );
-                        })}
+                            </div>
+                          </td>
+                        );
+                      })}
                     </tr>
                   </tbody>
                 </table>

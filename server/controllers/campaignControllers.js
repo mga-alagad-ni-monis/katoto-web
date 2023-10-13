@@ -1,5 +1,6 @@
 const multer = require("multer");
 const uniqid = require("uniqid");
+const moment = require("moment");
 
 const db = require("../utils/firebase");
 
@@ -42,6 +43,26 @@ const addCampaign = (req, res) => {
   } = req.body;
 
   try {
+    // const isBefore = moment(effectivityDate).isBefore(
+    //   moment(moment(new Date()).add(1, "years"))
+    // );
+    // const isAfter = moment(effectivityDate).isAfter(moment(moment(new Date())));
+    if (
+      !title.trim() ||
+      !description.trim() ||
+      !campaignType ||
+      !effectivityDate
+      // (!isBefore && !isAfter)
+    ) {
+      // console.
+      // console.log(
+      //   moment(effectivityDate),
+      //   moment(moment(new Date())),
+      //   moment(effectivityDate).isAfter(moment(moment(new Date())))
+      // );
+      return res.status(404).send("Check the campaign information!");
+    }
+
     if (id) {
       db.collection("campaigns")
         .where("id", "==", id)
@@ -77,7 +98,7 @@ const addCampaign = (req, res) => {
             effectivityDate,
             campaignInfo,
             imageHeader,
-            createDate: new Date(),
+            createDate: new Date().toLocaleString(),
             id: uniqid.time(),
           })
           .then((querySnapshot) => {
@@ -99,7 +120,7 @@ const getCampaigns = (req, res) => {
       .get()
       .then((querySnapshot) => {
         if (querySnapshot.empty) {
-          return res.status(404).send("Error");
+          return res.status(404).send("No Campaigns!");
         }
         let campaigns = [];
         querySnapshot.forEach((i) => {
