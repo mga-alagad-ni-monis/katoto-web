@@ -111,7 +111,7 @@ const markNotification = async (req, res) => {
             notifications: newNotifications,
           });
         });
-        res.status(200);
+        res.status(200).send("Marked notification!");
       });
   } catch (err) {
     res.status(404).send("Error");

@@ -168,7 +168,7 @@ const sendConversation = async (req, res) => {
       });
     }
 
-    res.status(200);
+    res.status(200).send("Message sent!");
   } catch (err) {
     res.status(404).send("Error");
   }
