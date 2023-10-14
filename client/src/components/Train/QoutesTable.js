@@ -106,19 +106,22 @@ function QoutesTable({
   return (
     <div className="w-full mt-5">
       <div className="w-full justify-end flex justify-between">
-        <input
-          type="text"
-          placeholder="Search..."
-          className="py-2 px-5 bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-          }}
-        />
-        <div className="flex gap-5">
+        <div>
+          <p className="mb-3 font-bold text-xs">What are you looking for?</p>
+          <input
+            type="text"
+            placeholder="Search..."
+            className="py-2 px-5 bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+            }}
+          />
+        </div>
+        <div className="flex gap-5 items-end">
           {deleteQuotes.length ? (
             <button
-              className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+              className="h-fit bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
               onClick={() => {
                 if (window.confirm("Do you want to proceed with deletion?")) {
@@ -133,7 +136,7 @@ function QoutesTable({
             </button>
           ) : (
             <button
-              className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+              className="h-fit bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-[--red] transition-all duration-300 opacity-50"
               disabled
             >
@@ -143,7 +146,7 @@ function QoutesTable({
           )}
           {editQuotes.length === 1 ? (
             <button
-              className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+              className="h-fit bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
               onClick={() => {
                 setAuthor("");
@@ -163,7 +166,7 @@ function QoutesTable({
             </button>
           ) : (
             <button
-              className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+              className="h-fit bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-black transition-all duration-300 opacity-50"
               disabled
             >
@@ -172,7 +175,7 @@ function QoutesTable({
             </button>
           )}
           <button
-            className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+            className="h-fit bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
 border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
             onClick={() => {
               setAuthor("");

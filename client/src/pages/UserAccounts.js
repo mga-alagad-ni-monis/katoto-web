@@ -169,6 +169,36 @@ function UserAccounts({ toast, auth }) {
     );
   };
 
+  const convertDate = (date) => {
+    const formattedDate = new Date(date);
+
+    const convertedDateTime = formattedDate.toLocaleString("en-PH", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      timeZone: "Asia/Singapore",
+    });
+
+    const convertedDate = formattedDate.toLocaleString("en-PH", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "Asia/Singapore",
+    });
+
+    const convertedTime = formattedDate.toLocaleString("en-PH", {
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      timeZone: "Asia/Singapore",
+    });
+
+    return [convertedDateTime, convertedDate, convertedTime];
+  };
+
   const handleGetUsers = async () => {
     try {
       await axios
@@ -179,7 +209,11 @@ function UserAccounts({ toast, auth }) {
           },
         })
         .then((res) => {
-          setUsers(res?.data?.users);
+          const newUsers = res?.data?.users?.map((i) => {
+            i["birthday"] = convertDate(i["birthday"])[1];
+            return i;
+          });
+          setUsers(newUsers);
         })
         .catch((err) => {
           toast.error(err?.response?.data);
@@ -351,6 +385,29 @@ function UserAccounts({ toast, auth }) {
     }
   };
 
+  const filteredUsers = () => {
+    const newUsers = users?.filter((i) => {
+      if (search?.toLowerCase().trim()) {
+        return (
+          i?.idNo.toLowerCase().includes(search.toLowerCase()) ||
+          i?.name.toLowerCase().includes(search.toLowerCase()) ||
+          i?.credentials?.email.toLowerCase().includes(search.toLowerCase()) ||
+          i?.gender.toLowerCase().startsWith(search.toLowerCase()) ||
+          i?.department.toLowerCase().includes(search.toLowerCase()) ||
+          i?.yearSection.toLowerCase().includes(search.toLowerCase()) ||
+          i?.contactNo.toLowerCase().includes(search.toLowerCase()) ||
+          i?.birthday.toLowerCase().includes(search.toLowerCase()) ||
+          i?.credentials?.privilegeType
+            .toLowerCase()
+            .includes(search.toLowerCase())
+        );
+      } else {
+        return i;
+      }
+    });
+
+    return newUsers;
+  };
   return (
     <>
       {isLoading ? (
@@ -1114,31 +1171,28 @@ function UserAccounts({ toast, auth }) {
             <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">
               User Accounts
             </p>
-            <div className="flex justify-between w-full items-center mb-5">
-              <div className="flex gap-5">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="py-2 px-5 bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                  }}
-                />
-                <div className="hs-dropdown relative inline-flex gap-5">
-                  <button
-                    type="button"
-                    className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
-              border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-                    onClick={() => {
-                      setIsOpenSearchButton(!isOpenSearchButton);
+            <div className="flex justify-between w-full mb-5">
+              <div className="flex gap-5 items-end">
+                <div>
+                  <p className="mb-3 font-bold text-xs">
+                    What are you looking for?
+                  </p>
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    className="py-2 px-5 bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                    value={search}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
                     }}
-                  >
-                    {filterCategory}
-                    <FiChevronDown size={16} />
-                  </button>
+                  />
+                </div>
+                <div>
+                  {/* <p className="mb-3 font-bold text-xs">
+                    Spreadsheet template for bulk imports
+                  </p> */}
                   <button
-                    className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+                    className="h-fit bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                     onClick={() => {
                       window.open("/UserAccountTemplate.xlsx");
@@ -1147,32 +1201,9 @@ function UserAccounts({ toast, auth }) {
                     <RiFileExcel2Line size={16} />
                     Download Template
                   </button>
-
-                  <div
-                    className={`${
-                      isOpenSearchButton ? "visible" : "hidden"
-                    } absolute top-9 transition-all duration-100 w-72
-              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
-                  >
-                    {categories.map((i, k) => {
-                      return (
-                        <button
-                          key={k}
-                          className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                          onClick={() => {
-                            setFilterCategory(i);
-                            setIsOpenSearchButton(false);
-                            setSearch("");
-                          }}
-                        >
-                          {i}
-                        </button>
-                      );
-                    })}
-                  </div>
                 </div>
               </div>
-              <div className="flex gap-5">
+              <div className="flex gap-5 items-end">
                 {deleteUsers.length ? (
                   <button
                     className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
@@ -1338,168 +1369,144 @@ function UserAccounts({ toast, auth }) {
                 </tr>
               </thead>
               <tbody className="flex flex-col max-h-[624px] overflow-y-auto">
-                {users
-                  ?.filter((i) => {
-                    if (search?.toLowerCase().trim()) {
-                      if (filterCategory === "Email") {
-                        return i?.credentials?.email
-                          .toLowerCase()
-                          .includes(search.toLowerCase());
-                      } else if (filterCategory === "Department/Course") {
-                        return i?.department
-                          .toLowerCase()
-                          .includes(search.toLowerCase());
-                      } else if (filterCategory === "User Type") {
-                        return i?.credentials?.privilegeType === "student"
-                          ? "Student"
-                              .toLowerCase()
-                              .includes(search.toLowerCase())
-                          : i?.credentials?.privilegeType ===
-                            "systemAdministrator"
-                          ? "System Administrator"
-                              .toLowerCase()
-                              .includes(search.toLowerCase())
-                          : "Guidance Counselor"
-                              .toLowerCase()
-                              .includes(search.toLowerCase());
-                      }
-                    } else {
-                      return i;
-                    }
-                  })
-                  ?.map((i, k) => {
-                    return (
-                      <tr key={k}>
-                        <td
-                          className={`flex font-medium mx-1 px-5 mb-1 py-3 text-sm ${
-                            k % 2 ? "bg-[--light-green] rounded-lg" : null
-                          } ${
-                            i.isChecked
-                              ? "relative bg-[--light-green] rounded-lg"
-                              : null
-                          }`}
-                          onClick={() => {
-                            handleChecked(
-                              k,
-                              i?.credentials?.email,
-                              i.isChecked,
-                              i?.name,
-                              i?.credentials?.privilegeType,
-                              i?.idNo,
-                              i?.gender,
-                              i?.yearSection,
-                              i?.contactNo,
-                              i?.birthday,
-                              i?.department,
-                              i?.assignedCollege
-                            );
-                          }}
-                        >
-                          {i.isChecked ? (
-                            <div className="absolute w-[8px] h-full bg-[--dark-green] left-0 top-0 rounded-tl-lg rounded-bl-lg"></div>
-                          ) : null}
-                          <div className="flex gap-5 items-center ">
-                            <input
-                              id="checkbox-1"
-                              className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
+                {filteredUsers()?.length === 0 ? (
+                  <p className="font-bold flex justify-center items-center min-h-[624px]">
+                    No users...
+                  </p>
+                ) : null}
+                {filteredUsers()?.map((i, k) => {
+                  return (
+                    <tr key={k}>
+                      <td
+                        className={`flex font-medium mx-1 px-5 mb-1 py-3 text-sm ${
+                          k % 2 ? "bg-[--light-green] rounded-lg" : null
+                        } ${
+                          i.isChecked
+                            ? "relative bg-[--light-green] rounded-lg"
+                            : null
+                        }`}
+                        onClick={() => {
+                          handleChecked(
+                            k,
+                            i?.credentials?.email,
+                            i.isChecked,
+                            i?.name,
+                            i?.credentials?.privilegeType,
+                            i?.idNo,
+                            i?.gender,
+                            i?.yearSection,
+                            i?.contactNo,
+                            i?.birthday,
+                            i?.department,
+                            i?.assignedCollege
+                          );
+                        }}
+                      >
+                        {i.isChecked ? (
+                          <div className="absolute w-[8px] h-full bg-[--dark-green] left-0 top-0 rounded-tl-lg rounded-bl-lg"></div>
+                        ) : null}
+                        <div className="flex gap-5 items-center ">
+                          <input
+                            id="checkbox-1"
+                            className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
    checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
    float-left cursor-pointer appearance-none border border-solid border-2  border-[--dark-green] bg-[--light-green] 
    bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
    after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-['✔'] 
    checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100 mr-1"
-                              type="checkbox"
-                              style={{
-                                fontFamily: "FontAwesome",
-                              }}
-                              onChange={() => {
-                                handleChecked(
-                                  k,
-                                  i?.credentials?.email,
-                                  i.isChecked,
-                                  i?.name,
-                                  i?.credentials?.privilegeType,
-                                  i?.idNo,
-                                  i?.gender,
-                                  i?.yearSection,
-                                  i?.contactNo,
-                                  i?.birthday,
-                                  i?.department,
-                                  i?.assignedCollege
-                                );
-                              }}
-                              checked={i.isChecked ? true : false}
-                            />
-                            <p className="w-[80px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
-                              <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white">
-                                {i?.idNo}
-                              </div>
+                            type="checkbox"
+                            style={{
+                              fontFamily: "FontAwesome",
+                            }}
+                            onChange={() => {
+                              handleChecked(
+                                k,
+                                i?.credentials?.email,
+                                i.isChecked,
+                                i?.name,
+                                i?.credentials?.privilegeType,
+                                i?.idNo,
+                                i?.gender,
+                                i?.yearSection,
+                                i?.contactNo,
+                                i?.birthday,
+                                i?.department,
+                                i?.assignedCollege
+                              );
+                            }}
+                            checked={i.isChecked ? true : false}
+                          />
+                          <p className="w-[80px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
+                            <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white">
                               {i?.idNo}
-                            </p>
-                          </div>
-                          <p className="w-[180px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
-                            <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
-                              {i?.name}
                             </div>
+                            {i?.idNo}
+                          </p>
+                        </div>
+                        <p className="w-[180px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
+                          <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
                             {i?.name}
-                          </p>
-                          <p className="w-[230px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
-                            <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
-                              {i?.credentials?.email}
-                            </div>
+                          </div>
+                          {i?.name}
+                        </p>
+                        <p className="w-[230px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
+                          <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
                             {i?.credentials?.email}
-                          </p>
-                          <p className="w-[70px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
-                            <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
-                              {i?.gender}
-                            </div>
+                          </div>
+                          {i?.credentials?.email}
+                        </p>
+                        <p className="w-[70px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
+                          <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
                             {i?.gender}
-                          </p>
-                          <p className="w-[295px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
-                            <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
-                              {i?.department}
-                            </div>
+                          </div>
+                          {i?.gender}
+                        </p>
+                        <p className="w-[295px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
+                          <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
                             {i?.department}
-                          </p>
-                          <p className="w-[80px] ml-3 flex justify-start truncate text-ellipsis tooltip-div">
-                            {i?.yearSection ? (
-                              <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
-                                {i?.yearSection}
-                              </div>
-                            ) : null}
-                            {i?.yearSection}
-                          </p>
-                          <p className="w-[110px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
+                          </div>
+                          {i?.department}
+                        </p>
+                        <p className="w-[80px] ml-3 flex justify-start truncate text-ellipsis tooltip-div">
+                          {i?.yearSection ? (
                             <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
-                              {i?.contactNo}
+                              {i?.yearSection}
                             </div>
+                          ) : null}
+                          {i?.yearSection}
+                        </p>
+                        <p className="w-[110px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
+                          <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
                             {i?.contactNo}
-                          </p>
-                          <p className="w-[85px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
-                            <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
-                              {i?.birthday}
-                            </div>
+                          </div>
+                          {i?.contactNo}
+                        </p>
+                        <p className="w-[85px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
+                          <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
                             {i?.birthday}
-                          </p>
-                          <p className="w-[100px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
-                            <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
-                              {i?.credentials?.privilegeType === "student"
-                                ? "Student"
-                                : i?.credentials?.privilegeType ===
-                                  "systemAdministrator"
-                                ? "System Administrator"
-                                : "Guidance Counselor"}
-                            </div>
+                          </div>
+                          {i?.birthday}
+                        </p>
+                        <p className="w-[100px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
+                          <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
                             {i?.credentials?.privilegeType === "student"
                               ? "Student"
                               : i?.credentials?.privilegeType ===
                                 "systemAdministrator"
                               ? "System Administrator"
                               : "Guidance Counselor"}
-                          </p>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                          </div>
+                          {i?.credentials?.privilegeType === "student"
+                            ? "Student"
+                            : i?.credentials?.privilegeType ===
+                              "systemAdministrator"
+                            ? "System Administrator"
+                            : "Guidance Counselor"}
+                        </p>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

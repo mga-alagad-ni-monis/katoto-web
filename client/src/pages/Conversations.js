@@ -150,15 +150,20 @@ function Conversations({ auth, toast }) {
               <div className="w-2/5">
                 <div className="flex justify-between w-full items-center mb-5">
                   <div className="flex gap-5">
-                    <input
-                      type="text"
-                      placeholder="Search email..."
-                      className="py-2 px-5 bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                      value={search}
-                      onChange={(e) => {
-                        setSearch(e.target.value);
-                      }}
-                    />
+                    <div>
+                      <p className="mb-3 font-bold text-xs">
+                        What are you looking for?
+                      </p>
+                      <input
+                        type="text"
+                        placeholder="Search..."
+                        className="py-2 px-5 bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                        value={search}
+                        onChange={(e) => {
+                          setSearch(e.target.value);
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
                 <table
