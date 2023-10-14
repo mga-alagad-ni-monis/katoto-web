@@ -43,23 +43,19 @@ const addCampaign = (req, res) => {
   } = req.body;
 
   try {
-    // const isBefore = moment(effectivityDate).isBefore(
-    //   moment(moment(new Date()).add(1, "years"))
-    // );
-    // const isAfter = moment(effectivityDate).isAfter(moment(moment(new Date())));
+    const isBefore = moment(effectivityDate).isBefore(
+      moment(moment(new Date()).add(1, "years"))
+    );
+    const isAfter = moment(effectivityDate).isAfter(moment(new Date()));
+
     if (
       !title.trim() ||
       !description.trim() ||
       !campaignType ||
-      !effectivityDate
-      // (!isBefore && !isAfter)
+      !effectivityDate ||
+      !isBefore ||
+      !isAfter
     ) {
-      // console.
-      // console.log(
-      //   moment(effectivityDate),
-      //   moment(moment(new Date())),
-      //   moment(effectivityDate).isAfter(moment(moment(new Date())))
-      // );
       return res.status(404).send("Check the campaign information!");
     }
 

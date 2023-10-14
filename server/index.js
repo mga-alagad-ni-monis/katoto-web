@@ -253,24 +253,25 @@ io.on("connection", (socket) => {
 
         await addNotificationGcSa(appointmentDetails);
         if (counselorAdmin.length > 0) {
-          counselorAdmin.forEach((user) => {
+          for (const user of counselorAdmin) {
             io.to(user.socketId).emit("scheduleResponse", {
               id: id,
               type: type,
             });
-          });
+          }
         }
 
         await addNotificationStudent(appointmentDetails, idNo);
         if (creator === userDetails.idNo) {
-          onlineUsers.forEach((user) => {
+          for (const user of onlineUsers) {
             if (idNo === user.idNo) {
               io.to(user.socketId).emit("studentScheduleResponse", {
                 appointmentDetails,
               });
             }
-          });
+          }
         }
+        console.log("appointment added!");
       }
     }
   );
@@ -286,7 +287,7 @@ io.on("connection", (socket) => {
         await addNotificationStudent(appointmentDetails, idNo);
         onlineUsers.forEach((user) => {
           if (idNo === user.idNo) {
-            console.log("adasdda");
+          
             io.to(user.socketId).emit("cancelAppointmentResponse", {
               appointmentDetails,
             });

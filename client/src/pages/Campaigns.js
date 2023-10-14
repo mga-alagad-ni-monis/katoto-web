@@ -673,43 +673,50 @@ checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:af
                                   <p>
                                     {moment(
                                       convertDate(i?.effectivityDate)[1]
-                                    ).diff(convertDate(new Date())[1], "days")}
+                                    ).diff(convertDate(new Date())[1], "days") <
+                                    0
+                                      ? 0
+                                      : moment(
+                                          convertDate(i?.effectivityDate)[1]
+                                        ).diff(
+                                          convertDate(new Date())[1],
+                                          "days"
+                                        )}
                                     d
                                   </p>
                                 </div>
                                 <div className="w-full">
                                   <div className="rounded-lg h-2 bg-black/20">
-                                    {console.log(
-                                      moment(
-                                        convertDate(i?.effectivityDate)[1]
-                                      ).diff(new Date(), "minutes"),
-
-                                      moment(
-                                        convertDate(i?.effectivityDate)[1]
-                                      ).diff(
-                                        convertDate(i?.createDate)[1],
-                                        "minutes"
-                                      )
-                                    )}
                                     <div
                                       className="rounded-lg h-2"
                                       style={{
                                         background:
                                           "linear-gradient(90deg, rgba(45,117,124,1) 0%, rgba(0,0,0,1) 100%)",
                                         width: `${
-                                          (1 -
-                                            moment(
-                                              convertDate(i?.effectivityDate)[1]
-                                            ).diff(new Date(), "minutes") /
-                                              moment(
-                                                convertDate(
-                                                  i?.effectivityDate
-                                                )[1]
-                                              ).diff(
-                                                convertDate(i?.createDate)[1],
-                                                "minutes"
-                                              )) *
-                                          100
+                                          moment(
+                                            convertDate(i?.effectivityDate)[1]
+                                          ).diff(
+                                            convertDate(new Date())[1],
+                                            "days"
+                                          ) < 0
+                                            ? 100
+                                            : (1 -
+                                                moment(
+                                                  convertDate(
+                                                    i?.effectivityDate
+                                                  )[1]
+                                                ).diff(new Date(), "minutes") /
+                                                  moment(
+                                                    convertDate(
+                                                      i?.effectivityDate
+                                                    )[1]
+                                                  ).diff(
+                                                    convertDate(
+                                                      i?.createDate
+                                                    )[1],
+                                                    "minutes"
+                                                  )) *
+                                              100
                                         }%`,
                                       }}
                                     ></div>

@@ -326,7 +326,6 @@ const cancelAppointment = async (req, res) => {
           .json({ message: "Appointment cancelled successfully!" });
       });
   } catch (err) {
-    console.log(err);
     res.status(404).send("Error");
   }
 };
@@ -422,7 +421,6 @@ const editAppointment = async (req, res) => {
         });
       });
   } catch (err) {
-    console.log(err);
     res.status(404).send("Error");
   }
 };
@@ -487,14 +485,13 @@ const approveAppointment = async (req, res) => {
         });
       });
   } catch (err) {
-    console.log(err);
     res.status(404).send("Error");
   }
 };
 
 const completeAppointment = async (req, res) => {
   const { id, type } = req.body;
-  console.log(type);
+
   try {
     await db
       .collection("reports")
@@ -515,7 +512,7 @@ const completeAppointment = async (req, res) => {
               if (j.id === id) {
                 docInfo["name"] = i.id;
                 docInfo["appointments"] = i.data().reports.sosAppointments;
-                console.log(i.data().reports.sosAppointments);
+
                 return;
               }
             });
@@ -592,7 +589,6 @@ const completeAppointment = async (req, res) => {
         });
       });
   } catch (err) {
-    console.log(err);
     res.status(404).send("Error");
   }
 };
@@ -699,7 +695,6 @@ const deleteAppointment = async (req, res) => {
         res.status(200).json({ message: "Appointment deleted successfully!" });
       });
   } catch (err) {
-    console.log(err);
     res.status(404).send("Error");
   }
 };
@@ -802,7 +797,6 @@ const saveNotes = async (req, res) => {
         });
       });
   } catch (err) {
-    console.log(err);
     res.status(404).send("Error");
   }
 };
