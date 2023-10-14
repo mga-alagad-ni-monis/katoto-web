@@ -304,10 +304,10 @@ function NavBar({ auth, logout, socket, toast }) {
         .then((res) => {
           toast.success(res?.data?.message);
           editAppointmentRealTime(res?.data?.appointmentOldNew);
-          // setTimeout(() => {
-          //   getAppointments();
-          //   getBookedAppointments();
-          // }, 200);
+          setTimeout(() => {
+            getMyAppointment();
+            getBookedAppointments();
+          }, 200);
         })
         .catch((err) => {
           toast.error(err?.response?.data);
@@ -802,6 +802,7 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
         animate={isOpenProfile ? "show" : "hide"}
         initial={{ opacity: 0, y: 0, scale: 0, transformOrigin: "top right" }}
       >
+        {console.log(bookedAppointments)}
         <div className="h-1/6 p-1 w-[250px]">
           <Link
             to={"/profile"}

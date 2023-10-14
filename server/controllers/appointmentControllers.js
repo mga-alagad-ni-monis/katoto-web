@@ -469,8 +469,10 @@ const approveAppointment = async (req, res) => {
             };
             docInfo["appointment"] = newAppointment;
             return newAppointment;
+          } else {
+            j["status"] = "cancelled";
+            return j;
           }
-          return j;
         });
 
         const doc = db.collection("reports").doc(docInfo.name);

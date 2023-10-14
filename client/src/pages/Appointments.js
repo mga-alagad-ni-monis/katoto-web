@@ -455,6 +455,7 @@ function Appointments({ socket, toast, auth }) {
 
   const handleSaveNotes = async () => {
     try {
+      let notes = notesRef.current.value;
       await axios
         .post(
           "/api/appointments/save-notes",
@@ -472,12 +473,14 @@ function Appointments({ socket, toast, auth }) {
         )
         .then((res) => {
           toast.success(res?.data?.message);
+          let newDetails = appointmentDetails;
+          newDetails["data"]["notes"] = notes;
+          setAppointmentDetails(newDetails);
           setTimeout(() => {
             getAppointments();
           }, 200);
         });
     } catch (err) {
-      console.log(err);
       toast.error("Error");
     }
   };
