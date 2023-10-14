@@ -250,16 +250,16 @@ function NavBar({ auth, logout, socket, toast }) {
           }
         )
         .then((res) => {
-          let newAppointment = {};
-          newAppointment[`${type === "standard" ? "sos" : "standard"}`] =
-            yourAppointment[`${type === "standard" ? "sos" : "standard"}`];
-          setYourAppointment(newAppointment);
-          toast.success(res?.data?.message);
           setTimeout(() => {
             let appointment = yourAppointment[`${type}`];
             appointment["status"] = "cancelled";
             cancelRealTime(appointment);
           }, 200);
+
+          let newAppointment = yourAppointment;
+          delete newAppointment[`${type}`];
+          setYourAppointment(newAppointment);
+          toast.success(res?.data?.message);
         })
         .catch((err) => {
           toast.error(err?.response?.data);
@@ -337,7 +337,7 @@ function NavBar({ auth, logout, socket, toast }) {
           <nav
             className={`flex ${
               location.pathname === "/login"
-                ? "bg-transparent ml-[20rem]"
+                ? "bg-transparent"
                 : "bg-[--light-brown]"
             } justify-start py-4 items-center container mx-auto 2xl:px-[2rem] w-full gap-28`}
           >
@@ -485,6 +485,7 @@ function NavBar({ auth, logout, socket, toast }) {
           <motion.p>
             {isEditAppointment ? "Edit Appointment" : "Your Appointment"}{" "}
           </motion.p>
+          {console.log(yourAppointment)}
         </motion.div>
 
         {isEditAppointment ? (

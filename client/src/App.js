@@ -68,26 +68,34 @@ function App() {
         {/* <Route element={<NavBar />}> */}
         <Route element={<NavBar socket={socket} />}>
           <Route path="/" element={<Home />}></Route>
-          <Route
-            path="/login"
-            element={
-              <Login toast={toast} loading={loading} setLoading={setLoading} />
-            }
-          ></Route>
+          <Route element={<PersistLogin />}>
+            <Route
+              path="/login"
+              element={
+                <Login
+                  toast={toast}
+                  loading={loading}
+                  setLoading={setLoading}
+                  auth={auth}
+                />
+              }
+            ></Route>
+          </Route>
+          <Route element={<NavBar socket={socket} />}>
+            <Route
+              path="/forgot/:resetToken"
+              element={
+                <ForgotPassword
+                  auth={auth}
+                  toast={toast}
+                  loading={loading}
+                  setLoading={setLoading}
+                />
+              }
+            ></Route>
+          </Route>
         </Route>
-        <Route element={<NavBar socket={socket} />}>
-          <Route
-            path="/forgot/:resetToken"
-            element={
-              <ForgotPassword
-                auth={auth}
-                toast={toast}
-                loading={loading}
-                setLoading={setLoading}
-              />
-            }
-          ></Route>
-        </Route>
+
         {/* </Route> */}
         {/* <Route path="/loading" element={<Loading />}></Route> */}
         <Route element={<PersistLogin />}>

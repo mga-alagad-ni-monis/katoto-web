@@ -1,12 +1,12 @@
 import axios from "../api/axios";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import useAuth from "../hooks/useAuth";
 
 import plvImage from "../assets/plv.png";
 
-function Login({ toast, loading, setLoading }) {
+function Login({ toast, loading, setLoading, auth }) {
   const { setAuth } = useAuth();
 
   const navigate = useNavigate();
@@ -17,6 +17,13 @@ function Login({ toast, loading, setLoading }) {
   const [forgotMessage, setForgotMessage] = useState("");
 
   const [isForgotPw, setIsForgotPw] = useState(false);
+
+  useEffect(() => {
+    console.log(auth);
+    if (auth?.accessToken) {
+      navigate("/chat");
+    }
+  }, []);
 
   const login = async (e) => {
     e.preventDefault();

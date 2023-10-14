@@ -83,16 +83,19 @@ function Chatbot({ toast, auth, socket }) {
   useEffect(() => {
     if (socket) {
       socket.on("studentScheduleResponse", (details) => {
-        getBookedAppointments();
-        setSosNo(0);
-        setPopUpSOS(false);
-        setIsOpenStandardAppoint(false);
-        setDescRefLen(0);
-        if (details.appointmentDetails.type === "sos") {
-          setSosDetails(details);
-        } else if (details.appointmentDetails.type === "standard") {
-          setStandardDetails(details);
-        }
+        setTimeout(async () => {
+          await getBookedAppointments();
+          setSosNo(0);
+          setPopUpSOS(false);
+          setIsOpenStandardAppoint(false);
+          setDescRefLen(0);
+          console.log("asdasda");
+          if (details.appointmentDetails.type === "sos") {
+            setSosDetails(details);
+          } else if (details.appointmentDetails.type === "standard") {
+            setStandardDetails(details);
+          }
+        }, 200);
       });
 
       socket.on("hasPending", (message) => {
@@ -234,8 +237,11 @@ function Chatbot({ toast, auth, socket }) {
 
   const handleSubmitMessage = async (sender, inputMessage) => {
     try {
-      let msg = friendlyMsgRef.current.value;
-      friendlyMsgRef.current.value = "";
+      let msg = "";
+      if (!isGuided) {
+        msg = friendlyMsgRef?.current?.value;
+        friendlyMsgRef.current.value = "";
+      }
       setGuidedButtons([]);
       setInputFriendly("");
       setIsTyping(true);
@@ -363,6 +369,7 @@ function Chatbot({ toast, auth, socket }) {
           toast.error("Error");
         });
     } catch (err) {
+      console.log(err);
       toast.error("Error");
     }
   };
