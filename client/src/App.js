@@ -67,6 +67,7 @@ function App() {
         {/* login module*/}
         {/* <Route element={<NavBar />}> */}
         <Route element={<NavBar socket={socket} />}>
+          <Route path="/" element={<Home />}></Route>
           <Route
             path="/login"
             element={

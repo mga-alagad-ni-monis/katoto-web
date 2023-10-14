@@ -329,9 +329,9 @@ function NavBar({ auth, logout, socket, toast }) {
       {location.pathname === "/login" || "/chat" ? (
         <div
           className={`fixed w-full z-40 ${
-            location.pathname === "/login"
-              ? "bg-[--light-brown] shadow-md"
-              : "bg-[--light-brown] shadow-md"
+            location.pathname === "/"
+              ? "bg-[--light-brown] shadow"
+              : "bg-[--light-brown] shadow"
           } `}
         >
           <nav
@@ -339,16 +339,16 @@ function NavBar({ auth, logout, socket, toast }) {
               location.pathname === "/login"
                 ? "bg-transparent ml-[20rem]"
                 : "bg-[--light-brown]"
-            } justify-start py-5 items-center container mx-auto 2xl:px-[2rem] w-full gap-28`}
+            } justify-start py-4 items-center container mx-auto 2xl:px-[2rem] w-full gap-28`}
           >
             <Link
               to={"/"}
-              className="text-4xl font-extrabold z-50 flex gap-7 items-center"
+              className="text-3xl font-extrabold z-50 flex gap-5 items-center"
             >
               <img
                 src={logo}
                 alt="logo"
-                className="h-[50px] z-20 bg-[--light-green] rounded-full"
+                className="h-[40px] z-20 bg-[--light-green] rounded-full"
               />
               <span>Katoto</span>
             </Link>
@@ -663,10 +663,16 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                           className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
           border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
                           onClick={() => {
-                            handleCancelAppointment(
-                              yourAppointment?.standard?.id,
-                              yourAppointment?.standard?.type
-                            );
+                            if (
+                              window.confirm(
+                                "Do you want to proceed cancel your appointment?"
+                              )
+                            ) {
+                              handleCancelAppointment(
+                                yourAppointment?.standard?.id,
+                                yourAppointment?.standard?.type
+                              );
+                            }
                           }}
                         >
                           Cancel
@@ -730,10 +736,16 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                           className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
           border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
                           onClick={() => {
-                            handleCancelAppointment(
-                              yourAppointment?.sos?.id,
-                              yourAppointment?.sos?.type
-                            );
+                            if (
+                              window.confirm(
+                                "Do you want to proceed cancel your appointment?"
+                              )
+                            ) {
+                              handleCancelAppointment(
+                                yourAppointment?.sos?.id,
+                                yourAppointment?.sos?.type
+                              );
+                            }
                           }}
                         >
                           Cancel

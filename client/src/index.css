@@ -14,7 +14,7 @@
 
 * {
   font-family: inter;
-  user-select: none;
+  /* user-select: none; */
 }
 
 *::-webkit-scrollbar,
@@ -47,6 +47,10 @@
   border-radius: 50%;
   border: #000 1px solid;
   animation: eyeMove 8s infinite, blink 8s infinite;
+}
+
+.text-shadow {
+  text-shadow: 0 3px 8px rgba(77, 243, 255, 0.2);
 }
 
 @keyframes eyeMove {
