@@ -5,3 +5,4 @@ build/
 dist/
 server/credentials.json
 server/tmp
+server/backups

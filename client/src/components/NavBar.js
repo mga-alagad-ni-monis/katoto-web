@@ -250,16 +250,18 @@ function NavBar({ auth, logout, socket, toast }) {
           }
         )
         .then((res) => {
+          let appointment = yourAppointment[`${type}`];
+
+          let newAppointment = { ...yourAppointment };
+          delete newAppointment[type];
+          console.log(newAppointment);
+          setYourAppointment(newAppointment);
+
           setTimeout(() => {
-            let appointment = yourAppointment[`${type}`];
             appointment["status"] = "cancelled";
             cancelRealTime(appointment);
+            toast.success(res?.data?.message);
           }, 200);
-
-          let newAppointment = yourAppointment;
-          delete newAppointment[`${type}`];
-          setYourAppointment(newAppointment);
-          toast.success(res?.data?.message);
         })
         .catch((err) => {
           toast.error(err?.response?.data);
@@ -485,7 +487,6 @@ function NavBar({ auth, logout, socket, toast }) {
           <motion.p>
             {isEditAppointment ? "Edit Appointment" : "Your Appointment"}{" "}
           </motion.p>
-          {console.log(yourAppointment)}
         </motion.div>
 
         {isEditAppointment ? (
