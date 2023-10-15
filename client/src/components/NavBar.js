@@ -329,130 +329,135 @@ function NavBar({ auth, logout, socket, toast }) {
   return (
     <>
       {location.pathname === "/login" || "/chat" ? (
-        <div
-          className={`fixed w-full z-40 ${
-            location.pathname === "/"
-              ? "bg-[--light-brown] shadow"
-              : "bg-[--light-brown] shadow"
-          } `}
-        >
-          <nav
-            className={`flex ${
-              location.pathname === "/login"
-                ? "bg-transparent"
-                : "bg-[--light-brown]"
-            } justify-start py-4 items-center container mx-auto 2xl:px-[2rem] w-full gap-28`}
+        <>
+          <div
+            className={`fixed w-full z-40 ${
+              location.pathname === "/"
+                ? "bg-[--light-brown] shadow"
+                : "bg-[--light-brown] shadow"
+            } `}
           >
-            <Link
-              to={"/"}
-              className="text-3xl font-extrabold z-50 flex gap-5 items-center"
+            <nav
+              className={`flex ${
+                location.pathname === "/login"
+                  ? "bg-transparent"
+                  : "bg-[--light-brown]"
+              } justify-start py-4 items-center container mx-auto 2xl:px-[2rem] w-full gap-28`}
             >
-              <img
-                src={logo}
-                alt="logo"
-                className="h-[40px] z-20 bg-[--light-green] rounded-full"
-              />
-              <span>Katoto</span>
-            </Link>
-            <div className="flex justify-between items-center z-50 w-full">
-              <li className="flex gap-10 font-medium">
-                <ul>
-                  <Link
-                    to={"/chat"}
-                    className={`hover:text-[--dark-green] ${
-                      location.pathname === "/chat" ? "font-extrabold" : null
-                    }`}
-                  >
-                    Chatbot
-                  </Link>
-                </ul>
-                <ul>
-                  <Link
-                    to={"/view-campaigns"}
-                    className={`hover:text-[--dark-green] ${
-                      location.pathname === "/view-campaigns"
-                        ? "font-extrabold"
-                        : null
-                    }`}
-                  >
-                    Campaigns
-                  </Link>
-                </ul>
-              </li>
-              {auth ? (
-                <div className="flex gap-5">
-                  <button
-                    className={`${
-                      isOpenAppointments
-                        ? "bg-[--light-green] text-[--dark-green]"
-                        : "bg-black/20 text-black"
-                    } rounded-lg font-semibold text-sm py-2.5 px-3
+              <Link
+                to={"/"}
+                className="text-3xl font-extrabold z-50 flex gap-5 items-center"
+              >
+                <img
+                  src={logo}
+                  alt="logo"
+                  className="h-[40px] z-20 bg-[--light-green] rounded-full"
+                />
+                <span>Katoto</span>
+              </Link>
+              <div className="flex justify-between items-center z-50 w-full">
+                <li className="flex gap-10 font-medium">
+                  <ul>
+                    <Link
+                      to={"/chat"}
+                      className={`hover:text-[--dark-green] ${
+                        location.pathname === "/chat" ? "font-extrabold" : null
+                      }`}
+                    >
+                      Chatbot
+                    </Link>
+                  </ul>
+                  <ul>
+                    <Link
+                      to={"/view-campaigns"}
+                      className={`hover:text-[--dark-green] ${
+                        location.pathname === "/view-campaigns"
+                          ? "font-extrabold"
+                          : null
+                      }`}
+                    >
+                      Campaigns
+                    </Link>
+                  </ul>
+                </li>
+                {auth ? (
+                  <div className="flex gap-5">
+                    <button
+                      className={`${
+                        isOpenAppointments
+                          ? "bg-[--light-green] text-[--dark-green]"
+                          : "bg-black/20 text-black"
+                      } rounded-lg font-semibold text-sm py-2.5 px-3
                     hover:bg-[--light-green] hover:text-[--dark-green] transition-all duration-300 relative`}
-                    onClick={() => {
-                      setIsOpenAppointments(!isOpenAppointments);
-                      setIsOpenNotifications(false);
-                      setIsOpenProfile(false);
-                    }}
-                  >
-                    <BsFillCalendar2WeekFill size={20} />
-                    {Object.keys(yourAppointment).length !== 0 ? (
-                      <span
-                        className="absolute min-w-[50%] min-h-[50%] p-1 bg-[--dark-green] rounded-full -top-2 -right-2 
+                      onClick={() => {
+                        setIsOpenAppointments(!isOpenAppointments);
+                        setIsOpenNotifications(false);
+                        setIsOpenProfile(false);
+                      }}
+                    >
+                      <BsFillCalendar2WeekFill size={20} />
+                      {Object.keys(yourAppointment).length !== 0 ? (
+                        <span
+                          className="absolute min-w-[50%] min-h-[50%] p-1 bg-[--dark-green] rounded-full -top-2 -right-2 
                     text-xs text-center flex justify-center items-center text-white"
-                      >
-                        {Object.keys(yourAppointment).length}
-                      </span>
-                    ) : null}
-                  </button>
-                  <button
-                    className={`${
-                      isOpenNotifications
-                        ? "bg-[--light-green] text-[--dark-green]"
-                        : "bg-black/20 text-black"
-                    } rounded-lg font-semibold text-sm py-2.5 px-3
+                        >
+                          {Object.keys(yourAppointment).length}
+                        </span>
+                      ) : null}
+                    </button>
+                    <button
+                      className={`${
+                        isOpenNotifications
+                          ? "bg-[--light-green] text-[--dark-green]"
+                          : "bg-black/20 text-black"
+                      } rounded-lg font-semibold text-sm py-2.5 px-3
                     hover:bg-[--light-green] hover:text-[--dark-green] transition-all duration-300 relative`}
-                    onClick={() => {
-                      setIsOpenAppointments(false);
-                      setIsOpenNotifications(!isOpenNotifications);
-                      setIsOpenProfile(false);
-                    }}
-                  >
-                    <BsFillBellFill size={20} />
-                    {unreadNotifications !== 0 ? (
-                      <span
-                        className="absolute min-w-[50%] min-h-[50%] p-1 bg-[--dark-green] rounded-full -top-2 -right-2 text-xs 
+                      onClick={() => {
+                        setIsOpenAppointments(false);
+                        setIsOpenNotifications(!isOpenNotifications);
+                        setIsOpenProfile(false);
+                      }}
+                    >
+                      <BsFillBellFill size={20} />
+                      {unreadNotifications !== 0 ? (
+                        <span
+                          className="absolute min-w-[50%] min-h-[50%] p-1 bg-[--dark-green] rounded-full -top-2 -right-2 text-xs 
                     text-center flex justify-center items-center text-white"
-                      >
-                        {unreadNotifications}
-                      </span>
-                    ) : null}
-                  </button>
-                  <button
-                    className={`${
-                      isOpenProfile
-                        ? "bg-[--light-green] text-[--dark-green]"
-                        : "bg-black/20 text-black"
-                    } rounded-lg font-semibold text-sm py-2.5 px-3
+                        >
+                          {unreadNotifications}
+                        </span>
+                      ) : null}
+                    </button>
+                    <button
+                      className={`${
+                        isOpenProfile
+                          ? "bg-[--light-green] text-[--dark-green]"
+                          : "bg-black/20 text-black"
+                      } rounded-lg font-semibold text-sm py-2.5 px-3
                     hover:bg-[--light-green] hover:text-[--dark-green] transition-all duration-300 relative`}
-                    onClick={() => {
-                      setIsOpenAppointments(false);
-                      setIsOpenNotifications(false);
-                      setIsOpenProfile(!isOpenProfile);
-                    }}
-                  >
-                    <BsPersonCircle size={20} />
-                  </button>
-                  {/* <button
+                      onClick={() => {
+                        setIsOpenAppointments(false);
+                        setIsOpenNotifications(false);
+                        setIsOpenProfile(!isOpenProfile);
+                      }}
+                    >
+                      <BsPersonCircle size={20} />
+                    </button>
+                    {/* <button
                     className="bg-black rounded-full font-semibold text-[--light-brown] text-sm py-2 px-8 hover:bg-transparent hover:text-black border-2 border-black transition-all duration-300"
                     onClick={logout}
                   >
                     Logout
                   </button> */}
-                </div>
-              ) : null}
+                  </div>
+                ) : null}
+              </div>
+            </nav>
+            <div className="font-bold text-sm w-full text-black/60 bg-gradient-to-r from-[--light-green] to-[#1cd8d2] hover:bg-gradient-to-r py-1 flex justify-center">
+              Join us on our event entitled Mega: A filipino, on June 24, 2023.
             </div>
-          </nav>
-        </div>
+          </div>
+        </>
       ) : null}
       <motion.div
         className="bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg w-auto h-auto top-[90px] right-[18.3%] fixed z-40"

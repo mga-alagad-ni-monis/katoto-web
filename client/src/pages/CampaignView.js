@@ -72,8 +72,10 @@ function CampaignView({ token, auth, toast }) {
         })
         .then((res) => {
           const newCampaigns = res?.data?.campaigns?.map((i) => {
-            i["effectivityDate"] = convertDate(i["effectivityDate"])[1];
-            return i;
+            if (new Date(convertDate(i["effectivityDate"])[1]) > new Date()) {
+              i["effectivityDate"] = convertDate(i["effectivityDate"])[1];
+              return i;
+            }
           });
 
           setCampaigns(newCampaigns);
@@ -115,6 +117,16 @@ function CampaignView({ token, auth, toast }) {
 
   const filteredCampaigns = () => {
     const newCampaigns = campaigns
+      ?.sort((a, b) => {
+        let propA = new Date(convertDate(a["effectivityDate"])[1]);
+        let propB = new Date(convertDate(b["effectivityDate"])[1]);
+
+        if (propA > propB) {
+          return 1;
+        } else {
+          return -1;
+        }
+      })
       ?.filter((i) => {
         if (search?.toLowerCase().trim()) {
           return (
