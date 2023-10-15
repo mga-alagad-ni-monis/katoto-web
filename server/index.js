@@ -106,68 +106,72 @@ io.on("connection", (socket) => {
   });
 
   socket.on("train", async ({ mode, id }) => {
-    if (mode === "cg") {
-      await setConcerns();
-    }
+    try {
+      if (mode === "cg") {
+        await setConcerns();
+      }
 
-    let port = mode === "cg" ? 8000 : 8001;
+      let port = mode === "cg" ? 8000 : 8001;
 
-    if (detectOSType() === "Windows") {
-      console.log("Windows");
-      const trainData = spawn(
-        `echo Training has started, Please wait and do not close the window. && conda activate katoto-ml-${mode} && rasa train --config config.yml && rasa run --enable-api --cors \"*\" -p ${port} --debug`,
-        {
-          shell: true,
-          cwd: `${process.env.RASA_FILES_PATH}katoto-ml-${mode}`,
-        }
-      );
+      if (detectOSType() === "Windows") {
+        console.log("Windows");
+        const trainData = spawn(
+          `echo Training has started, Please wait and do not close the window. && conda activate katoto-ml-${mode} && rasa train --config config.yml && rasa run --enable-api --cors \"*\" -p ${port} --debug`,
+          {
+            shell: true,
+            cwd: `${process.env.RASA_FILES_PATH}katoto-ml-${mode}`,
+          }
+        );
 
-      trainData.stdout.on("data", (data) => {
-        console.log(`stdout: ${data}`);
-        io.to(id).emit("displayData", {
-          data: data,
+        trainData.stdout.on("data", (data) => {
+          console.log(`stdout: ${data}`);
+          io.to(id).emit("displayData", {
+            data: data,
+          });
         });
-      });
-      trainData.stderr.on("data", (data) => {
-        console.error(`stderr: ${data}`);
-        io.to(id).emit("displayData", {
-          data: data,
+        trainData.stderr.on("data", (data) => {
+          console.error(`stderr: ${data}`);
+          io.to(id).emit("displayData", {
+            data: data,
+          });
         });
-      });
-      trainData.on("close", (code) => {
-        console.log(`child process exited with code ${code}`);
-        io.to(id).emit("displayData", {
-          data: code,
+        trainData.on("close", (code) => {
+          console.log(`child process exited with code ${code}`);
+          io.to(id).emit("displayData", {
+            data: code,
+          });
         });
-      });
-    } else if (detectOSType() === "Linux") {
-      console.log("Linux");
-      const trainData = spawn(
-        `echo Training has started, Please wait and do not close the window. && eval "$(conda shell.bash hook)" && conda activate katoto-env && rasa train --config config.yml && pm2 delete "${mode}" && pm2 start ../../katoto-ml/katoto-ml-${mode}/${mode}.sh --attach`,
-        {
-          shell: true,
-          cwd: `${process.env.RASA_FILES_PATH}katoto-ml-${mode}`,
-        }
-      );
+      } else if (detectOSType() === "Linux") {
+        console.log("Linux");
+        const trainData = spawn(
+          `echo Training has started, Please wait and do not close the window. && eval "$(conda shell.bash hook)" && conda activate katoto-env && rasa train --config config.yml && pm2 delete "${mode}" && pm2 start ../../katoto-ml/katoto-ml-${mode}/${mode}.sh --attach`,
+          {
+            shell: true,
+            cwd: `${process.env.RASA_FILES_PATH}katoto-ml-${mode}`,
+          }
+        );
 
-      trainData.stdout.on("data", (data) => {
-        console.log(`stdout: ${data}`);
-        io.to(id).emit("displayData", {
-          data: data,
+        trainData.stdout.on("data", (data) => {
+          console.log(`stdout: ${data}`);
+          io.to(id).emit("displayData", {
+            data: data,
+          });
         });
-      });
-      trainData.stderr.on("data", (data) => {
-        console.error(`stderr: ${data}`);
-        io.to(id).emit("displayData", {
-          data: data,
+        trainData.stderr.on("data", (data) => {
+          console.error(`stderr: ${data}`);
+          io.to(id).emit("displayData", {
+            data: data,
+          });
         });
-      });
-      trainData.on("close", (code) => {
-        console.log(`child process exited with code ${code}`);
-        io.to(id).emit("displayData", {
-          data: code,
+        trainData.on("close", (code) => {
+          console.log(`child process exited with code ${code}`);
+          io.to(id).emit("displayData", {
+            data: code,
+          });
         });
-      });
+      }
+    } catch (err) {
+      console.log(err);
     }
   });
 
@@ -287,7 +291,6 @@ io.on("connection", (socket) => {
         await addNotificationStudent(appointmentDetails, idNo);
         onlineUsers.forEach((user) => {
           if (idNo === user.idNo) {
-          
             io.to(user.socketId).emit("cancelAppointmentResponse", {
               appointmentDetails,
             });

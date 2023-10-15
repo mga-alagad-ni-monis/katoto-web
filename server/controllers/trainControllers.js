@@ -63,12 +63,13 @@ const setFiles = async (req, res) => {
 const setSpecificFile = (directory, file, data) => {
   //adding more examples into intents
   if (file === "nlu") {
-    data = data?.nlu?.map((i) => {
+    const newNlu = data?.nlu?.map((i) => {
       if (!i["examples"].includes(`- ${i["intent"]}`)) {
         i["examples"] = i["examples"] + `- ${i["intent"]}\n`;
       }
       return i;
     });
+    data["nlu"] = newNlu;
   }
 
   file += ".yml";
