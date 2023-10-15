@@ -274,7 +274,7 @@ function Chatbot({ toast, auth, socket }) {
               : res.data[0].text;
 
           if (isGuided) {
-            const buttons = res.data[0].buttons.map((i) => {
+            const buttons = res.data[0]?.buttons?.map((i) => {
               return i;
             });
 
@@ -295,6 +295,18 @@ function Chatbot({ toast, auth, socket }) {
 
             if (inputMessage.payload === "Mga Problema") {
               isProblem = true;
+            }
+
+            if (inputMessage.payload === "Open SOS") {
+              setPopUpSOS(true);
+            }
+
+            if (inputMessage.payload === "Open Regular") {
+              setPopUpStandard(true);
+            }
+
+            if (inputMessage.payload === "Open Feedback") {
+              setIsOpenFeedbackModal(true);
             }
 
             await axios
@@ -1716,7 +1728,7 @@ border border-2 transition-all duration-300`}
                         animate="visible"
                         className="px-5 py-3 list-none gap-2 justify-center flex w-full mb-3 flex-wrap"
                       >
-                        {guidedButtons.map((i, k) => {
+                        {guidedButtons?.map((i, k) => {
                           return (
                             <motion.li
                               key={k}

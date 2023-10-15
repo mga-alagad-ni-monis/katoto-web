@@ -19,7 +19,6 @@ function Login({ toast, loading, setLoading, auth }) {
   const [isForgotPw, setIsForgotPw] = useState(false);
 
   useEffect(() => {
-    console.log(auth);
     if (auth?.accessToken) {
       navigate("/chat");
     }

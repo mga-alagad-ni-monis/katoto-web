@@ -21,6 +21,7 @@ import { AiOutlineLogout } from "react-icons/ai";
 import NotificationContainer from "./NotificationContainer";
 
 import logo from "../assets/logo/katoto-logo.png";
+import { HiArrowLongRight } from "react-icons/hi2";
 
 function NavBar({ auth, logout, socket, toast }) {
   const [isOpenNotifications, setIsOpenNotifications] = useState(false);
@@ -30,6 +31,7 @@ function NavBar({ auth, logout, socket, toast }) {
 
   const [notifications, setNotifications] = useState([]);
   const [bookedAppointments, setBookedAppointments] = useState([]);
+  const [campaign, setCampaign] = useState([]);
 
   const [yourAppointment, setYourAppointment] = useState({});
 
@@ -51,6 +53,7 @@ function NavBar({ auth, logout, socket, toast }) {
       getMyAppointment();
       getBookedAppointments();
     }
+    handleGetPublishedCampaign();
   }, [auth]);
 
   useEffect(() => {
@@ -91,6 +94,35 @@ function NavBar({ auth, logout, socket, toast }) {
       });
     }
   }, [socket]);
+
+  const handleGetPublishedCampaign = async () => {
+    try {
+      await axios.get("/api/get-published-latest").then((res) => {
+        const newCampaigns = res?.data?.campaigns
+          ?.map((i) => {
+            if (new Date(convertDate(i["effectivityDate"])[1]) > new Date()) {
+              i["effectivityDate"] = convertDate(i["effectivityDate"])[1];
+              return i;
+            }
+          })
+          ?.sort((a, b) => {
+            let propA = new Date(convertDate(a["effectivityDate"])[1]);
+            let propB = new Date(convertDate(b["effectivityDate"])[1]);
+
+            if (propA > propB) {
+              return 1;
+            } else {
+              return -1;
+            }
+          });
+
+        setCampaign(newCampaigns[0]);
+      });
+    } catch (err) {
+      console.log(err);
+      toast.error("Error");
+    }
+  };
 
   const convertDateAppointment = (date, hours, minutes) => {
     const date_object = new Date(date);
@@ -254,7 +286,7 @@ function NavBar({ auth, logout, socket, toast }) {
 
           let newAppointment = { ...yourAppointment };
           delete newAppointment[type];
-          console.log(newAppointment);
+
           setYourAppointment(newAppointment);
 
           setTimeout(() => {
@@ -337,6 +369,50 @@ function NavBar({ auth, logout, socket, toast }) {
                 : "bg-[--light-brown] shadow"
             } `}
           >
+            <div className="relative font-medium text-sm w-full text-black/80 flex justify-center">
+              <span className="w-1/2 bg-gradient-to-l from-[--light-green] to-[#1cd8d2] h-9"></span>
+              <p className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                {(() => {
+                  if (campaign?.campaignType == "announcement") {
+                    return (
+                      <p>{`Announcement for everyone: ${(
+                        <span className="font-bold">{campaign?.title}</span>
+                      )}`}</p>
+                    );
+                  } else if (campaign?.campaignType == "event") {
+                    return (
+                      <div className="flex gap-3 items-center">
+                        <Link
+                          to={"/view-campaigns"}
+                          className="hover:mr-3 hover:underline duration-300 cursor-pointer"
+                        >
+                          Join us on our event entitled:
+                          <span className="font-extrabold text-black">
+                            {" "}
+                            {campaign?.title}{" "}
+                          </span>
+                          on{" "}
+                          <span className="font-extrabold text-black">
+                            {" "}
+                            {campaign?.effectivityDate}
+                          </span>
+                          .
+                        </Link>
+                        <Link
+                          className="hover:ml-3 duration-300"
+                          to={"/view-campaigns"}
+                        >
+                          <HiArrowLongRight size={18} />
+                        </Link>
+                      </div>
+                    );
+                  } else if (campaign?.campaignType == "webinar") {
+                    return `Attend on webinar entitled: ${campaign?.title} on ${campaign?.effectivityDate}`;
+                  }
+                })()}
+              </p>
+              <span className="w-1/2 bg-gradient-to-r from-[--light-green] to-[#1cd8d2] h-9"></span>
+            </div>
             <nav
               className={`flex ${
                 location.pathname === "/login"
@@ -453,9 +529,6 @@ function NavBar({ auth, logout, socket, toast }) {
                 ) : null}
               </div>
             </nav>
-            <div className="font-bold text-sm w-full text-black/60 bg-gradient-to-r from-[--light-green] to-[#1cd8d2] hover:bg-gradient-to-r py-1 flex justify-center">
-              Join us on our event entitled Mega: A filipino, on June 24, 2023.
-            </div>
           </div>
         </>
       ) : null}
@@ -807,7 +880,6 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
         animate={isOpenProfile ? "show" : "hide"}
         initial={{ opacity: 0, y: 0, scale: 0, transformOrigin: "top right" }}
       >
-        {console.log(bookedAppointments)}
         <div className="h-1/6 p-1 w-[250px]">
           <Link
             to={"/profile"}

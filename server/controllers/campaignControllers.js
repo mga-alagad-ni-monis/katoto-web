@@ -141,7 +141,6 @@ const getPublishedCampaigns = (req, res) => {
         let campaigns = [];
         querySnapshot.forEach((i) => {
           const campaign = i.data();
-          console.log(campaign.isPublished);
           if (campaign.isPublished) {
             campaigns.push(campaign);
           }

@@ -41,7 +41,7 @@ router.get(
 
 router.get(
   "/get-published",
-  verifyRoles(["systemAdministrator", "guidanceCounselor", "student"]),
+  // verifyRoles(["systemAdministrator", "guidanceCounselor", "student"]),
   getPublishedCampaigns
 );
 
