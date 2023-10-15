@@ -538,7 +538,7 @@ function UserAccounts({ toast, auth }) {
                       className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
                       type="password"
                       placeholder="mmddyyyy or other"
-                      pattern=".{8}"
+                      pattern="{8}"
                       value={password}
                       onChange={(e) => {
                         setPassword(e.target.value);
@@ -1211,7 +1211,7 @@ function UserAccounts({ toast, auth }) {
                     onClick={() => {
                       if (
                         window.confirm(
-                          "Do you want to proceed deleting the appointment?"
+                          "Do you want to proceed deleting the user account?"
                         )
                       ) {
                         handleDeleteUsers();
