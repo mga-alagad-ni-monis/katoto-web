@@ -28,7 +28,7 @@ function Loading() {
           <span class="loader"></span>
         </div>
       </div> */}
-      <div class="lds-ring">
+      <div className="lds-ring">
         <div></div>
         <div></div>
         <div></div>

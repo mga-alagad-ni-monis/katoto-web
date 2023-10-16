@@ -119,7 +119,6 @@ function NavBar({ auth, logout, socket, toast }) {
         setCampaign(newCampaigns[0]);
       });
     } catch (err) {
-      console.log(err);
       toast.error("Error");
     }
   };
@@ -362,57 +361,83 @@ function NavBar({ auth, logout, socket, toast }) {
     <>
       {location.pathname === "/login" || "/chat" ? (
         <>
-          <div
-            className={`fixed w-full z-40 ${
-              location.pathname === "/"
-                ? "bg-[--light-brown] shadow"
-                : "bg-[--light-brown] shadow"
-            } `}
-          >
-            <div className="relative font-medium text-sm w-full text-black/80 flex justify-center">
-              <span className="w-1/2 bg-gradient-to-l from-[--light-green] to-[#1cd8d2] h-9"></span>
-              <p className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                {(() => {
-                  if (campaign?.campaignType == "announcement") {
-                    return (
-                      <p>{`Announcement for everyone: ${(
-                        <span className="font-bold">{campaign?.title}</span>
-                      )}`}</p>
-                    );
-                  } else if (campaign?.campaignType == "event") {
-                    return (
-                      <div className="flex gap-3 items-center">
-                        <Link
-                          to={"/view-campaigns"}
-                          className="hover:mr-3 hover:underline duration-300 cursor-pointer"
-                        >
-                          Join us on our event entitled:
-                          <span className="font-extrabold text-black">
-                            {" "}
-                            {campaign?.title}{" "}
-                          </span>
-                          on{" "}
-                          <span className="font-extrabold text-black">
-                            {" "}
-                            {campaign?.effectivityDate}
-                          </span>
-                          .
-                        </Link>
-                        <Link
-                          className="hover:ml-3 duration-300"
-                          to={"/view-campaigns"}
-                        >
-                          <HiArrowLongRight size={18} />
-                        </Link>
-                      </div>
-                    );
-                  } else if (campaign?.campaignType == "webinar") {
-                    return `Attend on webinar entitled: ${campaign?.title} on ${campaign?.effectivityDate}`;
-                  }
-                })()}
-              </p>
-              <span className="w-1/2 bg-gradient-to-r from-[--light-green] to-[#1cd8d2] h-9"></span>
-            </div>
+          <div className={`fixed w-full z-40 bg-[--light-brown] shadow`}>
+            {campaign?.title ? (
+              <div className="relative font-medium text-sm w-full text-black/80 flex justify-center">
+                <span className="w-1/2 bg-gradient-to-l from-[--light-green] to-[#1cd8d2] h-9"></span>
+                <p className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                  {(() => {
+                    if (campaign?.campaignType == "announcement") {
+                      return (
+                        <div className="flex gap-3 items-center hover:gap-6 duration-300 cursor-pointer">
+                          <Link
+                            to={"/view-campaigns"}
+                            className=" hover:underline"
+                          >
+                            Announcement for everyone:{" "}
+                            <span className="font-extrabold text-black">
+                              {campaign?.title}
+                            </span>
+                          </Link>
+                          <Link to={"/view-campaigns"}>
+                            <HiArrowLongRight size={18} />
+                          </Link>
+                        </div>
+                      );
+                    } else if (campaign?.campaignType == "event") {
+                      return (
+                        <div className="flex gap-3 items-center hover:gap-6 duration-300 cursor-pointer">
+                          <Link
+                            to={"/view-campaigns"}
+                            className=" hover:underline"
+                          >
+                            Join us on our event entitled:
+                            <span className="font-extrabold text-black">
+                              {" "}
+                              {campaign?.title}{" "}
+                            </span>
+                            on{" "}
+                            <span className="font-extrabold text-black">
+                              {" "}
+                              {campaign?.effectivityDate}
+                            </span>
+                            .
+                          </Link>
+                          <Link to={"/view-campaigns"}>
+                            <HiArrowLongRight size={18} />
+                          </Link>
+                        </div>
+                      );
+                    } else if (campaign?.campaignType == "webinar") {
+                      return (
+                        <div className="flex gap-3 items-center hover:gap-6 duration-300 cursor-pointer">
+                          <Link
+                            to={"/view-campaigns"}
+                            className=" hover:underline"
+                          >
+                            Attend on webinar entitled:
+                            <span className="font-extrabold text-black">
+                              {" "}
+                              {campaign?.title}{" "}
+                            </span>
+                            on{" "}
+                            <span className="font-extrabold text-black">
+                              {" "}
+                              {campaign?.effectivityDate}
+                            </span>
+                            .
+                          </Link>
+                          <Link to={"/view-campaigns"}>
+                            <HiArrowLongRight size={18} />
+                          </Link>
+                        </div>
+                      );
+                    }
+                  })()}
+                </p>
+                <span className="w-1/2 bg-gradient-to-r from-[--light-green] to-[#1cd8d2] h-9"></span>
+              </div>
+            ) : null}
             <nav
               className={`flex ${
                 location.pathname === "/login"

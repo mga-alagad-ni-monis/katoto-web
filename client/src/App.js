@@ -81,6 +81,10 @@ function App() {
               }
             ></Route>
           </Route>
+          <Route
+            path="/view-campaigns"
+            element={<CampaignView toast={toast} auth={auth} />}
+          ></Route>
           <Route element={<NavBar socket={socket} />}>
             <Route
               path="/forgot/:resetToken"
@@ -95,8 +99,6 @@ function App() {
             ></Route>
           </Route>
         </Route>
-
-        {/* </Route> */}
         {/* <Route path="/loading" element={<Loading />}></Route> */}
         <Route element={<PersistLogin />}>
           {/* navbar component */}
@@ -126,10 +128,7 @@ function App() {
                 path="/chat"
                 element={<Chatbot toast={toast} auth={auth} socket={socket} />}
               ></Route>
-              <Route
-                path="/view-campaigns"
-                element={<CampaignView toast={toast} auth={auth} />}
-              ></Route>
+
               {auth?.roles
                 ? auth?.roles[0] === "student" && (
                     <Route

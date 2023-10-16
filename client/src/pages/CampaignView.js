@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "../api/axios";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { HiArrowLongRight } from "react-icons/hi2";
+import { HiArrowLongRight, HiChevronLeft } from "react-icons/hi2";
 
 import { Markup } from "interweave";
 
@@ -20,66 +20,34 @@ import Loading from "../components/Loading";
 
 function CampaignView({ token, auth, toast }) {
   const [campaigns, setCampaigns] = useState([]);
+  const [filter, setFilter] = useState([]);
 
   const [campaignInfo, setCampaignInfo] = useState("");
   const [search, setSearch] = useState("");
-  const [announcementFilter, setAnnouncementFilter] = useState("");
-  const [eventFilter, setEventFilter] = useState("");
-  const [webinarFilter, setWebinarFilter] = useState("");
+
   const [campaignTitle, setCampaignTitle] = useState("");
 
   const [isShow, setIsShow] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [quote, setQuote] = useState({});
-
   useEffect(() => {
     (async () => {
       await handleGetPublishedCampaign();
-      await getQuote();
       setIsLoading(false);
     })();
   }, []);
 
-  const getQuote = async () => {
-    try {
-      await axios
-        .get("/api/train/get-quote", {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${auth?.accessToken}`,
-          },
-        })
-        .then((res) => {
-          setQuote(res?.data?.quote);
-        })
-        .catch((err) => {
-          toast.error(err?.response?.data);
-        });
-    } catch (err) {
-      toast.error("Error");
-    }
-  };
-
   const handleGetPublishedCampaign = async () => {
     try {
-      await axios
-        .get("/api/campaigns/get-published", {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${auth?.accessToken}`,
-          },
-        })
-        .then((res) => {
-          const newCampaigns = res?.data?.campaigns?.map((i) => {
-            if (new Date(convertDate(i["effectivityDate"])[1]) > new Date()) {
-              i["effectivityDate"] = convertDate(i["effectivityDate"])[1];
-              return i;
-            }
-          });
-
-          setCampaigns(newCampaigns);
+      await axios.get("/api/get-published-latest").then((res) => {
+        const newCampaigns = res?.data?.campaigns?.map((i) => {
+          if (new Date(convertDate(i["effectivityDate"])[1]) > new Date()) {
+            i["effectivityDate"] = convertDate(i["effectivityDate"])[1];
+            return i;
+          }
         });
+        setCampaigns(newCampaigns);
+      });
     } catch (err) {
       toast.error("Error");
     }
@@ -128,6 +96,12 @@ function CampaignView({ token, auth, toast }) {
         }
       })
       ?.filter((i) => {
+        if (filter.length === 0) {
+          return i;
+        }
+        return filter?.includes(i?.campaignType);
+      })
+      ?.filter((i) => {
         if (search?.toLowerCase().trim()) {
           return (
             i?.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -138,23 +112,12 @@ function CampaignView({ token, auth, toast }) {
         } else {
           return i;
         }
-      })
-      ?.filter((i) => {
-        if (announcementFilter?.toLowerCase().trim()) {
-          return i?.campaignType
-            .toLowerCase()
-            .includes(announcementFilter?.toLowerCase().trim());
-        } else if (eventFilter?.toLowerCase().trim()) {
-          return i?.campaignType
-            .toLowerCase()
-            .includes(eventFilter?.toLowerCase().trim());
-        } else {
-          return i;
-        }
       });
 
     return newCampaigns;
   };
+
+  const campaignTypes = ["announcement", "event", "webinar"];
 
   return (
     <>
@@ -164,22 +127,25 @@ function CampaignView({ token, auth, toast }) {
         <div className="bg-[--light-brown] pt-2 min-h-screen pb-32">
           <div className="flex flex-col">
             {isShow ? (
-              <div className="pt-20 px-60">
-                <div className="w-full pb-12 flex gap-3">
-                  <span>
-                    <button
-                      onClick={() => {
-                        setIsShow(false);
-                      }}
-                      className="text-[--dark-green] hover:underline"
-                    >
-                      Campaigns
-                    </button>{" "}
-                    / {toHeaderCase(campaignTitle)}
-                  </span>
+              <>
+                {campaigns?.length === 0 ? null : <span className="h-9"></span>}
+                <div className="pt-20 px-60">
+                  <div className="w-full pb-12 flex gap-3">
+                    <span className="flex gap-1">
+                      <button
+                        onClick={() => {
+                          setIsShow(false);
+                        }}
+                        className="text-[--dark-green] hover:underline flex gap-1 items-center"
+                      >
+                        <HiChevronLeft /> Campaigns
+                      </button>{" "}
+                      / {toHeaderCase(campaignTitle)}
+                    </span>
+                  </div>
+                  <Markup content={campaignInfo} />
                 </div>
-                <Markup content={campaignInfo} />
-              </div>
+              </>
             ) : (
               <>
                 <div className="mt-16 h-96 px-60 flex w-full mb-8 items-center bg-[url('./assets/campaign-bg-sample.jpg')] bg-center bg-no-repeat bg-cover">
@@ -246,131 +212,107 @@ function CampaignView({ token, auth, toast }) {
                     </div>
                     <div className="mt-3">
                       <p className="mb-3 font-bold text-xs">Preferences</p>
+
                       <div className="flex flex-col gap-3">
-                        <div className="flex gap-3 items-center">
-                          <input
-                            id="checkbox-1"
-                            className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
-   checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
-   float-left cursor-pointer appearance-none border border-solid border-2  border-[--dark-green] bg-[--light-green] 
-   bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
-   after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-['✔'] 
-   checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100 mr-1"
-                            type="checkbox"
-                            style={{
-                              fontFamily: "FontAwesome",
-                            }}
-                            onChange={() => {
-                              setAnnouncementFilter(
-                                announcementFilter ? "" : "announcement"
-                              );
-                            }}
-                            checked={announcementFilter ? true : false}
-                          />
-                          <label htmlFor="checkbox-1">Announcement</label>
-                        </div>
-                        <div className="flex gap-3 items-center">
-                          <input
-                            id="checkbox-2"
-                            className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
-   checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
-   float-left cursor-pointer appearance-none border border-solid border-2  border-[--dark-green] bg-[--light-green] 
-   bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
-   after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-['✔'] 
-   checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100 mr-1"
-                            type="checkbox"
-                            style={{
-                              fontFamily: "FontAwesome",
-                            }}
-                            onChange={() => {
-                              setEventFilter(eventFilter ? "" : "event");
-                            }}
-                            checked={eventFilter ? true : false}
-                          />
-                          <label htmlFor="checkbox-2">Event</label>
-                        </div>
-                        <div className="flex gap-3 items-center">
-                          <input
-                            id="checkbox-3"
-                            className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
-   checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
-   float-left cursor-pointer appearance-none border border-solid border-2  border-[--dark-green] bg-[--light-green] 
-   bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
-   after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-['✔'] 
-   checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100 mr-1"
-                            type="checkbox"
-                            style={{
-                              fontFamily: "FontAwesome",
-                            }}
-                            onChange={() => {
-                              setWebinarFilter(webinarFilter ? "" : "webinar");
-                            }}
-                            checked={webinarFilter ? true : false}
-                          />
-                          <label htmlFor="checkbox-3">Webinar</label>
-                        </div>
+                        {campaignTypes?.map((i, k) => {
+                          return (
+                            <div className="flex gap-3 items-center" key={k}>
+                              <input
+                                id={k}
+                                className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 
+checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
+float-left cursor-pointer appearance-none border border-solid border-2  border-black/10 bg-black/10
+bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
+after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-['✔'] 
+checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:after:opacity-100 mr-1"
+                                type="checkbox"
+                                style={{
+                                  fontFamily: "FontAwesome",
+                                }}
+                                onChange={() => {
+                                  if (filter?.includes(i)) {
+                                    const newFilter = filter?.filter(
+                                      (j) => j != i
+                                    );
+                                    setFilter([...newFilter]);
+                                  } else {
+                                    const newFilter = filter;
+                                    newFilter.push(i);
+                                    setFilter([...newFilter]);
+                                  }
+                                }}
+                                checked={filter?.includes(i) ? true : false}
+                              />
+                              <label htmlFor={k} className="cursor-pointer">
+                                {toHeaderCase(i)}
+                              </label>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
                   <div className="w-4/5 flex flex-col gap-8 max-screen">
                     <p className="font-extrabold">Upcoming Campaigns</p>
-                    <div className="flex gap-5">
+                    <div className="w-full overflow flex flex-wrap">
                       {filteredCampaigns()?.map((i, k) => {
                         return (
-                          <div
-                            className="w-1/3 flex flex-col border-[1px] border-black/20 rounded-xl"
-                            key={k}
-                          >
-                            <div className="relative">
-                              {i?.imageHeader ? (
-                                <img
-                                  src={i?.imageHeader}
-                                  className="w-full rounded-t-xl h-[200px] cursor-pointer"
-                                  onClick={() => {
-                                    setIsShow(true);
-                                    setCampaignInfo(i?.campaignInfo);
-                                    setCampaignTitle(i?.title);
-                                  }}
-                                ></img>
-                              ) : (
-                                <div
-                                  onClick={() => {
-                                    setIsShow(true);
-                                    setCampaignInfo(i?.campaignInfo);
-                                    setCampaignTitle(i?.title);
-                                  }}
-                                  className="w-full bg-gradient-to-t from-[--light-green] to-[#1cd8d2] h-[200px] rounded-t-xl cursor-pointer"
-                                ></div>
-                              )}
-                              <div className="bg-[--dark-green] rounded-full py-1 px-2 w-fit text-sm text-[--light-brown] absolute right-4 top-4">
-                                {toHeaderCase(i?.campaignType)}
+                          <div className="w-1/3 pb-5 pr-5">
+                            <div
+                              className="w-full flex flex-col border-[1px] border-black/20 rounded-xl"
+                              key={k}
+                            >
+                              <div className="relative">
+                                {i?.imageHeader ? (
+                                  <img
+                                    src={i?.imageHeader}
+                                    className="w-full rounded-t-xl h-[200px] cursor-pointer"
+                                    onClick={() => {
+                                      setIsShow(true);
+                                      setCampaignInfo(i?.campaignInfo);
+                                      setCampaignTitle(i?.title);
+                                    }}
+                                  ></img>
+                                ) : (
+                                  <div
+                                    onClick={() => {
+                                      setIsShow(true);
+                                      setCampaignInfo(i?.campaignInfo);
+                                      setCampaignTitle(i?.title);
+                                    }}
+                                    className="w-full bg-gradient-to-t from-[--light-green] to-[#1cd8d2] h-[200px] rounded-t-xl cursor-pointer"
+                                  ></div>
+                                )}
+                                <div className="bg-[--dark-green] rounded-full py-1 px-2 w-fit text-sm text-[--light-brown] absolute right-4 top-4">
+                                  {toHeaderCase(i?.campaignType)}
+                                </div>
                               </div>
-                            </div>
 
-                            <div className="w-full p-5 flex flex-col gap-5">
-                              <p
-                                className="font-semibold text-[--dark-green] cursor-pointer duration-300 text-2xl"
-                                onClick={() => {
-                                  setIsShow(true);
-                                  setCampaignInfo(i?.campaignInfo);
-                                  setCampaignTitle(i?.title);
-                                }}
-                              >
-                                {toHeaderCase(i?.title)}
-                              </p>
-                              <p className="">Until: {i?.effectivityDate}</p>
-                              <p className="truncate">{i?.description}</p>
-                              <button
-                                className="h-fit w-fit bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
+                              <div className="w-full p-5 flex flex-col gap-5">
+                                <p
+                                  className="font-semibold text-[--dark-green] cursor-pointer duration-300 text-2xl"
+                                  onClick={() => {
+                                    setIsShow(true);
+                                    setCampaignInfo(i?.campaignInfo);
+                                    setCampaignTitle(i?.title);
+                                  }}
+                                >
+                                  {toHeaderCase(i?.title)}
+                                </p>
+                                <p className="">Until: {i?.effectivityDate}</p>
+                                <p className="truncate">{i?.description}</p>
+                                <button
+                                  className="h-fit w-fit bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-                                onClick={() => {
-                                  setIsShow(true);
-                                  setCampaignInfo(i?.campaignInfo);
-                                  setCampaignTitle(i?.title);
-                                }}
-                              >
-                                Learn More <HiArrowLongRight />
-                              </button>
+                                  onClick={() => {
+                                    setIsShow(true);
+                                    setCampaignInfo(i?.campaignInfo);
+                                    setCampaignTitle(i?.title);
+                                  }}
+                                >
+                                  Learn More <HiArrowLongRight />
+                                </button>
+                              </div>
                             </div>
                           </div>
                         );

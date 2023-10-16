@@ -205,6 +205,9 @@ iframe {
   display: none;
 }
 
+.tox-tinymce iframe {
+  display: block;
+}
 .lds-ring div:nth-child(1) {
   animation-delay: -0.45s;
 }
