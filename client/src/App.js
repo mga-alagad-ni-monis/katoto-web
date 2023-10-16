@@ -25,6 +25,7 @@ import Conversations from "./pages/Conversations";
 import Appointments from "./pages/Appointments";
 import Profile from "./pages/Profile";
 import ForgotPassword from "./pages/ForgotPassword";
+import Error from "./pages/Error";
 
 function App() {
   const { auth, setAuth } = useAuth();
@@ -66,6 +67,7 @@ function App() {
       <Routes>
         {/* login module*/}
         {/* <Route element={<NavBar />}> */}
+        <Route path="*" element={<Error />}></Route>
         <Route element={<NavBar socket={socket} />}>
           <Route path="/" element={<Home />}></Route>
           <Route element={<PersistLogin />}>
