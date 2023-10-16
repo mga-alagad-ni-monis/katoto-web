@@ -102,6 +102,7 @@ function TrainingEditor({
 
   return (
     <div>
+      {console.log(file)}
       <div className="flex justify-between mb-5 mt-5">
         <div className="hs-dropdown relative inline-flex gap-5">
           <button

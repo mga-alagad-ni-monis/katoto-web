@@ -225,7 +225,7 @@ function UserAccounts({ toast, auth }) {
 
   const handleSubmitAddUser = async (e) => {
     e.preventDefault();
-
+    document.body.style.overflow = "";
     try {
       await axios
         .post(
@@ -276,6 +276,7 @@ function UserAccounts({ toast, auth }) {
 
   const handleImport = async (e) => {
     e.preventDefault();
+    document.body.style.overflow = "";
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -320,6 +321,7 @@ function UserAccounts({ toast, auth }) {
 
   const handleEditUser = async (e) => {
     e.preventDefault();
+    document.body.style.overflow = "";
     try {
       await axios
         .post(
@@ -454,6 +456,7 @@ function UserAccounts({ toast, auth }) {
                 <p className="text-2xl font-extrabold">Add User</p>
                 <button
                   onClick={() => {
+                    document.body.style.overflow = "";
                     setIsOpenAddModal(false);
                   }}
                   type="button"
@@ -775,6 +778,7 @@ function UserAccounts({ toast, auth }) {
                 <p className="text-2xl font-extrabold">Edit User</p>
                 <button
                   onClick={() => {
+                    document.body.style.overflow = "";
                     setIsOpenEditModal(false);
                   }}
                   type="button"
@@ -1075,6 +1079,7 @@ function UserAccounts({ toast, auth }) {
                 <p className="text-2xl font-extrabold">Import CSV</p>
                 <button
                   onClick={() => {
+                    document.body.style.overflow = "";
                     setIsOpenImportModal(false);
                     setFile(null);
                     setErrorMessages([]);
@@ -1237,6 +1242,12 @@ function UserAccounts({ toast, auth }) {
           border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
                     onClick={() => {
                       if (editUser.length === 1) {
+                        window.scrollTo({
+                          top: 0,
+                          left: 0,
+                          behavior: "smooth",
+                        });
+                        document.body.style.overflow = "hidden";
                         setEmail(editUser[0].email);
                         setName(editUser[0].name);
                         setUserType(editUser[0].userType);
@@ -1269,6 +1280,8 @@ function UserAccounts({ toast, auth }) {
                   className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
                   onClick={() => {
+                    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+                    document.body.style.overflow = "hidden";
                     setIsOpenAddModal(true);
                     handleAllUnchecked();
                     setEmail("");
@@ -1282,6 +1295,7 @@ function UserAccounts({ toast, auth }) {
                     setDepartment("");
                     setAssignedCollege([]);
                     setAssignedCollegeLen([""]);
+                    setDeleteUsers([]);
                   }}
                 >
                   <HiPlus size={16} />
@@ -1292,6 +1306,8 @@ function UserAccounts({ toast, auth }) {
                   className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-4 flex gap-2 items-center justify-center 
           border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
                   onClick={() => {
+                    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+                    document.body.style.overflow = "hidden";
                     setIsOpenImportModal(true);
                   }}
                 >

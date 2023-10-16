@@ -178,9 +178,11 @@ function QoutesTable({
             className="h-fit bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
 border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
             onClick={() => {
+              window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
               setAuthor("");
               setQuote("");
               setIsOpenAddModal(true);
+              document.body.style.overflow = "hidden";
             }}
           >
             <HiPlus size={16} />

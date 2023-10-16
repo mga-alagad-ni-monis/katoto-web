@@ -558,7 +558,9 @@ function NavBar({ auth, logout, socket, toast }) {
         </>
       ) : null}
       <motion.div
-        className="bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg w-auto h-auto top-[90px] right-[18.3%] fixed z-40"
+        className={`bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg w-auto h-auto ${
+          campaign?.title ? "top-[108px]" : "top-[90px]"
+        } right-[18.3%] fixed z-40`}
         variants={{
           show: {
             opacity: 1,
@@ -874,10 +876,13 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
         notifications={notifications}
         setNotifications={setNotifications}
         isStudent={true}
+        campaign={campaign}
       />
       <Outlet />
       <motion.div
-        className="bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg w-auto h-auto top-[90px] right-[11.5%] fixed z-40"
+        className={`bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg w-auto h-auto ${
+          campaign?.title ? "top-[108px]" : "top-[90px]"
+        } right-[11.5%] fixed z-40`}
         variants={{
           show: {
             opacity: 1,

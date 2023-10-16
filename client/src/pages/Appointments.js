@@ -417,6 +417,7 @@ function Appointments({ socket, toast, auth }) {
   };
 
   const handleSetStandardAppointment = async () => {
+    document.body.style.overflow = "";
     try {
       if (
         appointmentDateStart !== "" &&
@@ -444,6 +445,7 @@ function Appointments({ socket, toast, auth }) {
           descRef.current.value = "";
           setIsOpenAddAppointment(false);
           setIsOpenCalendar(false);
+          toast.success("Successfully Added!");
         } catch (err) {
           toast.error("Error");
         }
@@ -914,7 +916,13 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                         className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
                         onClick={() => {
+                          window.scrollTo({
+                            top: 0,
+                            left: 0,
+                            behavior: "smooth",
+                          });
                           setIsOpenNotesModal(true);
+                          document.body.style.overflow = "hidden";
                         }}
                       >
                         <HiPlus size={16} />
@@ -1086,6 +1094,7 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
               <button
                 onClick={() => {
                   setIsOpenCalendar(false);
+                  document.body.style.overflow = "";
                 }}
                 type="button"
               >
@@ -1105,6 +1114,7 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
               <p className="text-2xl font-extrabold">Notes</p>
               <button
                 onClick={() => {
+                  document.body.style.overflow = "";
                   setIsOpenNotesModal(false);
                   setIsViewNotes(false);
                   setNotes("");
@@ -1152,6 +1162,7 @@ border border-2 border-[--dark-green] transition-all duration-300"
                       className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
 border border-2 border-[--dark-green] transition-all duration-300"
                       onClick={() => {
+                        document.body.style.overflow = "";
                         handleSaveNotes();
                         setIsViewNotes(true);
                         setNotes("");
@@ -1171,6 +1182,7 @@ border border-2 border-[--dark-green] transition-all duration-300"
               <p className="text-2xl font-extrabold">Regular Appointment</p>
               <button
                 onClick={() => {
+                  document.body.style.overflow = "";
                   setIsOpenAddAppointment(false);
                   setIsOpenCalendar(true);
                   setAppointmentDateStart("");
@@ -1441,6 +1453,7 @@ border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2
                 rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
                 border border-2 transition-all duration-300"
                   onClick={() => {
+                    document.body.style.overflow = "";
                     setIsOpenAddAppointment(false);
                     setIsOpenCalendar(true);
                     setAppointmentDateStart("");
@@ -1481,9 +1494,15 @@ border border-2 transition-all duration-300"
                         className="bg-black rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-5 pl-3 flex gap-2 items-center justify-center 
           border border-2 border-black hover:border-black hover:border-2 hover:bg-transparent hover:text-black transition-all duration-300"
                         onClick={() => {
+                          window.scrollTo({
+                            top: 0,
+                            left: 0,
+                            behavior: "smooth",
+                          });
                           setIsOpenCalendar(true);
                           setIsOpenAppointmentSidebar(false);
                           setDescRefLen(0);
+                          document.body.style.overflow = "hidden";
                         }}
                       >
                         <HiPlus size={16} />

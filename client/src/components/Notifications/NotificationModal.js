@@ -23,6 +23,7 @@ function NotificationModal({
         <button
           onClick={() => {
             setIsOpenNotificationModal(false);
+            document.body.style.overflow = "";
           }}
           type="button"
         >
@@ -244,6 +245,7 @@ function NotificationModal({
                     setIsOpenNotificationModal(false);
                     handleDeleteNotification(appointmentDetails.id);
                     handleDeleteLocal(appointmentDetails.id);
+                    document.body.style.overflow = "";
                   }}
                 >
                   <BsFillTrash3Fill size={14} />

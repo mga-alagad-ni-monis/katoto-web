@@ -43,6 +43,7 @@ function Train({ auth, toast, socket }) {
 
   const handleSubmitAddQuote = async (e) => {
     e.preventDefault();
+    document.body.style.overflow = "";
     try {
       await axios
         .post(
@@ -321,6 +322,7 @@ function Train({ auth, toast, socket }) {
                 <button
                   onClick={() => {
                     setIsOpenAddModal(false);
+                    document.body.style.overflow = "";
                   }}
                   type="button"
                 >

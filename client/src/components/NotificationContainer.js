@@ -35,6 +35,7 @@ function NotificationContainer({
   notifications,
   setNotifications,
   isStudent,
+  campaign,
 }) {
   const [notificationDetails, setNotificationDetails] = useState({});
   const [isOpenNotificationModal, setIsOpenNotificationModal] = useState(false);
@@ -552,7 +553,9 @@ function NotificationContainer({
       )}
       {isStudent ? (
         <motion.div
-          className="bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg w-1/5 h-[526px] top-[90px] right-[15%] fixed z-40"
+          className={`bg-[--light-brown] rounded-2xl border-2 border-black/10 shadow-lg w-1/5 h-[526px] ${
+            campaign?.title ? "top-[108px]" : "top-[90px]"
+          } right-[15%] fixed z-40`}
           variants={{
             show: {
               opacity: 1,
@@ -594,12 +597,14 @@ function NotificationContainer({
                     key={k}
                     className="hover:bg-black/5 cursor-pointer transition-all duration-100"
                     onClick={() => {
+                      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
                       setNotificationDetails(i);
                       setIsOpenNotificationModal(true);
                       if (i.isSeen === false) {
                         markNotification(i.id, true);
                         handleChangeSeen(i.id, true);
                       }
+                      document.body.style.overflow = "hidden";
                     }}
                   >
                     {(() => {
@@ -790,12 +795,14 @@ function NotificationContainer({
                     key={k}
                     className="hover:bg-black/5 cursor-pointer transition-all duration-100"
                     onClick={() => {
+                      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
                       setNotificationDetails(i);
                       setIsOpenNotificationModal(true);
                       if (i.isSeen === false) {
                         markNotification(i.id, true);
                         handleChangeSeen(i.id, true);
                       }
+                      document.body.style.overflow = "hidden";
                     }}
                   >
                     {(() => {

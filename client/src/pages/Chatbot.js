@@ -268,8 +268,9 @@ function Chatbot({ toast, auth, socket }) {
           }
         )
         .then(async (res) => {
+          console.log(res);
           res.data[0].text =
-            res.data[0].custom !== undefined
+            res.data[0]?.custom !== undefined
               ? res.data[0].custom.text
               : res.data[0].text;
 
@@ -337,6 +338,7 @@ function Chatbot({ toast, auth, socket }) {
                 console.log(err);
               });
           } else {
+            console.log(res);
             setKatotoMessage(res.data[0].text);
             setTimeout(() => {
               setFriendlyMessages([
@@ -417,6 +419,7 @@ function Chatbot({ toast, auth, socket }) {
   };
 
   const handleSetStandardAppointment = async () => {
+    document.body.style.overflow = "";
     try {
       if (
         isAppointmentChecked &&
@@ -458,6 +461,7 @@ function Chatbot({ toast, auth, socket }) {
   ];
 
   const handleSendFeedback = async () => {
+    document.body.style.overflow = "";
     if (rating !== 0) {
       try {
         await axios
@@ -638,6 +642,7 @@ function Chatbot({ toast, auth, socket }) {
 
               <button
                 onClick={() => {
+                  document.body.style.overflow = "";
                   setPopUpSOS(false);
                   setSosNo(0);
                   setDescription("");
@@ -827,6 +832,7 @@ function Chatbot({ toast, auth, socket }) {
                           className="bg-[--red] rounded-full p-1 text-white border border-2 border-[--red] hover:bg-transparent hover:text-[--red] 
               transition-all duration-300"
                           onClick={() => {
+                            document.body.style.overflow = "";
                             handleClickSOS();
                             setDescription("");
                             setPreferredMode("facetoface");
@@ -855,6 +861,7 @@ function Chatbot({ toast, auth, socket }) {
               <p className="text-2xl font-extrabold">Pick a date</p>
               <button
                 onClick={() => {
+                  document.body.style.overflow = "";
                   setPopUpStandard(false);
                 }}
                 type="button"
@@ -887,6 +894,7 @@ function Chatbot({ toast, auth, socket }) {
                   <p className="text-2xl font-extrabold">Regular Appointment</p>
                   <button
                     onClick={() => {
+                      document.body.style.overflow = "";
                       setIsOpenStandardAppoint(false);
                       setPopUpStandard(true);
                       setAppointmentDateStart("");
@@ -1122,6 +1130,7 @@ function Chatbot({ toast, auth, socket }) {
                   rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
                   border border-2 transition-all duration-300"
                       onClick={() => {
+                        document.body.style.overflow = "";
                         setIsOpenStandardAppoint(false);
                         setPopUpStandard(true);
                         setIsAppointmentChecked(false);
@@ -1151,6 +1160,7 @@ function Chatbot({ toast, auth, socket }) {
               <p className="text-2xl font-extrabold">Give Feedback</p>
               <button
                 onClick={() => {
+                  document.body.style.overflow = "";
                   setIsOpenFeedbackModal(false);
                   feedbackRef.current.value = "";
                   setRating(0);
@@ -1195,6 +1205,7 @@ function Chatbot({ toast, auth, socket }) {
                 rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
                 border border-2 transition-all duration-300"
                   onClick={() => {
+                    document.body.style.overflow = "";
                     setIsOpenFeedbackModal(false);
                     feedbackRef.current.value = "";
                     setRating(0);
@@ -1219,6 +1230,7 @@ function Chatbot({ toast, auth, socket }) {
 
               <button
                 onClick={() => {
+                  document.body.style.overflow = "";
                   setIsOpenPolicyModal(false);
                   setIsAcceptedPolicy(false);
                   setIsGuided(false);
@@ -1313,6 +1325,7 @@ function Chatbot({ toast, auth, socket }) {
 border border-2 transition-all duration-300`}
                     disabled={isAcceptedPolicy ? false : true}
                     onClick={() => {
+                      document.body.style.overflow = "";
                       setIsOpenPolicyModal(false);
                       setIsInitial(false);
                     }}
@@ -1358,6 +1371,12 @@ border border-2 transition-all duration-300`}
                         className="bg-[--dark-green] rounded-full p-1 text-white p-2 border border-2 border-[--dark-green] 
                   hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                         onClick={() => {
+                          window.scrollTo({
+                            top: 0,
+                            left: 0,
+                            behavior: "smooth",
+                          });
+                          document.body.style.overflow = "hidden";
                           descRef.current.value = "";
                           setDescRefLen(0);
                           setPopUpStandard(true);
@@ -1377,6 +1396,12 @@ border border-2 transition-all duration-300`}
                         className="bg-[--red] rounded-full p-1 text-white border border-2 border-[--red] hover:bg-transparent 
                   hover:text-[--red] transition-all duration-300"
                         onClick={() => {
+                          window.scrollTo({
+                            top: 0,
+                            left: 0,
+                            behavior: "smooth",
+                          });
+                          document.body.style.overflow = "hidden";
                           setPreferredGC(
                             gcNames?.filter((i) =>
                               i?.assignedCollege?.includes(
@@ -1493,6 +1518,12 @@ border border-2 transition-all duration-300`}
                             {"Learn more about our "}
                             <span
                               onClick={() => {
+                                window.scrollTo({
+                                  top: 0,
+                                  left: 0,
+                                  behavior: "smooth",
+                                });
+                                document.body.style.overflow = "hidden";
                                 setIsOpenPolicyModal(true);
                               }}
                               className="font-bold text-[--dark-green] hover:underline transition-all cursor-pointer"
@@ -1514,6 +1545,12 @@ border border-2 transition-all duration-300`}
                           <p
                             className="text-xs"
                             onClick={() => {
+                              window.scrollTo({
+                                top: 0,
+                                left: 0,
+                                behavior: "smooth",
+                              });
+                              document.body.style.overflow = "hidden";
                               setIsOpenFeedbackModal(true);
                             }}
                           >
