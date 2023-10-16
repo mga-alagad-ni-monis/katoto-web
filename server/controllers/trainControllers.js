@@ -93,9 +93,33 @@ const setConcerns = async () => {
     { lineWidth: -1 }
   );
 
-  const concernsArray = domain?.responses?.utter_mga_problema[0]?.buttons?.map(
-    (i) => i?.title
+  let concernsArray = domain?.responses?.utter_mga_problema[0]?.buttons?.map(
+    (i) => {
+      if (i?.title !== "Iba pang problema") {
+        return i?.title;
+      }
+      return;
+    }
   );
+
+  ["2", "3", "4", "5", "6", "7", "8", "9", "10"].forEach((i) => {
+    if (domain?.responses[`utter_${i}_mga_problema`]) {
+      const newConcerns = domain?.responses[
+        `utter_${i}_mga_problema`
+      ][0]?.buttons?.map((j) => {
+        if (j?.title !== "Iba pang problema") {
+          return j?.title;
+        }
+        return;
+      });
+
+      newConcerns.forEach((j) => {
+        concernsArray.push(j);
+      });
+    }
+  });
+
+  concernsArray = concernsArray?.filter((i) => i !== undefined);
 
   const document = await db.collection("values").doc("global");
 
