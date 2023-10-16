@@ -111,7 +111,7 @@ io.on("connection", (socket) => {
         await setConcerns();
       }
 
-      let port = mode === "cg" ? 8000 : 8001;
+      let port = mode === "cg" ? process.env.CG_PORT : process.env.FC_PORT;
 
       if (detectOSType() === "Windows") {
         console.log("Windows");

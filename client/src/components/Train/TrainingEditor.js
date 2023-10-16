@@ -11,6 +11,7 @@ function TrainingEditor({
   handleSetFiles,
   selectedMode,
   handleTrain,
+  setIsOpenFinishedTraining,
   socket,
 }) {
   const monacoRef = useRef(null);
@@ -39,6 +40,9 @@ function TrainingEditor({
         var buffer = new Uint8Array(data.data);
         var fileString = String.fromCharCode.apply(null, buffer);
         setShellLogs((shellLogs) => [...shellLogs, fileString]);
+        if (fileString?.includes("Rasa server is up and running")) {
+          setIsOpenFinishedTraining(true);
+        }
       });
     }
   }, [train]);

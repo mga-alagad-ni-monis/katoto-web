@@ -255,6 +255,9 @@ checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:af
                   <div className="w-4/5 flex flex-col gap-8 max-screen">
                     <p className="font-extrabold">Upcoming Campaigns</p>
                     <div className="w-full overflow flex flex-wrap">
+                      {filteredCampaigns()?.length === 0 ? (
+                        <p className="w-full font-bold">No Campaigns...</p>
+                      ) : null}
                       {filteredCampaigns()?.map((i, k) => {
                         return (
                           <div className="w-1/3 pb-5 pr-5">

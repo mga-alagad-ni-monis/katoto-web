@@ -10,6 +10,7 @@ import QoutesTable from "../components/Train/QoutesTable";
 import { motion } from "framer-motion";
 import Modal from "../components/Modal";
 import Loading from "../components/Loading";
+import { MdOutlineCheckCircleOutline } from "react-icons/md";
 
 function Train({ auth, toast, socket }) {
   const [trainingData, setTrainingData] = useState();
@@ -28,6 +29,7 @@ function Train({ auth, toast, socket }) {
   const [quote, setQuote] = useState("");
   const [id, setId] = useState("");
   const [status, setStatus] = useState(null);
+  const [isOpenFinishedTraining, setIsOpenFinishedTraining] = useState(false);
 
   const [quotes, setQuotes] = useState([]);
 
@@ -238,7 +240,7 @@ function Train({ auth, toast, socket }) {
         <Loading />
       ) : (
         <div className="bg-[--light-brown] h-screen overflow-hidden">
-          {isOpenAddModal || isOpenEditModal ? (
+          {isOpenAddModal || isOpenEditModal || isOpenFinishedTraining ? (
             <motion.div
               className="bg-black/50 absolute w-screen h-screen z-40"
               variants={{
@@ -259,12 +261,55 @@ function Train({ auth, toast, socket }) {
                   },
                 },
               }}
-              animate={isOpenAddModal || isOpenEditModal ? "show" : "hide"}
+              animate={
+                isOpenAddModal || isOpenEditModal || isOpenFinishedTraining
+                  ? "show"
+                  : "hide"
+              }
               initial={{
                 opacity: 0,
               }}
             ></motion.div>
           ) : null}
+
+          <Modal isOpen={isOpenFinishedTraining}>
+            <div className="w-full justify-between flex">
+              <p className="text-2xl font-extrabold">
+                Training Already Finished
+              </p>
+              <button
+                onClick={() => {
+                  setIsOpenFinishedTraining(false);
+                }}
+                type="button"
+              >
+                <FaTimes size={20} />
+              </button>
+            </div>
+            <div className="flex flex-col gap-4 mt-5">
+              <div className="flex gap-5">
+                <div className="bg-[--dark-green] h-fit rounded-full p-2 text-white border border-2 border-[--dark-green]">
+                  <MdOutlineCheckCircleOutline size={48} />
+                </div>
+                <p>
+                  <span className="font-bold">We're all set!</span> The
+                  chatbot's training is <span className="font-bold">done</span>,
+                  and it's ready to use by students!
+                </p>
+              </div>
+              <div className="w-full flex justify-end">
+                <button
+                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 p-5 flex gap-2 items-center justify-center 
+          border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                  onClick={() => {
+                    setIsOpenFinishedTraining(false);
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </Modal>
 
           <form
             className="w-full justify-between flex"
@@ -482,6 +527,7 @@ function Train({ auth, toast, socket }) {
                 selectedMode={selectedMode}
                 handleTrain={handleTrain}
                 socket={socket}
+                setIsOpenFinishedTraining={setIsOpenFinishedTraining}
               ></TrainingEditor>
             ) : (
               <QoutesTable
