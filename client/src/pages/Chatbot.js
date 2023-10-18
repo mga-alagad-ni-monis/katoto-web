@@ -8,7 +8,7 @@ import "@smastrom/react-rating/style.css";
 
 import { IoSend } from "react-icons/io5";
 import { AiOutlineCloseCircle } from "react-icons/ai";
-import { MdSos, MdOutlinePending } from "react-icons/md";
+import { MdSos, MdOutlinePending, MdOutlineCancel } from "react-icons/md";
 import { FaTimes } from "react-icons/fa";
 
 import {
@@ -43,6 +43,7 @@ function Chatbot({ toast, auth, socket }) {
   const [isAcceptedPolicy, setIsAcceptedPolicy] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isAppointmentLoading, setIsAppointmentLoading] = useState(false);
+  const [isYouHavePending, setIsYouHavePending] = useState(false);
 
   const [katotoMessage, setKatotoMessage] = useState("");
   const [inputFriendly, setInputFriendly] = useState("");
@@ -84,25 +85,32 @@ function Chatbot({ toast, auth, socket }) {
   useEffect(() => {
     if (socket) {
       socket.on("studentScheduleResponse", (details) => {
-        setIsAppointmentLoading(false);
-        console.log("1");
         setTimeout(async () => {
           await getBookedAppointments();
           setSosNo(0);
           setPopUpSOS(false);
           setIsOpenStandardAppoint(false);
           setDescRefLen(0);
-          console.log("22");
           if (details.appointmentDetails.type === "sos") {
             setSosDetails(details);
           } else if (details.appointmentDetails.type === "standard") {
             setStandardDetails(details);
           }
+          setIsAppointmentLoading(false);
         }, 200);
       });
 
       socket.on("hasPending", (message) => {
-        toast.error(message.appointmentDetails);
+        setIsOpenStandardAppoint(false);
+        setPopUpStandard(false);
+        setPopUpSOS(false);
+        setAppointmentDateStart("");
+        setAppointmentDateEnd("");
+        setIsAppointmentChecked(false);
+        setDescRefLen(0);
+        setIsAppointmentLoading(false);
+        setIsYouHavePending(true);
+        // toast.error(message.appointmentDetails);
       });
     }
   }, [socket]);
@@ -524,7 +532,8 @@ function Chatbot({ toast, auth, socket }) {
           popUpStandard ||
           isOpenStandardAppoint ||
           isOpenFeedbackModal ||
-          isOpenPolicyModal ? (
+          isOpenPolicyModal ||
+          isYouHavePending ? (
             <motion.div
               className="bg-black/50 absolute w-screen h-screen z-50 overflow-hidden"
               variants={{
@@ -551,7 +560,8 @@ function Chatbot({ toast, auth, socket }) {
                 popUpStandard ||
                 isOpenStandardAppoint ||
                 isOpenFeedbackModal ||
-                isOpenPolicyModal
+                isOpenPolicyModal ||
+                isYouHavePending
                   ? "show"
                   : "hide"
               }
@@ -877,7 +887,62 @@ function Chatbot({ toast, auth, socket }) {
               ></CalendarComponent>
             </div>
           </Modal>
+          <Modal isOpen={isYouHavePending}>
+            <div className="w-full justify-between flex">
+              <p className="text-2xl font-extrabold">
+                You Have a Pending Appointment
+              </p>
+              <button
+                onClick={() => {
+                  setIsYouHavePending(false);
+                }}
+                type="button"
+              >
+                <FaTimes size={20} />
+              </button>
+            </div>
+            <div className="flex flex-col gap-4 mt-5">
+              <div className="flex gap-5">
+                <div className="bg-[--red] h-fit rounded-full p-2 text-white border border-2 border-[--red]">
+                  <MdOutlineCancel size={48} />
+                </div>
+                <p>
+                  <span className="font-bold">Currently</span> you have a
+                  pending <span className="font-bold">appointment.</span> Please
+                  check the details on the appointments tab, Thank you!
+                </p>
+              </div>
+              <div className="w-full flex justify-end">
+                <button
+                  className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 p-5 flex gap-2 items-center justify-center 
+          border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                  onClick={() => {
+                    setIsYouHavePending(false);
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </Modal>
           <Modal isOpen={isOpenStandardAppoint}>
+            <div className="w-full justify-between flex">
+              <p className="text-2xl font-extrabold">Regular Appointment</p>
+              <button
+                onClick={() => {
+                  document.body.style.overflow = "";
+                  setIsOpenStandardAppoint(false);
+                  setPopUpStandard(true);
+                  setAppointmentDateStart("");
+                  setAppointmentDateEnd("");
+                  setIsAppointmentChecked(false);
+                  setDescRefLen(0);
+                }}
+                type="button"
+              >
+                <FaTimes size={20} />
+              </button>
+            </div>
             {isAppointmentLoading ? (
               <div className="flex justify-center w-full">
                 <div class="lds-ring">
@@ -888,147 +953,128 @@ function Chatbot({ toast, auth, socket }) {
                 </div>
               </div>
             ) : (
-              <>
-                {" "}
-                <div className="w-full justify-between flex">
-                  <p className="text-2xl font-extrabold">Regular Appointment</p>
-                  <button
-                    onClick={() => {
-                      document.body.style.overflow = "";
-                      setIsOpenStandardAppoint(false);
-                      setPopUpStandard(true);
-                      setAppointmentDateStart("");
-                      setAppointmentDateEnd("");
-                      setIsAppointmentChecked(false);
-                      setDescRefLen(0);
-                    }}
-                    type="button"
-                  >
-                    <FaTimes size={20} />
-                  </button>
+              <div className="mt-4">
+                <div className="flex items-center gap-5">
+                  <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                    Appointment Details
+                  </p>
                 </div>
-                <div className="mt-4">
-                  <div className="flex items-center gap-5">
-                    <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                      Appointment Details
+                <div className="bg-black/10 w-full h-auto p-3 rounded-lg mb-5">
+                  <div className="flex gap-4">
+                    <BsCalendar4Week size={24} />
+                    <p>{convertDate(appointmentDetails?.start)[1]}</p>
+                    <div className="border-[1px] border-black/20 border-right"></div>
+                    <BsClockHistory size={24} />
+                    <p>
+                      {appointmentDateStart
+                        ? `${new Date(
+                            appointmentDateStart
+                          ).toLocaleTimeString()} - ${new Date(
+                            appointmentDateEnd
+                          ).toLocaleTimeString()}`
+                        : "00:00:00"}
                     </p>
+                    <p>45 mins</p>
                   </div>
-                  <div className="bg-black/10 w-full h-auto p-3 rounded-lg mb-5">
-                    <div className="flex gap-4">
-                      <BsCalendar4Week size={24} />
-                      <p>{convertDate(appointmentDetails?.start)[1]}</p>
-                      <div className="border-[1px] border-black/20 border-right"></div>
-                      <BsClockHistory size={24} />
-                      <p>
-                        {appointmentDateStart
-                          ? `${new Date(
-                              appointmentDateStart
-                            ).toLocaleTimeString()} - ${new Date(
-                              appointmentDateEnd
-                            ).toLocaleTimeString()}`
-                          : "00:00:00"}
-                      </p>
-                      <p>45 mins</p>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-5 mb-5 gap-y-3">
-                    {availableTime.map((i, k) => {
-                      return bookedAppointments.some(
-                        (j) =>
-                          `${new Date(
-                            appointmentDetails?.start
-                          ).toLocaleDateString()}, ${i.time}` ===
-                          new Date(j.start).toLocaleString()
-                      ) ? (
-                        <button
-                          key={k}
-                          className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+                </div>
+                <div className="flex flex-wrap gap-5 mb-5 gap-y-3">
+                  {availableTime.map((i, k) => {
+                    return bookedAppointments.some(
+                      (j) =>
+                        `${new Date(
+                          appointmentDetails?.start
+                        ).toLocaleDateString()}, ${i.time}` ===
+                        new Date(j.start).toLocaleString()
+                    ) ? (
+                      <button
+                        key={k}
+                        className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
   border border-2 border-[--dark-green] transition-all duration-300 opacity-50"
-                          disabled
-                        >
-                          {i.time}
-                        </button>
-                      ) : (
-                        <button
-                          key={k}
-                          className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
-  border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-                          onClick={() => {
-                            setAppointmentDateStart(
-                              convertDateAppointment(
-                                new Date(
-                                  convertDate(appointmentDetails?.start)[1]
-                                ).toLocaleString(),
-                                i.no,
-                                0
-                              )
-                            );
-                            setAppointmentDateEnd(
-                              convertDateAppointment(
-                                new Date(
-                                  convertDate(appointmentDetails?.start)[1]
-                                ).toLocaleString(),
-                                i.no,
-                                45
-                              )
-                            );
-                          }}
-                        >
-                          {i.time}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className="flex gap-5 mb-5">
-                    <div>
-                      <p className="text-[--dark-green] font-bold flex items-center mb-3 justify-between  ">
-                        Concern{" "}
-                        <span className="text-[8px] text-[--red]">
-                          {200 - descRefLen} character(s) left
-                        </span>
-                      </p>
-                      <textarea
-                        className="w-auto h-[46px] bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
-                p-3 font-semibold resize-none"
-                        placeholder="Describe your concern..."
-                        ref={descRef}
-                        maxLength={200}
-                        onChange={() => {
-                          setTimeout(() => {
-                            setDescRefLen(descRef?.current?.value.length);
-                          }, 1000);
-                        }}
-                      ></textarea>
-                    </div>
-
-                    <div>
-                      <p className="text-[--dark-green] font-bold flex items-center mb-3">
-                        Mode
-                      </p>
-                      <select
-                        id="mode"
-                        className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                        value={preferredMode}
-                        onChange={(e) => {
-                          setPreferredMode(e.target.value);
-                        }}
-                        required
+                        disabled
                       >
-                        <option value="facetoface" defaultValue>
-                          Face-to-face
-                        </option>
-                        <option value="virtual">Virtual</option>
-                      </select>
-                    </div>
-                    <div>
-                      <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
-                        Guidance Counselor
-                      </p>
+                        {i.time}
+                      </button>
+                    ) : (
+                      <button
+                        key={k}
+                        className="bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+  border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                        onClick={() => {
+                          setAppointmentDateStart(
+                            convertDateAppointment(
+                              new Date(
+                                convertDate(appointmentDetails?.start)[1]
+                              ).toLocaleString(),
+                              i.no,
+                              0
+                            )
+                          );
+                          setAppointmentDateEnd(
+                            convertDateAppointment(
+                              new Date(
+                                convertDate(appointmentDetails?.start)[1]
+                              ).toLocaleString(),
+                              i.no,
+                              45
+                            )
+                          );
+                        }}
+                      >
+                        {i.time}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex gap-5 mb-5">
+                  <div>
+                    <p className="text-[--dark-green] font-bold flex items-center mb-3 justify-between  ">
+                      Concern{" "}
+                      <span className="text-[8px] text-[--red]">
+                        {200 - descRefLen} character(s) left
+                      </span>
+                    </p>
+                    <textarea
+                      className="w-auto h-[46px] bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 
+                p-3 font-semibold resize-none"
+                      placeholder="Describe your concern..."
+                      ref={descRef}
+                      maxLength={200}
+                      onChange={() => {
+                        setTimeout(() => {
+                          setDescRefLen(descRef?.current?.value.length);
+                        }, 1000);
+                      }}
+                    ></textarea>
+                  </div>
 
-                      <p>
-                        {gcNames.filter((i) => i.idNo === preferredGC)[0]?.name}
-                      </p>
-                      {/* <select
+                  <div>
+                    <p className="text-[--dark-green] font-bold flex items-center mb-3">
+                      Mode
+                    </p>
+                    <select
+                      id="mode"
+                      className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                      value={preferredMode}
+                      onChange={(e) => {
+                        setPreferredMode(e.target.value);
+                      }}
+                      required
+                    >
+                      <option value="facetoface" defaultValue>
+                        Face-to-face
+                      </option>
+                      <option value="virtual">Virtual</option>
+                    </select>
+                  </div>
+                  <div>
+                    <p className="text-[--dark-green] font-bold flex items-center mb-3 ">
+                      Guidance Counselor
+                    </p>
+
+                    <p>
+                      {gcNames.filter((i) => i.idNo === preferredGC)[0]?.name}
+                    </p>
+                    {/* <select
                   id="guidanceCounselors"
                   className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
                   value={preferredGC}
@@ -1051,108 +1097,104 @@ function Chatbot({ toast, auth, socket }) {
                     );
                   })}
                 </select> */}
-                    </div>
                   </div>
-                  <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
-                    Your Details
-                  </p>
-                  <table className="mb-5 text-xs">
-                    <tr>
-                      <td className="w-[150px] flex justify-start">Name</td>
-                      <td>{auth?.userInfo?.name}</td>
-                    </tr>
-                    <tr>
-                      <td className="w-[150px] flex justify-start">Gender</td>
-                      <td>{auth?.userInfo?.gender}</td>
-                    </tr>
-                    <tr>
-                      <td className="w-[150px] flex justify-start">Email</td>
-                      <td>{auth?.userInfo?.credentials?.email}</td>
-                    </tr>
-                    <tr>
-                      <td className="w-[150px] flex justify-start">
-                        {" "}
-                        ID Number
-                      </td>
-                      <td> {auth?.userInfo?.idNo}</td>
-                    </tr>
-                    <tr>
-                      <td className="w-[150px] flex justify-start">Course</td>
-                      <td>{auth?.userInfo?.department}</td>
-                    </tr>
-                    <tr>
-                      <td className="w-[150px] flex justify-start">
-                        Year and Section
-                      </td>
-                      <td>{auth?.userInfo?.yearSection}</td>
-                    </tr>
-                    <tr>
-                      <td className="w-[150px] flex justify-start">College</td>
-                      <td>{auth?.userInfo?.mainDepartment}</td>
-                    </tr>
-                    <tr>
-                      <td className="w-[150px] flex justify-start">Phone</td>
-                      <td>{auth?.userInfo?.contactNo}</td>
-                    </tr>
-                  </table>
-                  <div className="flex gap-5 mb-5">
-                    <input
-                      id="checkbox-1"
-                      className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 mt-1
+                </div>
+                <p className="text-[--dark-green] font-bold flex items-center w-full mb-3">
+                  Your Details
+                </p>
+                <table className="mb-5 text-xs">
+                  <tr>
+                    <td className="w-[150px] flex justify-start">Name</td>
+                    <td>{auth?.userInfo?.name}</td>
+                  </tr>
+                  <tr>
+                    <td className="w-[150px] flex justify-start">Gender</td>
+                    <td>{auth?.userInfo?.gender}</td>
+                  </tr>
+                  <tr>
+                    <td className="w-[150px] flex justify-start">Email</td>
+                    <td>{auth?.userInfo?.credentials?.email}</td>
+                  </tr>
+                  <tr>
+                    <td className="w-[150px] flex justify-start"> ID Number</td>
+                    <td> {auth?.userInfo?.idNo}</td>
+                  </tr>
+                  <tr>
+                    <td className="w-[150px] flex justify-start">Course</td>
+                    <td>{auth?.userInfo?.department}</td>
+                  </tr>
+                  <tr>
+                    <td className="w-[150px] flex justify-start">
+                      Year and Section
+                    </td>
+                    <td>{auth?.userInfo?.yearSection}</td>
+                  </tr>
+                  <tr>
+                    <td className="w-[150px] flex justify-start">College</td>
+                    <td>{auth?.userInfo?.mainDepartment}</td>
+                  </tr>
+                  <tr>
+                    <td className="w-[150px] flex justify-start">Phone</td>
+                    <td>{auth?.userInfo?.contactNo}</td>
+                  </tr>
+                </table>
+                <div className="flex gap-5 mb-5">
+                  <input
+                    id="checkbox-1"
+                    className="text-[--light-brown] w-5 h-5 ease-soft text-xs rounded-lg checked:bg-[--dark-green] checked:from-gray-900 mt-1
      checked:to-slate-800 after:text-xxs after:font-awesome after:duration-250 after:ease-soft-in-out duration-250 relative 
      float-left cursor-pointer appearance-none border border-solid border-2  border-[--light-gray] checked:border-[--light-gray] checked:border-2 bg-[--light-gray] 
      bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full 
      after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-['✔'] 
      checked:bg-[--dark-green] checked:after:opacity-100"
-                      type="checkbox"
-                      style={{
-                        fontFamily: "FontAwesome",
-                      }}
-                      checked={isAppointmentChecked ? true : false}
-                      onChange={() => {
-                        setIsAppointmentChecked(!isAppointmentChecked);
-                      }}
-                    />
-                    <p
-                      className="w-fit cursor-pointer"
-                      onClick={() => {
-                        setIsAppointmentChecked(!isAppointmentChecked);
-                      }}
-                    >
-                      By ticking the box, you hereby acknowledge and consent to
-                      the use of your personal information for scheduling
-                      appointments with our mental health chatbot.
-                    </p>
-                  </div>
-                  <div className="flex justify-end gap-5">
-                    <button
-                      className="bg-[--red] border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red]
+                    type="checkbox"
+                    style={{
+                      fontFamily: "FontAwesome",
+                    }}
+                    checked={isAppointmentChecked ? true : false}
+                    onChange={() => {
+                      setIsAppointmentChecked(!isAppointmentChecked);
+                    }}
+                  />
+                  <p
+                    className="w-fit cursor-pointer"
+                    onClick={() => {
+                      setIsAppointmentChecked(!isAppointmentChecked);
+                    }}
+                  >
+                    By ticking the box, you hereby acknowledge and consent to
+                    the use of your personal information for scheduling
+                    appointments with our mental health chatbot.
+                  </p>
+                </div>
+                <div className="flex justify-end gap-5">
+                  <button
+                    className="bg-[--red] border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red]
                   rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
                   border border-2 transition-all duration-300"
-                      onClick={() => {
-                        document.body.style.overflow = "";
-                        setIsOpenStandardAppoint(false);
-                        setPopUpStandard(true);
-                        setIsAppointmentChecked(false);
-                      }}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className={`${
-                        isAppointmentChecked
-                          ? "hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green]"
-                          : "opacity-50"
-                      } bg-[--dark-green] border-[--dark-green]  rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+                    onClick={() => {
+                      document.body.style.overflow = "";
+                      setIsOpenStandardAppoint(false);
+                      setPopUpStandard(true);
+                      setIsAppointmentChecked(false);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className={`${
+                      isAppointmentChecked
+                        ? "hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green]"
+                        : "opacity-50"
+                    } bg-[--dark-green] border-[--dark-green]  rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
   border border-2 transition-all duration-300`}
-                      onClick={handleSetStandardAppointment}
-                      disabled={isAppointmentChecked ? false : true}
-                    >
-                      Submit
-                    </button>
-                  </div>
+                    onClick={handleSetStandardAppointment}
+                    disabled={isAppointmentChecked ? false : true}
+                  >
+                    Submit
+                  </button>
                 </div>
-              </>
+              </div>
             )}
           </Modal>
           <Modal isOpen={isOpenFeedbackModal} isCalendar={true}>

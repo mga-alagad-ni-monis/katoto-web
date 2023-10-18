@@ -217,9 +217,9 @@ h6 {
   border-color: var(--dark-green) transparent transparent transparent;
 }
 
-iframe {
+/* iframe {
   display: none;
-}
+} */
 
 .tox-tinymce iframe {
   display: block;

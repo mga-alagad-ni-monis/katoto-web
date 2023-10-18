@@ -445,7 +445,6 @@ function Appointments({ socket, toast, auth }) {
           descRef.current.value = "";
           setIsOpenAddAppointment(false);
           setIsOpenCalendar(false);
-          toast.success("Successfully Added!");
         } catch (err) {
           toast.error("Error");
         }

@@ -90,75 +90,79 @@ const addStandardAppointment = async (
   creator,
   description
 ) => {
-  let result = await db
-    .collection("reports")
-    .get()
-    .then((querySnapshot) => {
-      if (querySnapshot.empty) {
-        return res.status(404).send("Error");
-      }
-
-      let message = "";
-      querySnapshot.forEach((i) => {
-        if (i.data().reports.standardAppointments !== undefined) {
-          i.data().reports.standardAppointments.forEach((j) => {
-            if (
-              userDetails.idNo === j.userDetails.idNo &&
-              (j.status === "upcoming" || j.status === "pending")
-            ) {
-              if (creator !== userDetails.idNo) {
-                message = "The student has a pending appointment";
-              } else {
-                message = "You have pending appointment";
-              }
-            }
-          });
+  try {
+    let result = await db
+      .collection("reports")
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          return res.status(404).send("Error");
         }
+
+        let message = "";
+        querySnapshot.forEach((i) => {
+          if (i.data().reports.standardAppointments !== undefined) {
+            i.data().reports.standardAppointments.forEach((j) => {
+              if (
+                userDetails.idNo === j.userDetails.idNo &&
+                (j.status === "upcoming" || j.status === "pending")
+              ) {
+                if (creator !== userDetails.idNo) {
+                  message = "The student has a pending appointment";
+                } else {
+                  message = "You have pending appointment";
+                }
+              }
+            });
+          }
+        });
+        return message;
       });
-      return message;
+
+    if (result !== "") return result;
+
+    const currentDate = new Date()
+      .toLocaleDateString("en-US", {
+        month: "2-digit",
+        day: "2-digit",
+        year: "numeric",
+      })
+      .replace(/\//g, "");
+
+    const document = await db.collection("reports").doc(currentDate);
+
+    let reports = await document.get();
+
+    let standardAppointments = reports.data().reports.standardAppointments;
+
+    let date = new Date();
+
+    const standardDetails = {
+      id: uniqid.time(),
+      userDetails,
+      createdDate: date.toLocaleString(),
+      type: "standard",
+      status: userDetails.idNo !== creator ? "upcoming" : "pending",
+      // subject for date changes
+      start: start,
+      end: end,
+      gc: gc,
+      mode: mode,
+      creator: creator,
+      description,
+      notes: "",
+    };
+
+    standardAppointments.push(standardDetails);
+
+    await document.update({
+      "reports.standardAppointments": standardAppointments,
     });
 
-  if (result !== "") return result;
-
-  const currentDate = new Date()
-    .toLocaleDateString("en-US", {
-      month: "2-digit",
-      day: "2-digit",
-      year: "numeric",
-    })
-    .replace(/\//g, "");
-
-  const document = await db.collection("reports").doc(currentDate);
-
-  let reports = await document.get();
-
-  let standardAppointments = reports.data().reports.standardAppointments;
-
-  let date = new Date();
-
-  const standardDetails = {
-    id: uniqid.time(),
-    userDetails,
-    createdDate: date.toLocaleString(),
-    type: "standard",
-    status: userDetails.idNo !== creator ? "upcoming" : "pending",
-    // subject for date changes
-    start: start,
-    end: end,
-    gc: gc,
-    mode: mode,
-    creator: creator,
-    description,
-    notes: "",
-  };
-
-  standardAppointments.push(standardDetails);
-
-  await document.update({
-    "reports.standardAppointments": standardAppointments,
-  });
-
-  return standardDetails;
+    return standardDetails;
+  } catch (err) {
+    return;
+  }
 };
 
 const getAppointments = async (req, res) => {
@@ -453,6 +457,7 @@ const approveAppointment = async (req, res) => {
 
         let appointmentsArray = docInfo.appointments.map((j) => {
           if (j.id === id) {
+            docInfo["start"] = j.start;
             let newAppointment = {
               creator: j.creator,
               mode: j.mode,
@@ -470,7 +475,9 @@ const approveAppointment = async (req, res) => {
             docInfo["appointment"] = newAppointment;
             return newAppointment;
           } else {
-            j["status"] = "cancelled";
+            if (j.start === docInfo["start"]) {
+              j["status"] = "cancelled";
+            }
             return j;
           }
         });

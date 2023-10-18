@@ -223,6 +223,7 @@ const handleImport = async (req, res) => {
         let errorAccounts = [];
         let isError = false;
         let documents = await Promise.all(
+          //if email is registered
           users.map(async (user, k) => {
             const querySnapshot = await db
               .collection("accounts")
@@ -240,6 +241,24 @@ const handleImport = async (req, res) => {
               }
             }
 
+            //if id no is registered
+            const querySnapshot2 = await db
+              .collection("accounts")
+              .where("idNo", "==", user["ID Number"])
+              .get();
+
+            if (!querySnapshot2.empty) {
+              if (user["ID Number"]) {
+                isError = true;
+                errorAccounts.push(
+                  `Error on Row ${k + 2}: ID Number ${
+                    user["ID Number"]
+                  } is already registered.`
+                );
+              }
+            }
+
+            //if plv domain
             if (!/^[^@\s]+@plv.edu.ph$/i.test(user["Email"])) {
               if (user["Email"]) {
                 isError = true;
@@ -251,6 +270,7 @@ const handleImport = async (req, res) => {
               }
             }
 
+            //if password > 7
             if (!(user["Password"].length > 7)) {
               if (user["Email"]) {
                 isError = true;
@@ -262,6 +282,7 @@ const handleImport = async (req, res) => {
               }
             }
 
+            //if gender is included
             if (
               user["Gender"] !== "Male" &&
               user["Gender"] !== "Female" &&
@@ -275,6 +296,7 @@ const handleImport = async (req, res) => {
               }
             }
 
+            //if privilege is correct
             if (
               user[Object.keys(users[k])[0]].charAt(0).toLowerCase() +
                 user[Object.keys(users[k])[0]].slice(1).replace(/\s/g, "") !==
@@ -293,6 +315,32 @@ const handleImport = async (req, res) => {
               }
             }
 
+            //check the format of y/s
+            if (
+              user[Object.keys(users[k])[0]].charAt(0).toLowerCase() +
+                user[Object.keys(users[k])[0]].slice(1).replace(/\s/g, "") ===
+              "student"
+            ) {
+              isError = true;
+              if (user["Year Section"]) {
+                if (
+                  !(
+                    user["Year Section"][0] > 0 && user["Year Section"][0] < 5
+                  ) ||
+                  !(
+                    user["Year Section"].slice(2) > 0 &&
+                    user["Year Section"].slice(2) < 21
+                  )
+                )
+                  errorAccounts.push(
+                    `Error on Row ${k + 2}: ${
+                      user["Name"]
+                    }'s year and section must follow the format e.g. (4-12)`
+                  );
+              }
+            }
+
+            //if student the y/s must be filled and if gc not
             if (
               user[Object.keys(users[k])[0]].charAt(0).toLowerCase() +
                 user[Object.keys(users[k])[0]].slice(1).replace(/\s/g, "") ===
@@ -308,6 +356,96 @@ const handleImport = async (req, res) => {
                   );
                 }
               }
+
+              if (user[Object.keys(users[k])[10]]) {
+                isError = true;
+                if (user["Email"]) {
+                  errorAccounts.push(
+                    `Error on Row ${k + 2}: ${
+                      user["Name"]
+                    } is a student and does not need an assigned college`
+                  );
+                }
+              }
+            } else if (
+              user[Object.keys(users[k])[0]].charAt(0).toLowerCase() +
+                user[Object.keys(users[k])[0]].slice(1).replace(/\s/g, "") ===
+              "guidanceCounselor"
+            ) {
+              if (user[Object.keys(users[k])[8]]) {
+                isError = true;
+                if (user["Email"]) {
+                  errorAccounts.push(
+                    `Error on Row ${k + 2}: ${
+                      user["Name"]
+                    } is a guidance counselor and does not need a year and section`
+                  );
+                }
+              }
+
+              if (user[Object.keys(users[k])[9]]) {
+                isError = true;
+                if (user["Email"]) {
+                  errorAccounts.push(
+                    `Error on Row ${k + 2}: ${
+                      user["Name"]
+                    } is a guidance counselor and does not need a department`
+                  );
+                }
+              }
+            }
+
+            if (
+              user[Object.keys(users[k])[0]].charAt(0).toLowerCase() +
+                user[Object.keys(users[k])[0]].slice(1).replace(/\s/g, "") ===
+              "student"
+            ) {
+              if (
+                !user[Object.keys(users[k])[0]] ||
+                !user[Object.keys(users[k])[1]] ||
+                !user[Object.keys(users[k])[2]] ||
+                !user[Object.keys(users[k])[3]] ||
+                !user[Object.keys(users[k])[4]] ||
+                !user[Object.keys(users[k])[5]] ||
+                !user[Object.keys(users[k])[6]] ||
+                !user[Object.keys(users[k])[7]] ||
+                !user[Object.keys(users[k])[8]] ||
+                !user[Object.keys(users[k])[9]]
+              ) {
+                isError = true;
+
+                errorAccounts.push(
+                  `Error on Row ${
+                    k + 2
+                  }: All the details must be filled except Colleges`
+                );
+              }
+            }
+
+            if (
+              user[Object.keys(users[k])[0]].charAt(0).toLowerCase() +
+                user[Object.keys(users[k])[0]].slice(1).replace(/\s/g, "") ===
+              "guidanceCounselor"
+            ) {
+              if (
+                !user[Object.keys(users[k])[0]] ||
+                !user[Object.keys(users[k])[1]] ||
+                !user[Object.keys(users[k])[2]] ||
+                !user[Object.keys(users[k])[3]] ||
+                !user[Object.keys(users[k])[4]] ||
+                !user[Object.keys(users[k])[5]] ||
+                !user[Object.keys(users[k])[6]] ||
+                !user[Object.keys(users[k])[7]] ||
+                !user[Object.keys(users[k])[10]]
+              ) {
+                isError = true;
+
+                errorAccounts.push(
+                  `Error on Row ${
+                    k + 2
+                  }: All the details must be filled except Department`
+                );
+              }
             }
 
             if (isError) {
@@ -321,22 +459,49 @@ const handleImport = async (req, res) => {
                 salt
               );
 
-              return {
-                name: user[Object.keys(users[k])[1]],
-                credentials: {
-                  privilegeType:
-                    user[Object.keys(users[k])[0]].charAt(0).toLowerCase() +
-                    user[Object.keys(users[k])[0]].slice(1).replace(/\s/g, ""),
-                  email: user[Object.keys(users[k])[2]],
-                  password: hashedPassword,
-                },
-                idNo: user[Object.keys(users[k])[4]],
-                gender: user[Object.keys(users[k])[5]],
-                contactNo: user[Object.keys(users[k])[6]],
-                birthday: user[Object.keys(users[k])[7]],
-                yearSection: user[Object.keys(users[k])[8]],
-                department: user[Object.keys(users[k])[9]],
-              };
+              if (
+                user[Object.keys(users[k])[0]].charAt(0).toLowerCase() +
+                  user[Object.keys(users[k])[0]].slice(1).replace(/\s/g, "") ===
+                "guidanceCounselor"
+              ) {
+                return {
+                  name: user[Object.keys(users[k])[1]],
+                  credentials: {
+                    privilegeType:
+                      user[Object.keys(users[k])[0]].charAt(0).toLowerCase() +
+                      user[Object.keys(users[k])[0]]
+                        .slice(1)
+                        .replace(/\s/g, ""),
+                    email: user[Object.keys(users[k])[2]],
+                    password: hashedPassword,
+                  },
+                  idNo: user[Object.keys(users[k])[4]],
+                  gender: user[Object.keys(users[k])[5]],
+                  contactNo: user[Object.keys(users[k])[6]],
+                  birthday: user[Object.keys(users[k])[7]],
+                  yearSection: user[Object.keys(users[k])[8]],
+                  assignedCollege: [user[Object.keys(users[k])[10]]],
+                };
+              } else {
+                return {
+                  name: user[Object.keys(users[k])[1]],
+                  credentials: {
+                    privilegeType:
+                      user[Object.keys(users[k])[0]].charAt(0).toLowerCase() +
+                      user[Object.keys(users[k])[0]]
+                        .slice(1)
+                        .replace(/\s/g, ""),
+                    email: user[Object.keys(users[k])[2]],
+                    password: hashedPassword,
+                  },
+                  idNo: user[Object.keys(users[k])[4]],
+                  gender: user[Object.keys(users[k])[5]],
+                  contactNo: user[Object.keys(users[k])[6]],
+                  birthday: user[Object.keys(users[k])[7]],
+                  yearSection: user[Object.keys(users[k])[8]],
+                  department: user[Object.keys(users[k])[9]],
+                };
+              }
             }
           })
         );

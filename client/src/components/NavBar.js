@@ -92,6 +92,12 @@ function NavBar({ auth, logout, socket, toast }) {
           await getNotification();
         }, 200);
       });
+
+      socket.on("studentScheduleResponse", (details) => {
+        setTimeout(async () => {
+          await getMyAppointment();
+        }, 200);
+      });
     }
   }, [socket]);
 

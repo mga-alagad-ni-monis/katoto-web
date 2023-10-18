@@ -1129,7 +1129,7 @@ function UserAccounts({ toast, auth }) {
                   name="file"
                   types={["CSV"]}
                 >
-                  <div className="mt-5 border border-4 border-[--dark-green] rounded-xl border-dashed w-full h-max p-8">
+                  <div className="mt-5 border border-4 border-[--dark-green] rounded-xl border-dashed w-full h-max p-8 cursor-pointer hover:bg-black/10 duration-300">
                     <div className="flex flex-col gap-1 items-center font-semibold">
                       <BsCloudUploadFill
                         size={32}
@@ -1360,7 +1360,7 @@ function UserAccounts({ toast, auth }) {
                 </tr>
                 <tr>
                   <td className="w-[295px] mr-5 flex justify-start truncate text-ellipsis">
-                    Department/Course
+                    Department/Assigned College
                   </td>
                 </tr>
                 <tr>
@@ -1384,7 +1384,7 @@ function UserAccounts({ toast, auth }) {
                   </td>
                 </tr>
               </thead>
-              <tbody className="flex flex-col max-h-[624px] overflow-y-auto">
+              <tbody className="flex flex-col max-h-[624px] overflow-y-auto overflow-x-none ">
                 {filteredUsers()?.length === 0 ? (
                   <p className="font-bold flex justify-center items-center min-h-[624px]">
                     No users...
@@ -1479,9 +1479,33 @@ function UserAccounts({ toast, auth }) {
                         </p>
                         <p className="w-[295px] mr-5 flex justify-start truncate text-ellipsis tooltip-div">
                           <div className="tooltip -mt-[40px] p-[10px] absolute bg-black rounded-lg text-white text-xs">
-                            {i?.department}
+                            {i?.credentials?.privilegeType === "student"
+                              ? i?.department
+                              : i?.assignedCollege.map((j, k) => {
+                                  if (j.includes("Education")) {
+                                    j = "COED";
+                                  } else if (j.includes("Arts")) {
+                                    j = "CAS";
+                                  } else if (j.includes("Technology")) {
+                                    j = "CEIT";
+                                  } else if (j.includes("Business")) {
+                                    j = "CABA";
+                                  }
+
+                                  if (k === i?.assignedCollege?.length - 1) {
+                                    return j;
+                                  }
+                                  return j + ", ";
+                                })}
                           </div>
-                          {i?.department}
+                          {i?.credentials?.privilegeType === "student"
+                            ? i?.department
+                            : i?.assignedCollege.map((j, k) => {
+                                if (k === i?.assignedCollege?.length - 1) {
+                                  return j;
+                                }
+                                return j + ", ";
+                              })}
                         </p>
                         <p className="w-[80px] ml-3 flex justify-start truncate text-ellipsis tooltip-div">
                           {i?.yearSection ? (

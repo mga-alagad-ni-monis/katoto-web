@@ -383,6 +383,11 @@ io.on("connection", (socket) => {
     removeUser(socket.id);
     console.log(onlineUsers);
   });
+
+  socket.on("disconnect", () => {
+    removeUser(socket.id);
+    console.log(onlineUsers);
+  });
 });
 //
 
