@@ -17,33 +17,41 @@ const components = {
       case "pending":
         return (
           <div className="sos-pending text-black font-bold p-1 text-xs rounded-md bg-[--yellow]">
-            {`${i.event.title} (${i.event.data.status})`}
+            {i?.event?.data?.type !== "sos"
+              ? `${i.event.title} (${i.event.data.status})`.slice(10)
+              : `${i.event.title} (${i.event.data.status})`.slice(6)}
           </div>
         );
       case "upcoming":
         if (new Date(i.event.end) < new Date()) {
           return (
             <div className="sos-upcoming-1 text-black font-bold p-1 text-xs rounded-md bg-black/20">
-              {`${i.event.title} (ended)`}
+              {`${i.event.title} (ended)`.slice(10)}
             </div>
           );
         }
         return (
           <div className="sos-upcoming-2 text-black font-bold p-1 text-xs rounded-md bg-[--light-green]">
-            {`${i.event.title} (${i.event.data.status})`}
+            {i?.event?.data?.type !== "sos"
+              ? `${i.event.title} (${i.event.data.status})`.slice(10)
+              : `${i.event.title} (${i.event.data.status})`.slice(6)}
           </div>
         );
 
       case "completed":
         return (
           <div className="sos-complete text-[--light-brown] font-bold p-1 text-xs rounded-md bg-[--dark-green]">
-            {`${i.event.title} (${i.event.data.status})`}
+            {i?.event?.data?.type !== "sos"
+              ? `${i.event.title} (${i.event.data.status})`.slice(10)
+              : `${i.event.title} (${i.event.data.status})`.slice(6)}
           </div>
         );
       case "cancelled":
         return (
           <div className="sos-cancel text-[--light-brown] font-bold p-1 text-xs rounded-md bg-[--red]">
-            {`${i.event.title} (${i.event.data.status})`}
+            {i?.event?.data?.type !== "sos"
+              ? `${i.event.title} (${i.event.data.status})`.slice(10)
+              : `${i.event.title} (${i.event.data.status})`.slice(6)}
           </div>
         );
       default:
@@ -100,10 +108,41 @@ function AppointmentTable({ toast, auth }) {
       toast.error("Error");
     }
   };
+
+  const convertDate = (date) => {
+    const formattedDate = new Date(date);
+
+    const convertedDateTime = formattedDate.toLocaleString("en-PH", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      timeZone: "Asia/Singapore",
+    });
+
+    const convertedDate = formattedDate.toLocaleString("en-PH", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "Asia/Singapore",
+    });
+
+    const convertedTime = formattedDate.toLocaleString("en-PH", {
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      timeZone: "Asia/Singapore",
+    });
+
+    return [convertedDateTime, convertedDate, convertedTime];
+  };
+
   return (
     <div className="sh rounded-xl p-8 mb-8">
       <div className="flex justify-between w-full items-center">
-        <p className="flex text-xl font-extrabold">Current Appointments</p>
+        <p className="flex text-xl font-extrabold">Appointments</p>
       </div>
       <div className="h-auto w-full mt-5">
         <div className="w-full flex gap-5">
@@ -124,7 +163,11 @@ function AppointmentTable({ toast, auth }) {
                   (i) =>
                     i.data.type === "standard" &&
                     (i.data.status === "upcoming" ||
-                      i.data.status === "pending")
+                      i.data.status === "pending") &&
+                    moment(convertDate(i?.data?.start)[1]).isSame(
+                      moment(),
+                      "day"
+                    )
                 )}
                 components={components}
                 selectable={true}

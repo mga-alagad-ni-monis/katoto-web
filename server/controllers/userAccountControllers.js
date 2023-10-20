@@ -626,21 +626,33 @@ const editUser = async (req, res) => {
         return res.status(404).send("Unable to edit!");
       }
 
-      i.ref.update({
-        birthday: birthday,
-        gender: gender,
-        "credentials.privilegeType": userType,
-        yearSection: yearSection,
-        name: name,
-        department: department,
-        idNo: idNo,
-        contactNo: contactNo,
-        assignedCollege: assignedCollege,
-      });
+      if (i.data().credentials.privilegeType === "student") {
+        i.ref.update({
+          birthday: birthday,
+          gender: gender,
+          "credentials.privilegeType": userType,
+          yearSection: yearSection,
+          name: name,
+          department: department,
+          idNo: idNo,
+          contactNo: contactNo,
+        });
+      } else {
+        i.ref.update({
+          birthday: birthday,
+          gender: gender,
+          "credentials.privilegeType": userType,
+          name: name,
+          idNo: idNo,
+          contactNo: contactNo,
+          assignedCollege: assignedCollege,
+        });
+      }
     });
 
     res.status(200).json({ message: "Edit successfully!" });
   } catch (err) {
+    console.log(err);
     res.status(404).send("Error");
   }
 };
