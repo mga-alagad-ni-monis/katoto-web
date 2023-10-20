@@ -61,9 +61,9 @@ function UserNumberReport({ data, isGuided, selectedMode, selectedDateTime }) {
 
   return (
     <div>
-      <div className="h-[500px]">
+      <div className="">
         <div className="flex gap-5">
-          <div className="flex bg-[--dark-green] text-[--light-brown] p-5 rounded-lg shadow-lg gap-5 w-fit mb-8 ml-10 items-center">
+          <div className="flex bg-[--dark-green] text-[--light-brown] p-5 rounded-lg shadow-lg gap-5 w-fit mb-8 items-center">
             <HiOutlineUsers size={52} />
             <div className="flex flex-col justify-between">
               <p className="font-bold text-2xl">{dailyUsersCount}</p>
@@ -88,7 +88,7 @@ function UserNumberReport({ data, isGuided, selectedMode, selectedDateTime }) {
             </div>
           </div>
         </div>
-        <ResponsiveContainer width={"100%"} height={"95%"}>
+        {/* <ResponsiveContainer width={"100%"} height={"95%"}>
           <AreaChart
             width={500}
             height={400}
@@ -116,7 +116,7 @@ function UserNumberReport({ data, isGuided, selectedMode, selectedDateTime }) {
               fill="#2d757c"
             />
           </AreaChart>
-        </ResponsiveContainer>
+        </ResponsiveContainer> */}
       </div>
     </div>
   );

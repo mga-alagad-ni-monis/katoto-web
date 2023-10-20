@@ -626,6 +626,48 @@ const editUser = async (req, res) => {
         return res.status(404).send("Unable to edit!");
       }
 
+      let COED = [
+        "Bachelor of Early Childhood Education (BECED)",
+        "Bachelor of Secondary Education Major in English (BSED English)",
+        "Bachelor of Secondary Education Major in Filipino (BSED Filipino)",
+        "Bachelor of Secondary Education Major in Mathematics (BSED Mathematics)",
+        "Bachelor of Secondary Education Major in Science (BSED Science)",
+        "Bachelor of Secondary Education Major in Social Studies (BSED Social Studies)",
+      ];
+
+      let CAS = [
+        "Bachelor of Arts in Communication (BAC)",
+        "Bachelor of Science in Psychology (BSP)",
+        "Bachelor of Science in Social Work (BSSW)",
+      ];
+
+      let CEIT = [
+        "Bachelor of Science in Civil Engineering (BSCE)",
+        "Bachelor of Science in Electrical Engineering (BSEE)",
+        "Bachelor of Science in Information Technology (BSIT)",
+      ];
+
+      let CABA = [
+        "Bachelor of Science in Accountancy (BSA)",
+        "Bachelor of Science in Business Administration Major in Financial Management (BSBA FM)",
+        "Bachelor of Science in Business Administration Major in Human Resource Development Management (BSBA HRDM)",
+        "Bachelor of Science in Business Administration Major in Marketing Management (BSBA MM)",
+        "Bachelor of Science in Public Administration (BSPA)",
+      ];
+
+      let mainDepartment = "";
+
+      if (COED.includes(department)) {
+        mainDepartment = "College of Education";
+      } else if (CAS.includes(department)) {
+        mainDepartment = "College of Arts and Sciences";
+      } else if (CEIT.includes(department)) {
+        mainDepartment = "College of Engineering and Information Technology";
+      } else if (CABA.includes(department)) {
+        mainDepartment =
+          "College of Business Administration, Public Administration and Accountancy";
+      }
+
       if (i.data().credentials.privilegeType === "student") {
         i.ref.update({
           birthday: birthday,
@@ -634,6 +676,7 @@ const editUser = async (req, res) => {
           yearSection: yearSection,
           name: name,
           department: department,
+          mainDepartment: mainDepartment,
           idNo: idNo,
           contactNo: contactNo,
         });
@@ -643,6 +686,7 @@ const editUser = async (req, res) => {
           gender: gender,
           "credentials.privilegeType": userType,
           name: name,
+          mainDepartment: mainDepartment,
           idNo: idNo,
           contactNo: contactNo,
           assignedCollege: assignedCollege,

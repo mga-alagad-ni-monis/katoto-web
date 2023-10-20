@@ -13,7 +13,7 @@ import {
   Bar,
 } from "recharts";
 
-function UserConcerns({ data, isGuided, auth, toast, concerns }) {
+function UserConcerns({ data, isGuided, auth, toast, concerns, date }) {
   const [concernData, setConcernData] = useState([]);
 
   useEffect(() => {
@@ -48,7 +48,7 @@ function UserConcerns({ data, isGuided, auth, toast, concerns }) {
         <p className="flex text-xl font-extrabold">Concerns</p>
       </div>
       <p className="mb-8 text-black/50 mb-8">
-        The number of students who have concerns.
+        The number of students who have concerns from {date}.
       </p>
       <div className="h-[500px] w-full">
         <ResponsiveContainer width={"100%"} height={"100%"}>

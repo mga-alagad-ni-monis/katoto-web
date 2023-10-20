@@ -10,6 +10,8 @@ import {
 import axios from "../../api/axios";
 
 import moment from "moment";
+import { HiArrowLongRight } from "react-icons/hi2";
+import { useNavigate } from "react-router-dom";
 
 const components = {
   event: (i) => {
@@ -139,6 +141,8 @@ function AppointmentTable({ toast, auth }) {
     return [convertedDateTime, convertedDate, convertedTime];
   };
 
+  const navigate = useNavigate();
+
   return (
     <div className="sh rounded-xl p-8 mb-8">
       <div className="flex justify-between w-full items-center">
@@ -148,14 +152,24 @@ function AppointmentTable({ toast, auth }) {
         <div className="w-full flex gap-5">
           <div className="w-1/2">
             <div className="regular-calendar">
-              <p className="font-extrabold text-md flex items-center">
+              <button
+                className="font-extrabold text-md flex w-full justify-between items-center pr-48"
+                onClick={() => {
+                  navigate("/appointments");
+                }}
+              >
                 Regular Appointments
-              </p>
+                <HiArrowLongRight size={24} />
+              </button>
             </div>
             <div className="flex gap-5 dashboard mt-5">
               <Calendar
                 localizer={localizer}
                 startAccessor="start"
+                messages={{
+                  noEventsInRange: "No appointments...",
+                  event: "Name of student (status)",
+                }}
                 endAccessor="end"
                 className="w-full second-calendar"
                 style={{ height: 270 }}
@@ -225,9 +239,15 @@ function AppointmentTable({ toast, auth }) {
             </div>
           </div>
           <div className="w-1/2 flex flex-col">
-            <p className="font-extrabold text-md flex items-center">
+            <button
+              className="font-extrabold text-md flex w-full justify-between items-center pr-48"
+              onClick={() => {
+                navigate("/appointments");
+              }}
+            >
               SOS Appointments
-            </p>
+              <HiArrowLongRight size={24} />
+            </button>
             <div className="w-full sos-calendar flex gap-5 dashboard mt-5">
               <Calendar
                 localizer={localizer}
@@ -235,7 +255,13 @@ function AppointmentTable({ toast, auth }) {
                 endAccessor="end"
                 className="w-full second-calendar"
                 style={{ height: 270 }}
-                events={events.filter((i) => i.data.type === "sos")}
+                messages={{
+                  noEventsInRange: "No appointments...",
+                  event: "Name of student (status)",
+                }}
+                events={events.filter(
+                  (i) => i.data.type === "sos" && i?.data?.status === "upcoming"
+                )}
                 components={components}
                 selectable={true}
                 views={{ month: true, week: false, day: false, agenda: true }}

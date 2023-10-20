@@ -153,99 +153,99 @@ function Reports({ auth, toast }) {
             </p>
             <AppointmentTable toast={toast} auth={auth}></AppointmentTable>
             <div className="sh rounded-xl p-8 mb-8">
+              <div className="flex gap-5 justify-end">
+                <div className="flex gap-5">
+                  <div className="hs-dropdown relative inline-flex gap-5">
+                    <button
+                      type="button"
+                      className="w-[203px] justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center
+          border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                      onClick={() => {
+                        setIsOpenModeDropDown(!isOpenModeDropDown);
+                      }}
+                    >
+                      {selectedMode}
+                      <FiChevronDown size={16} />
+                    </button>
+                    <div
+                      className={`${
+                        isOpenModeDropDown ? "visible" : "hidden"
+                      } absolute top-9 right-0 transition-all duration-100 w-[12.6rem]
+          z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                    >
+                      {mode.map((i, k) => {
+                        return (
+                          <button
+                            key={k}
+                            className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                            onClick={() => {
+                              if (i === "Counselor-Guided") {
+                                setIsGuided(true);
+                              } else {
+                                setIsGuided(false);
+                              }
+                              setIsOpenModeDropDown(!isOpenModeDropDown);
+                              setSelectedMode(i);
+                            }}
+                          >
+                            {i}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-5">
+                  <div className="hs-dropdown relative inline-flex gap-5">
+                    <button
+                      type="button"
+                      className="w-[120px] justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center
+          border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                      onClick={() => {
+                        setIsOpenDateTimeDropDown(!isOpenDateTimeDropDown);
+                      }}
+                    >
+                      {selectedDateTime}
+                      <FiChevronDown size={16} />
+                    </button>
+                    <div
+                      className={`${
+                        isOpenDateTimeDropDown ? "visible" : "hidden"
+                      } absolute top-9 right-0 transition-all duration-100 w-[12.6rem]
+          z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                    >
+                      {dateTime.map((i, k) => {
+                        return (
+                          <button
+                            key={k}
+                            className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                            onClick={() => {
+                              setIsOpenDateTimeDropDown(
+                                !isOpenDateTimeDropDown
+                              );
+                              setSelectedDateTime(i);
+                            }}
+                          >
+                            {i}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div className="flex justify-between w-full mb-1">
                 <div className="flex justify-between w-full">
                   <p className="flex text-xl font-extrabold items-center">
                     Daily Active Users
                   </p>
                 </div>
-                <div className="flex gap-5">
-                  <div className="flex gap-5">
-                    <div className="hs-dropdown relative inline-flex gap-5">
-                      <button
-                        type="button"
-                        className="w-[203px] justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center
-          border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-                        onClick={() => {
-                          setIsOpenModeDropDown(!isOpenModeDropDown);
-                        }}
-                      >
-                        {selectedMode}
-                        <FiChevronDown size={16} />
-                      </button>
-                      <div
-                        className={`${
-                          isOpenModeDropDown ? "visible" : "hidden"
-                        } absolute top-9 right-0 transition-all duration-100 w-[12.6rem]
-          z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
-                      >
-                        {mode.map((i, k) => {
-                          return (
-                            <button
-                              key={k}
-                              className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                              onClick={() => {
-                                if (i === "Counselor-Guided") {
-                                  setIsGuided(true);
-                                } else {
-                                  setIsGuided(false);
-                                }
-                                setIsOpenModeDropDown(!isOpenModeDropDown);
-                                setSelectedMode(i);
-                              }}
-                            >
-                              {i}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-5">
-                    <div className="hs-dropdown relative inline-flex gap-5">
-                      <button
-                        type="button"
-                        className="w-[120px] justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center
-          border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
-                        onClick={() => {
-                          setIsOpenDateTimeDropDown(!isOpenDateTimeDropDown);
-                        }}
-                      >
-                        {selectedDateTime}
-                        <FiChevronDown size={16} />
-                      </button>
-                      <div
-                        className={`${
-                          isOpenDateTimeDropDown ? "visible" : "hidden"
-                        } absolute top-9 right-0 transition-all duration-100 w-[12.6rem]
-          z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
-                      >
-                        {dateTime.map((i, k) => {
-                          return (
-                            <button
-                              key={k}
-                              className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                              onClick={() => {
-                                setIsOpenDateTimeDropDown(
-                                  !isOpenDateTimeDropDown
-                                );
-                                setSelectedDateTime(i);
-                              }}
-                            >
-                              {i}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
               <p className="mb-8 text-black/50">
                 The number of students who engage in {selectedMode} mode.
               </p>
-              <div className="w-full flex">
-                <div className="w-2/3">
+              <div className="w-full">
+                <div className="w-full">
                   <UserNumberReport
                     data={filteredReports()}
                     isGuided={isGuided}
@@ -253,7 +253,7 @@ function Reports({ auth, toast }) {
                     selectedDateTime={selectedDateTime}
                   ></UserNumberReport>
                 </div>
-                <div className="w-1/3">
+                <div className="w-full">
                   <UserDemographics
                     data={filteredReports()}
                     isGuided={isGuided}
@@ -263,16 +263,32 @@ function Reports({ auth, toast }) {
             </div>
             <UserConcerns
               data={filteredReports()}
-              isGuided={isGuided}
               auth={auth}
               toast={toast}
               concerns={concerns}
+              date={
+                convertDate(new Date(filteredReports()[0]?.date))[1] +
+                " to " +
+                convertDate(
+                  new Date(
+                    filteredReports()[filteredReports().length - 1]?.date
+                  )
+                )[1]
+              }
             ></UserConcerns>
             <UserFeedbacks
               data={filteredReports()}
-              isGuided={isGuided}
               auth={auth}
               toast={toast}
+              date={
+                convertDate(new Date(filteredReports()[0]?.date))[1] +
+                " to " +
+                convertDate(
+                  new Date(
+                    filteredReports()[filteredReports().length - 1]?.date
+                  )
+                )[1]
+              }
             ></UserFeedbacks>
           </div>
         </div>

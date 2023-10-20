@@ -28,6 +28,7 @@ function UserDemographics({ data, isGuided }) {
   }, [data, isGuided]);
 
   const COLORS = ["#000000", "#a9e6c2", "#f0ad4e", "#ff6961"];
+
   const RADIAN = Math.PI / 180;
   const renderCustomizedLabel = ({
     cx,
@@ -87,6 +88,46 @@ function UserDemographics({ data, isGuided }) {
       setMainDeparmentData(mainDepartment);
     }
   };
+
+  const COLORS_DEPT = [
+    "#000000",
+    "#a9e6c2",
+    "#f0ad4e",
+    "#ff6961",
+    "#00000033",
+    "#2d757c",
+    "#1cd8d2",
+    "#b8918a",
+    "#826",
+    "#7f9bd4",
+    "#e3bbbd",
+    "#97976a",
+    "#dc4d01",
+    "#ffffff",
+    "#effd5f",
+    "#68b6ef",
+    "#00008B",
+  ];
+
+  const department = [
+    "Bachelor of Early Childhood Education (BECED)",
+    "Bachelor of Secondary Education Major in English (BSED English)",
+    "Bachelor of Secondary Education Major in Filipino (BSED Filipino)",
+    "Bachelor of Secondary Education Major in Mathematics (BSED Mathematics)",
+    "Bachelor of Secondary Education Major in Science (BSED Science)",
+    "Bachelor of Secondary Education Major in Social Studies (BSED Soc Studies)",
+    "Bachelor of Arts in Communication (BAC)",
+    "Bachelor of Science in Psychology (BSP)",
+    "Bachelor of Science in Social Work (BSSW)",
+    "Bachelor of Science in Accountancy (BSA)",
+    "Bachelor of Science in Civil Engineering (BSCE)",
+    "Bachelor of Science in Electrical Engineering (BSEE)",
+    "Bachelor of Science in Information Technology (BSIT)",
+    "Bachelor of Science in Business Administration Major in Financial Management (BSBA FM)",
+    "Bachelor of Science in Business Administration Major in Human Resource Development Management (BSBA HRDM)",
+    "Bachelor of Science in Business Administration Major in Marketing Management (BSBA MM)",
+    "Bachelor of Science in Public Administration (BSPA)",
+  ];
 
   const getDepartmentData = () => {
     if (data !== undefined) {
@@ -195,58 +236,97 @@ function UserDemographics({ data, isGuided }) {
 
   return (
     <div>
-      <div className="flex justify-between w-full items-center mb-5">
-        <p className="flex text-xl font-extrabold ml-5">User Demographics</p>
-      </div>
-      <p className="font-bold ml-10">Colleges</p>
-      <div className="h-[350px] w-full flex items-center gap-3">
-        <ResponsiveContainer width={"75%"} height={"100%"}>
-          <PieChart width={400} height={400}>
-            <Pie
-              data={mainDeparmentData}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={renderCustomizedLabel}
-              outerRadius={80}
-              fill="#8884d8"
-              dataKey="value"
-            >
-              {mainDeparmentData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]}
-                />
-              ))}
-            </Pie>
-            <Pie
-              data={deparmentData}
-              dataKey="value"
-              cx="50%"
-              cy="50%"
-              innerRadius={90}
-              outerRadius={120}
-              fill="#2d757c"
-              label
-            ></Pie>
-          </PieChart>
-        </ResponsiveContainer>
-
-        <div className="flex flex-col gap-3">
-          {shortDept.map((i, k) => {
-            return (
-              <div key={k} className="flex gap-3 items-center">
-                <div
-                  className={`w-5 h-5 rounded-lg`}
-                  style={{ backgroundColor: COLORS[k] }}
-                ></div>
-                <p className="text-[12px]">{i}</p>
-              </div>
-            );
-          })}
+      <div className="flex justify-between w-full items-center mb-8">
+        <div className="flex flex-col gap-2">
+          <p className="flex text-xl font-extrabold">User Demographics</p>
+          <p className="text-black/50">
+            The demographics of daily active users.
+          </p>
         </div>
       </div>
-      {/* <div className="h-[500px] w-full">
+
+      <div className="flex w-full justify-between">
+        <div className="sh rounded-lg h-full pt-6 pr-12">
+          <p className="font-bold ml-8">College</p>
+          <div className="h-[230px] w-[330px] flex items-center">
+            <ResponsiveContainer width={"100%"} height={"100%"}>
+              <PieChart width={400} height={400}>
+                <Pie
+                  data={mainDeparmentData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={renderCustomizedLabel}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {mainDeparmentData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="flex flex-col gap-3">
+              {shortDept.map((i, k) => {
+                return (
+                  <div key={k} className="flex gap-3 items-center">
+                    <div
+                      className={`w-5 h-5 rounded-lg`}
+                      style={{ backgroundColor: COLORS[k] }}
+                    ></div>
+                    <p className="text-[12px]">{i}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+        <div className="sh rounded-lg h-full pt-6 pr-12">
+          <p className="font-bold ml-8">Department</p>
+          <div className="h-[230px] w-[600px] flex items-center">
+            <div className="w-[330px] h-full">
+              <ResponsiveContainer width={"100%"} height={"100%"}>
+                <PieChart width={400} height={400}>
+                  <Pie
+                    data={deparmentData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={renderCustomizedLabel}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {deparmentData.map((entry, index) => console.log(entry))}
+                    {deparmentData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS_DEPT[index]} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex flex-wrap w-1/2">
+              {department.map((i, k) => {
+                return (
+                  <div key={k} className="flex gap-3 w-1/2 items-center">
+                    <div
+                      className={`w-3 h-3 rounded-lg`}
+                      style={{ backgroundColor: COLORS_DEPT[k] }}
+                    ></div>
+                    <p className="text-[12px]">
+                      {JSON.stringify(i.match(/\(([^)]+)\)/g)).slice(3, -3)}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+        {/* <div className="h-[500px] w-full">
         <ResponsiveContainer width={"100%"} height={"100%"}>
           <BarChart
             width={500}
@@ -268,41 +348,41 @@ function UserDemographics({ data, isGuided }) {
           </BarChart>
         </ResponsiveContainer>
       </div> */}
-      <p className="font-bold ml-10">Gender</p>
-      <div className="h-[200px] w-full flex items-center gap-3">
-        <ResponsiveContainer width="75%" height="100%">
-          <PieChart width={400} height={400}>
-            <Pie
-              data={genderData}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={renderCustomizedLabel}
-              outerRadius={80}
-              fill="#8884d8"
-              dataKey="value"
-            >
-              {data.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]}
-                />
-              ))}
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
-        <div className="flex flex-col gap-3">
-          {gender.map((i, k) => {
-            return (
-              <div key={k} className="flex gap-3 items-center">
-                <div
-                  className={`w-5 h-5 rounded-lg`}
-                  style={{ backgroundColor: COLORS[k] }}
-                ></div>
-                <p className="text-[12px]">{i}</p>
-              </div>
-            );
-          })}
+        <div className="sh rounded-lg h-full pt-6 pr-12">
+          <p className="font-bold ml-8">Gender</p>
+          <div className="h-[230px]  w-[330px] flex items-center">
+            <ResponsiveContainer width="75%" height="100%">
+              <PieChart width={400} height={400}>
+                <Pie
+                  data={genderData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={renderCustomizedLabel}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {data.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="flex flex-col gap-3">
+              {gender.map((i, k) => {
+                return (
+                  <div key={k} className="flex gap-3 items-center">
+                    <div
+                      className={`w-5 h-5 rounded-lg`}
+                      style={{ backgroundColor: COLORS[k] }}
+                    ></div>
+                    <p className="text-[12px]">{i}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </div>
