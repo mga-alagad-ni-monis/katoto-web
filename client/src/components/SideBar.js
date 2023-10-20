@@ -300,7 +300,11 @@ function SideBar({ toast, logout, auth, socket }) {
                     auth.roles[0] !== "systemAdministrator" ? null : (
                       <Link
                         to={"/accounts"}
-                        className="flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200"
+                        className={`flex gap-5 items-center hover:text-[--dark-green] transition-all duration-200 ${
+                          location.pathname === "/accounts"
+                            ? "font-extrabold text-[--dark-green]"
+                            : null
+                        }`}
                       >
                         {isHovered ? (
                           <div className="flex gap-5 items-center">

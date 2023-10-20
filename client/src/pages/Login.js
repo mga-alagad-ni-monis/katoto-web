@@ -19,8 +19,12 @@ function Login({ toast, loading, setLoading, auth }) {
   const [isForgotPw, setIsForgotPw] = useState(false);
 
   useEffect(() => {
-    if (auth?.accessToken) {
-      navigate("/chat");
+    if (auth?.roles) {
+      if (auth?.roles[0] === "student") {
+        navigate("/chat");
+      } else {
+        navigate("/dashboard");
+      }
     }
   }, []);
 

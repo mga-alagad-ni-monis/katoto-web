@@ -1,6 +1,6 @@
 import axios from "../api/axios";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -212,11 +212,9 @@ function NavBar({ auth, logout, socket, toast }) {
         })
         .then((res) => {
           setYourAppointment(res?.data?.appointment);
-        })
-        .catch((err) => {
-          toast.error(err?.response?.data);
         });
     } catch (err) {
+      console.log(err);
       toast.error("Error");
     }
   };
@@ -362,6 +360,24 @@ function NavBar({ auth, logout, socket, toast }) {
     { no: "13", time: "1:00:00 PM" },
     { no: "14", time: "2:00:00 PM" },
   ];
+
+  const ref = useRef();
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        setIsOpenNotifications(false);
+        setIsOpenAppointments(false);
+        setIsOpenProfile(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [ref]);
 
   return (
     <>
@@ -513,6 +529,7 @@ function NavBar({ auth, logout, socket, toast }) {
                       ) : null}
                     </button>
                     <button
+                      ref={ref}
                       className={`${
                         isOpenNotifications
                           ? "bg-[--light-green] text-[--dark-green]"

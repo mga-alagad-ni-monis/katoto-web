@@ -56,6 +56,7 @@ const addCampaign = (req, res) => {
       !isBefore ||
       !isAfter
     ) {
+      
       return res.status(404).send("Check the campaign information!");
     }
 

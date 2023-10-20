@@ -9,6 +9,9 @@ import { flatten } from "flat";
 import ReportsTd from "./ReportsTd";
 import moment from "moment";
 import download from "js-file-download";
+import { DateRangePicker } from "react-date-range";
+import "react-date-range/dist/styles.css";
+import "react-date-range/dist/theme/default.css";
 
 function ReportTable({ toast, filters, tableCategories, title, auth }) {
   const [isOpenDateTimeButton, setIsOpenDateTimeButton] = useState(false);
@@ -653,12 +656,33 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
 
   const genders = ["All", "Male", "Female", "Other"];
 
+  const handleSelect = (date) => {
+    console.log(date); // native Date object
+  };
+
+  const [state, setState] = useState([
+    {
+      startDate: new Date(),
+      endDate: new Date(),
+      key: "selection",
+    },
+  ]);
+
   return (
     <>
       {isLoading ? (
         <Loading />
       ) : (
         <div className="bg-[--light-brown] h-screen overflow-hidden">
+          <DateRangePicker
+            ranges={state}
+            onChange={(item) => setState([item.selection])}
+            className="ml-32"
+            showSelectionPreview={true}
+            moveRangeOnFirstSelection={false}
+            months={2}
+            direction="horizontal"
+          />
           <div className="flex flex-col px-52">
             <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">
               {`${title} Reports`}

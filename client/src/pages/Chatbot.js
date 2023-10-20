@@ -1420,6 +1420,7 @@ border border-2 transition-all duration-300`}
                           });
                           document.body.style.overflow = "hidden";
                           descRef.current.value = "";
+                          setIsAppointmentChecked(false);
                           setDescRefLen(0);
                           setPopUpStandard(true);
                           setIsOpenNotificationModal(false);
@@ -1444,6 +1445,7 @@ border border-2 transition-all duration-300`}
                             behavior: "smooth",
                           });
                           document.body.style.overflow = "hidden";
+                          setIsAppointmentChecked(false);
                           setPreferredGC(
                             gcNames?.filter((i) =>
                               i?.assignedCollege?.includes(

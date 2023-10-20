@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import axios from "../api/axios";
 
 import moment from "moment";
@@ -141,6 +141,23 @@ function Reports({ auth, toast }) {
     return newReports;
   };
 
+  const ref = useRef();
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        // setIsOpenDateTimeDropDown(false);
+        setIsOpenModeDropDown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [ref]);
+
   return (
     <>
       {isLoading ? (
@@ -266,29 +283,11 @@ function Reports({ auth, toast }) {
               auth={auth}
               toast={toast}
               concerns={concerns}
-              date={
-                convertDate(new Date(filteredReports()[0]?.date))[1] +
-                " to " +
-                convertDate(
-                  new Date(
-                    filteredReports()[filteredReports().length - 1]?.date
-                  )
-                )[1]
-              }
             ></UserConcerns>
             <UserFeedbacks
               data={filteredReports()}
               auth={auth}
               toast={toast}
-              date={
-                convertDate(new Date(filteredReports()[0]?.date))[1] +
-                " to " +
-                convertDate(
-                  new Date(
-                    filteredReports()[filteredReports().length - 1]?.date
-                  )
-                )[1]
-              }
             ></UserFeedbacks>
           </div>
         </div>

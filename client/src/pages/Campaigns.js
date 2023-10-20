@@ -742,10 +742,16 @@ checked:border-0 checked:border-transparent checked:bg-[--dark-green] checked:af
                                     setIsAdd(true);
                                     setId(i?.id);
                                     setTitle(i?.title);
-                                    setEffectivityDate(i?.effectivityDate);
+                                    setEffectivityDate(
+                                      moment(
+                                        i?.effectivityDate,
+                                        "MMMM DD, YYYY"
+                                      ).format("YYYY-MM-DD")
+                                    );
                                     setCampaignType(i?.campaignType);
                                     setAddCampaignInfo(i?.campaignInfo);
                                     setImageHeader(i?.imageHeader);
+                                    setDescription(i?.description);
                                   }}
                                 >
                                   <span>

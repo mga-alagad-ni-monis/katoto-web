@@ -81,7 +81,7 @@ function UserFeedbacks({ data, isGuided, auth, toast, date }) {
         The number of students that have provided feedback on the system from{" "}
         {date}.
       </p>
-      <div className="h-auto flex flex-col w-full gap-12">
+      <div className="h-[500px] flex flex-col w-full gap-12">
         {/* {feedbackDescriptions?.map((i, k) => {
           return (
             <div className="flex flex-col items-center gap-3" key={k}>

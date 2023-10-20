@@ -574,7 +574,6 @@ const editUser = async (req, res) => {
   const {
     name,
     email,
-    idNo,
     gender,
     contactNo,
     birthday,
@@ -602,7 +601,6 @@ const editUser = async (req, res) => {
       !name.trim() ||
       !email.trim() ||
       !/^[^@\s]+@plv.edu.ph$/i.test(email) ||
-      !idNo.trim() ||
       !gender.trim() ||
       !contactNo.trim() ||
       !birthday.trim() ||
@@ -610,6 +608,11 @@ const editUser = async (req, res) => {
       !userType.trim()
     ) {
       return res.status(404).send("Please complete the form!");
+    }
+
+    if (assignedCollege.length === 2) {
+      if (assignedCollege[0] === assignedCollege[1])
+        return res.status(404).send("Assigned college is the same!");
     }
 
     const querySnapshot = await db
@@ -672,22 +675,18 @@ const editUser = async (req, res) => {
         i.ref.update({
           birthday: birthday,
           gender: gender,
-          "credentials.privilegeType": userType,
           yearSection: yearSection,
           name: name,
           department: department,
           mainDepartment: mainDepartment,
-          idNo: idNo,
           contactNo: contactNo,
         });
       } else {
         i.ref.update({
           birthday: birthday,
           gender: gender,
-          "credentials.privilegeType": userType,
           name: name,
           mainDepartment: mainDepartment,
-          idNo: idNo,
           contactNo: contactNo,
           assignedCollege: assignedCollege,
         });

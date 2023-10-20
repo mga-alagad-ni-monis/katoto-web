@@ -1,6 +1,7 @@
 import axios from "../api/axios";
 import { FileUploader } from "react-drag-drop-files";
 import { motion } from "framer-motion";
+import moment from "moment";
 
 import { useState, useEffect, useRef } from "react";
 import {
@@ -747,8 +748,8 @@ function UserAccounts({ toast, auth }) {
                               onClick={() => {
                                 let newArray = assignedCollege;
                                 newArray.splice(k, 1);
-                                setAssignedCollege(newArray);
-                                setAssignedCollegeLen(newArray);
+                                setAssignedCollege([...newArray]);
+                                setAssignedCollegeLen([...newArray]);
                               }}
                             >
                               Delete
@@ -810,12 +811,12 @@ function UserAccounts({ toast, auth }) {
                     </label>
                     <select
                       id="usertype"
-                      className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                      className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold opacity-50 text-black/50"
                       value={userType}
                       onChange={(e) => {
                         setUserType(e.target.value);
                       }}
-                      required
+                      disabled
                     >
                       <option
                         hidden
@@ -836,7 +837,7 @@ function UserAccounts({ toast, auth }) {
                       Email *
                     </label>
                     <input
-                      id="idNo"
+                      id="email"
                       className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold opacity-50 text-black/50"
                       type="email"
                       placeholder="namesurname@plv.edu.ph"
@@ -879,14 +880,14 @@ function UserAccounts({ toast, auth }) {
                     </label>
                     <input
                       id="id-no"
-                      className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                      className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold opacity-50 text-black/50"
                       type="text"
                       placeholder="xx-xxxx"
                       value={idNo}
                       onChange={(e) => {
                         setIdNo(e.target.value);
                       }}
-                      required
+                      disabled
                     />
                   </div>
                   <div className="w-1/2 flex flex-col gap-2">
@@ -941,7 +942,9 @@ function UserAccounts({ toast, auth }) {
                       type="date"
                       id="birthday"
                       className="bg-black/10 rounded-lg h-[46px] p-3 text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                      value={birthday}
+                      value={moment(birthday, "MMMM DD, YYYY").format(
+                        "YYYY-MM-DD"
+                      )}
                       onChange={(e) => {
                         setBirthday(e.target.value);
                       }}
@@ -996,7 +999,7 @@ function UserAccounts({ toast, auth }) {
                               assignedCollege.length !==
                               assignedCollegeLen.length
                             ) {
-                              toast.error("Assigned college!");
+                              toast.error("Assign college!");
                               return;
                             }
                             setAssignedCollegeLen([...assignedCollegeLen, ""]);
@@ -1050,8 +1053,8 @@ function UserAccounts({ toast, auth }) {
                                 );
                                 let newArray = assignedCollege;
                                 newArray.splice(k, 1);
-                                setAssignedCollege(newArray);
-                                setAssignedCollegeLen(newArray);
+                                setAssignedCollege([...newArray]);
+                                setAssignedCollegeLen([...newArray]);
                               }}
                             >
                               Delete
