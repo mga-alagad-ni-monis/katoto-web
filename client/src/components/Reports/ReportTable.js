@@ -10,8 +10,6 @@ import ReportsTd from "./ReportsTd";
 import moment from "moment";
 import download from "js-file-download";
 import { DateRangePicker } from "react-date-range";
-import "react-date-range/dist/styles.css";
-import "react-date-range/dist/theme/default.css";
 
 function ReportTable({ toast, filters, tableCategories, title, auth }) {
   const [isOpenDateTimeButton, setIsOpenDateTimeButton] = useState(false);
@@ -23,6 +21,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
   const [isOpenExport, setIsOpenExport] = useState(false);
   const [isAscending, setIsAscending] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [isOpenCustom, setIsOpenCustom] = useState(false);
 
   const [sortString, setSortString] = useState({});
   const [sortName, setSortName] = useState("");
@@ -33,6 +32,14 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
   const [filterSection, setFilterSection] = useState("All");
   const [filterGender, setFilterGender] = useState("All");
   const [search, setSearch] = useState("");
+
+  const [customDate, setCustomDate] = useState([
+    {
+      startDate: new Date(),
+      endDate: new Date(),
+      key: "selection",
+    },
+  ]);
 
   const [reports, setReports] = useState([]);
 
@@ -368,6 +375,26 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                 ) && moment(new Date()).isAfter(convertDate(i["start"])[1])
               );
             }
+          } else if (filterDateTime === "Custom") {
+            if (i["scheduledDate"] !== undefined) {
+              return (
+                moment(
+                  moment(customDate[0]?.startDate).subtract(1, "days")
+                ).isBefore(convertDate(i["createdDate"])[1]) &&
+                moment(moment(customDate[0]?.endDate).add(1, "days")).isAfter(
+                  convertDate(i["createdDate"])[1]
+                )
+              );
+            } else {
+              return (
+                moment(
+                  moment(customDate[0]?.startDate).subtract(1, "days")
+                ).isBefore(convertDate(i["start"])[1]) &&
+                moment(moment(customDate[0]?.endDate).add(1, "days")).isAfter(
+                  convertDate(i["start"])[1]
+                )
+              );
+            }
           }
         }
 
@@ -412,6 +439,15 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
               moment(convertDate(year)[1]).isBefore(
                 convertDate(i["createdDate"])[1]
               ) && moment(new Date()).isAfter(convertDate(i["createdDate"])[1])
+            );
+          } else if (filterDateTime === "Custom") {
+            return (
+              moment(
+                moment(customDate[0]?.startDate).subtract(1, "days")
+              ).isBefore(convertDate(i["createdDate"])[1]) &&
+              moment(moment(customDate[0]?.endDate).add(1, "days")).isAfter(
+                convertDate(i["createdDate"])[1]
+              )
             );
           }
         }
@@ -623,7 +659,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
     }
   };
 
-  const dateTime = ["Today", "Yesterday", "Week", "Month", "Year"];
+  const dateTime = ["Today", "Yesterday", "Week", "Month", "Year", "Custom"];
 
   const departments = [
     "All",
@@ -656,17 +692,10 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
 
   const genders = ["All", "Male", "Female", "Other"];
 
-  const handleSelect = (date) => {
-    console.log(date); // native Date object
+  const handleSubmitCustom = () => {
+    setCustomDate(customDate);
+    setIsOpenCustom(false);
   };
-
-  const [state, setState] = useState([
-    {
-      startDate: new Date(),
-      endDate: new Date(),
-      key: "selection",
-    },
-  ]);
 
   return (
     <>
@@ -674,15 +703,6 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
         <Loading />
       ) : (
         <div className="bg-[--light-brown] h-screen overflow-hidden">
-          <DateRangePicker
-            ranges={state}
-            onChange={(item) => setState([item.selection])}
-            className="ml-32"
-            showSelectionPreview={true}
-            moveRangeOnFirstSelection={false}
-            months={2}
-            direction="horizontal"
-          />
           <div className="flex flex-col px-52">
             <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">
               {`${title} Reports`}
@@ -714,6 +734,14 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
               border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                           onClick={() => {
                             setIsOpenDateTimeButton(!isOpenDateTimeButton);
+                            setIsOpenCustom(false);
+                          }}
+                          onMouseEnter={() => {
+                            if (filterDateTime === "Custom") {
+                              if (!isOpenDateTimeButton) {
+                                setIsOpenCustom(true);
+                              }
+                            }
                           }}
                         >
                           {filterDateTime}
@@ -733,6 +761,9 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                                 onClick={() => {
                                   setFilterDateTime(i);
                                   setIsOpenDateTimeButton(false);
+                                  if (i === "Custom") {
+                                    setIsOpenCustom(true);
+                                  }
                                 }}
                               >
                                 {i}
@@ -740,6 +771,43 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                             );
                           })}
                         </div>
+                        {isOpenCustom ? (
+                          <div className="p-3 sh rounded-2xl absolute z-30 bg-[--light-brown] mt-3">
+                            <div className="relative">
+                              <DateRangePicker
+                                ranges={customDate}
+                                staticRanges={[]}
+                                onChange={(item) =>
+                                  setCustomDate([item.selection])
+                                }
+                                showSelectionPreview={true}
+                                moveRangeOnFirstSelection={false}
+                                months={2}
+                                rangeColors={["#2d757c"]}
+                                color="#f5f3eb"
+                                direction="horizontal"
+                              />
+                              <div className="absolute bottom-0 right-0 flex gap-3 mr-3 mb-3">
+                                <button
+                                  onClick={() => {
+                                    setIsOpenCustom(false);
+                                  }}
+                                  className="flex justify-center bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+              border border-2 border-[--red] hover:border-[--red] hover:border-2 hover:bg-transparent hover:text-[--red] transition-all duration-300"
+                                >
+                                  Close
+                                </button>
+                                <button
+                                  onClick={handleSubmitCustom}
+                                  className="w-[60px] flex justify-center bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
+              border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                                >
+                                  Ok
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ) : null}
                       </div>
                     ) : null}
                   </div>
@@ -1049,7 +1117,6 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                     </p>
                   ) : null}
                   {filteredReports()?.map((i, k) => {
-                    console.log(i);
                     if (title === "Appointment") {
                       return (
                         <tr key={k}>
