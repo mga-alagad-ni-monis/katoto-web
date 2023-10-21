@@ -301,7 +301,6 @@ function UserDemographics({ data, isGuided }) {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {deparmentData.map((entry, index) => console.log(entry))}
                     {deparmentData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS_DEPT[index]} />
                     ))}

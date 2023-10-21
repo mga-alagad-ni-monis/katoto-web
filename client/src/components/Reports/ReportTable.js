@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FiChevronDown } from "react-icons/fi";
 import { RiFileExcel2Line, RiDownloadCloud2Line } from "react-icons/ri";
 import { FaLongArrowAltUp, FaLongArrowAltDown } from "react-icons/fa";
@@ -10,6 +10,7 @@ import ReportsTd from "./ReportsTd";
 import moment from "moment";
 import download from "js-file-download";
 import { DateRangePicker } from "react-date-range";
+import { HiOutlineChevronLeft, HiOutlineChevronRight } from "react-icons/hi2";
 
 function ReportTable({ toast, filters, tableCategories, title, auth }) {
   const [isOpenDateTimeButton, setIsOpenDateTimeButton] = useState(false);
@@ -32,6 +33,8 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
   const [filterSection, setFilterSection] = useState("All");
   const [filterGender, setFilterGender] = useState("All");
   const [search, setSearch] = useState("");
+  const [lines, setLines] = useState(10);
+  const [page, setPage] = useState(1);
 
   const [customDate, setCustomDate] = useState([
     {
@@ -42,6 +45,8 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
   ]);
 
   const [reports, setReports] = useState([]);
+
+  const searchRef = useRef();
 
   useEffect(() => {
     (async () => {
@@ -504,7 +509,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
         }
       })
       ?.filter((i) => {
-        if (search?.toLowerCase().trim()) {
+        if (search.toLowerCase().trim()) {
           if (title === "Appointment") {
             return (
               convertDate(i["start"])[1]
@@ -703,6 +708,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
         <Loading />
       ) : (
         <div className="bg-[--light-brown] h-screen overflow-hidden">
+          {console.log(searchRef?.current?.value)}
           <div className="flex flex-col px-52">
             <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">
               {`${title} Reports`}
@@ -718,11 +724,19 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                       type="text"
                       placeholder="Search..."
                       className="py-2 px-5 bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                      value={search}
-                      onChange={(e) => {
+                      // ref={searchRef}
+                      // value={search}
+                      onBlur={(e) => {
                         setSearch(e.target.value);
                       }}
                     />
+                    {/* <button
+                      onClick={() => {
+                        setSearch(searchRef.current.value);
+                      }}
+                      className="w-[120px] flex justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 
+                      items-center justify-center border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                    ></button> */}
                   </div>
                   <div>
                     <p className="mb-3 font-bold text-xs">Date/Time</p>
@@ -1068,182 +1082,273 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                   </div>
                 </div>
               </div>
-              <table
-                className="w-full rounded-lg shadow-lg bg-[--light-green] relative"
-                style={{ backgroundColor: "rgba(169, 230, 194, 0.2)" }}
-              >
-                <thead className="flex px-5 py-3 text-sm text-[--light-brown] font-bold bg-[--dark-green] rounded-lg m-1">
-                  {Object.entries(tableCategories).map(([key, value]) => {
-                    return (
-                      <p className="min-w-[100px] max-w-[100px] mr-[20px] flex justify-between truncate text-ellipsis">
-                        <span className="truncate w-[70%]">
-                          {toHeaderCase(key)}
-                        </span>
-                        {sortString[key] ? (
-                          <button
-                            onClick={() => {
-                              setSortString((prevSortString) => ({
-                                ...prevSortString,
-                                [key]: !prevSortString[key],
-                              }));
-                              setSortName(key);
-                              setIsAscending(false);
-                            }}
-                          >
-                            <FaLongArrowAltUp />
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              setSortString((prevSortString) => ({
-                                ...prevSortString,
-                                [key]: !prevSortString[key],
-                              }));
-                              setSortName(key);
-                              setIsAscending(true);
-                            }}
-                          >
-                            <FaLongArrowAltDown />
-                          </button>
-                        )}
-                      </p>
-                    );
-                  })}
-                </thead>
-                <tbody className="flex flex-col max-h-[624px] overflow-y-auto">
-                  {filteredReports()?.length === 0 ? (
-                    <p className="font-bold flex justify-center items-center min-h-[624px]">
-                      No data...
+              <div className="flex flex-col gap-1">
+                <div className="w-full justify-between flex items-center">
+                  <p className="">
+                    <span>Showing </span>
+                    <span>{`${
+                      filteredReports().length ? lines * page - lines + 1 : 0
+                    }-${
+                      lines * page > filteredReports().length
+                        ? filteredReports().length
+                        : lines * page
+                    }`}</span>
+                    <span> of </span>
+                    <span>{filteredReports().length} entries</span>
+                  </p>
+                  <div className="flex gap-3 items-center">
+                    <p>
+                      <span>Show </span>
+                      <input
+                        type="text"
+                        value={lines}
+                        placeholder="10"
+                        className="p-1 w-9 bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
+                        onBlur={(e) => {
+                          if (
+                            e.target.value < 10 ||
+                            e.target.value > filteredReports().length
+                          ) {
+                            return setLines(10);
+                          }
+                          return setLines(e.target.value);
+                        }}
+                        onChange={(e) => {
+                          setPage(1);
+                          return setLines(e.target.value);
+                        }}
+                      />
+                      <span> entries</span>
                     </p>
-                  ) : null}
-                  {filteredReports()?.map((i, k) => {
-                    if (title === "Appointment") {
+                    <p className="">
+                      <span>Page </span>
+                      <span>{filteredReports().length === 0 ? 0 : page}</span>
+                      <span> of </span>
+                      <span>
+                        {lines
+                          ? Math.ceil(filteredReports().length / lines)
+                          : 0}
+                      </span>
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPage(page - 1);
+                      }}
+                      className={`flex justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] p-1 
+                      flex gap-2 items-center justify-center border border-2 border-[--dark-green]  
+                      ${
+                        page <= 1
+                          ? "opacity-50"
+                          : "hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                      }`}
+                      disabled={page <= 1}
+                    >
+                      <HiOutlineChevronLeft size={18} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPage(page + 1);
+                      }}
+                      className={`flex justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] p-1 
+                      flex gap-2 items-center justify-center border border-2 border-[--dark-green]  
+                      ${
+                        page >= Math.ceil(filteredReports().length / lines)
+                          ? "opacity-50"
+                          : "hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                      }`}
+                      disabled={
+                        page >= Math.ceil(filteredReports().length / lines)
+                      }
+                    >
+                      <HiOutlineChevronRight size={18} />
+                    </button>
+                  </div>
+                </div>
+                <table
+                  className="w-full rounded-lg shadow-lg bg-[--light-green] relative"
+                  style={{ backgroundColor: "rgba(169, 230, 194, 0.2)" }}
+                >
+                  <thead className="flex px-5 py-3 text-sm text-[--light-brown] font-bold bg-[--dark-green] rounded-lg m-1">
+                    {Object.entries(tableCategories).map(([key, value]) => {
                       return (
-                        <tr key={k}>
-                          <td
-                            className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
-                              k % 2 ? "bg-[--light-green] rounded-lg" : null
-                            }`}
-                          >
-                            <ReportsTd
-                              value={
-                                convertDate(
-                                  i["scheduledDate"]
-                                    ? i["createdDate"]
-                                    : i["start"]
-                                )[1]
-                              }
-                            />
-                            <ReportsTd
-                              value={
-                                convertDate(
-                                  i["scheduledDate"]
-                                    ? i["createdDate"]
-                                    : i["start"]
-                                )[2]
-                              }
-                            />
-                            <ReportsTd value={i["userDetails.idNo"]} />
-                            <ReportsTd value={i["userDetails.name"]} />
-                            <ReportsTd value={i["userDetails.email"]} />
-                            <ReportsTd value={i["gc.name"]} />
-                            <ReportsTd
-                              value={
-                                i["mode"] === "facetoface"
-                                  ? "Face-to-face"
-                                  : "Virtual"
-                              }
-                            />
-                            <ReportsTd value={i["description"]} />
-                            <ReportsTd value={i["type"]} />
-                            <ReportsTd value={toHeaderCase(i["status"])} />
-                            <ReportsTd value={i["notes"]} />
-                            <ReportsTd value={i["userDetails.contactNo"]} />
-                          </td>
-                        </tr>
+                        <p className="min-w-[100px] max-w-[100px] mr-[20px] flex justify-between truncate text-ellipsis">
+                          <span className="truncate w-[70%]">
+                            {toHeaderCase(key)}
+                          </span>
+                          {sortString[key] ? (
+                            <button
+                              onClick={() => {
+                                setSortString((prevSortString) => ({
+                                  ...prevSortString,
+                                  [key]: !prevSortString[key],
+                                }));
+                                setSortName(key);
+                                setIsAscending(false);
+                              }}
+                            >
+                              <FaLongArrowAltUp />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setSortString((prevSortString) => ({
+                                  ...prevSortString,
+                                  [key]: !prevSortString[key],
+                                }));
+                                setSortName(key);
+                                setIsAscending(true);
+                              }}
+                            >
+                              <FaLongArrowAltDown />
+                            </button>
+                          )}
+                        </p>
                       );
-                    } else if (title === "Daily User") {
-                      return (
-                        <tr key={k}>
-                          <td
-                            className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
-                              k % 2 ? "bg-[--light-green] rounded-lg" : null
-                            }`}
-                          >
-                            <ReportsTd
-                              value={convertDate(i["createdDate"])[1]}
-                            />
-                            <ReportsTd
-                              value={convertDate(i["createdDate"])[2]}
-                            />
-                            <ReportsTd value={i["idNo"]} />
-                            <ReportsTd value={i["name"]} />
-                            <ReportsTd value={i["credentials.email"]} />
-                            <ReportsTd value={i["age"]} />
-                            <ReportsTd value={i["department"]} />
-                            <ReportsTd value={i["gender"]} />
-                            <ReportsTd value={i["yearSection"]} />
-                            <ReportsTd value={i["type"]} />
-                            <ReportsTd value={i["contactNo"]} />
-                          </td>
-                        </tr>
-                      );
-                    } else if (title === "Feedback") {
-                      return (
-                        <tr key={k}>
-                          <td
-                            className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
-                              k % 2 ? "bg-[--light-green] rounded-lg" : null
-                            }`}
-                          >
-                            <ReportsTd
-                              value={convertDate(i["createdDate"])[1]}
-                            />
-                            <ReportsTd
-                              value={convertDate(i["createdDate"])[2]}
-                            />
-                            <ReportsTd value={i["userDetails.idNo"]} />
-                            <ReportsTd value={i["userDetails.name"]} />
-                            <ReportsTd
-                              value={i["userDetails.credentials.email"]}
-                            />
-                            <ReportsTd value={i["userDetails.department"]} />
-                            <ReportsTd value={i["userDetails.yearSection"]} />
-                            <ReportsTd value={i["rating"]} />
-                            <ReportsTd value={i["feedbackDetails"]} />
-                          </td>
-                        </tr>
-                      );
-                    } else if (title === "Concern") {
-                      return (
-                        <tr key={k}>
-                          <td
-                            className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
-                              k % 2 ? "bg-[--light-green] rounded-lg" : null
-                            }`}
-                          >
-                            <ReportsTd
-                              value={convertDate(i["createdDate"])[1]}
-                            />
-                            <ReportsTd
-                              value={convertDate(i["createdDate"])[2]}
-                            />
-                            <ReportsTd value={i["idNo"]} />
-                            <ReportsTd value={i["name"]} />
-                            <ReportsTd value={i["credentials.email"]} />
-                            <ReportsTd value={i["age"]} />
-                            <ReportsTd value={i["department"]} />
-                            <ReportsTd value={i["gender"]} />
-                            <ReportsTd value={i["yearSection"]} />
-                            <ReportsTd value={i["concern"]} />
-                            <ReportsTd value={i["contactNo"]} />
-                          </td>
-                        </tr>
-                      );
-                    }
-                  })}
-                </tbody>
-              </table>
+                    })}
+                  </thead>
+                  <tbody className="flex flex-col max-h-[520px] overflow-y-auto">
+                    {filteredReports()?.length === 0 ? (
+                      <p className="font-bold flex justify-center items-center min-h-[520px]">
+                        No data...
+                      </p>
+                    ) : null}
+                    {filteredReports()
+                      ?.slice(lines * page - lines, lines * page)
+                      ?.map((i, k) => {
+                        if (title === "Appointment") {
+                          return (
+                            <tr key={k}>
+                              <td
+                                className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
+                                  k % 2 ? "bg-[--light-green] rounded-lg" : null
+                                }`}
+                              >
+                                <ReportsTd
+                                  value={
+                                    convertDate(
+                                      i["scheduledDate"]
+                                        ? i["createdDate"]
+                                        : i["start"]
+                                    )[1]
+                                  }
+                                />
+                                <ReportsTd
+                                  value={
+                                    convertDate(
+                                      i["scheduledDate"]
+                                        ? i["createdDate"]
+                                        : i["start"]
+                                    )[2]
+                                  }
+                                />
+                                <ReportsTd value={i["userDetails.idNo"]} />
+                                <ReportsTd value={i["userDetails.name"]} />
+                                <ReportsTd value={i["userDetails.email"]} />
+                                <ReportsTd value={i["gc.name"]} />
+                                <ReportsTd
+                                  value={
+                                    i["mode"] === "facetoface"
+                                      ? "Face-to-face"
+                                      : "Virtual"
+                                  }
+                                />
+                                <ReportsTd value={i["description"]} />
+                                <ReportsTd value={i["type"]} />
+                                <ReportsTd value={toHeaderCase(i["status"])} />
+                                <ReportsTd value={i["notes"]} />
+                                <ReportsTd value={i["userDetails.contactNo"]} />
+                              </td>
+                            </tr>
+                          );
+                        } else if (title === "Daily User") {
+                          return (
+                            <tr key={k}>
+                              <td
+                                className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
+                                  k % 2 ? "bg-[--light-green] rounded-lg" : null
+                                }`}
+                              >
+                                <ReportsTd
+                                  value={convertDate(i["createdDate"])[1]}
+                                />
+                                <ReportsTd
+                                  value={convertDate(i["createdDate"])[2]}
+                                />
+                                <ReportsTd value={i["idNo"]} />
+                                <ReportsTd value={i["name"]} />
+                                <ReportsTd value={i["credentials.email"]} />
+                                <ReportsTd value={i["age"]} />
+                                <ReportsTd value={i["department"]} />
+                                <ReportsTd value={i["gender"]} />
+                                <ReportsTd value={i["yearSection"]} />
+                                <ReportsTd value={i["type"]} />
+                                <ReportsTd value={i["contactNo"]} />
+                              </td>
+                            </tr>
+                          );
+                        } else if (title === "Feedback") {
+                          return (
+                            <tr key={k}>
+                              <td
+                                className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
+                                  k % 2 ? "bg-[--light-green] rounded-lg" : null
+                                }`}
+                              >
+                                <ReportsTd
+                                  value={convertDate(i["createdDate"])[1]}
+                                />
+                                <ReportsTd
+                                  value={convertDate(i["createdDate"])[2]}
+                                />
+                                <ReportsTd value={i["userDetails.idNo"]} />
+                                <ReportsTd value={i["userDetails.name"]} />
+                                <ReportsTd
+                                  value={i["userDetails.credentials.email"]}
+                                />
+                                <ReportsTd
+                                  value={i["userDetails.department"]}
+                                />
+                                <ReportsTd
+                                  value={i["userDetails.yearSection"]}
+                                />
+                                <ReportsTd value={i["rating"]} />
+                                <ReportsTd value={i["feedbackDetails"]} />
+                              </td>
+                            </tr>
+                          );
+                        } else if (title === "Concern") {
+                          return (
+                            <tr key={k}>
+                              <td
+                                className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
+                                  k % 2 ? "bg-[--light-green] rounded-lg" : null
+                                }`}
+                              >
+                                <ReportsTd
+                                  value={convertDate(i["createdDate"])[1]}
+                                />
+                                <ReportsTd
+                                  value={convertDate(i["createdDate"])[2]}
+                                />
+                                <ReportsTd value={i["idNo"]} />
+                                <ReportsTd value={i["name"]} />
+                                <ReportsTd value={i["credentials.email"]} />
+                                <ReportsTd value={i["age"]} />
+                                <ReportsTd value={i["department"]} />
+                                <ReportsTd value={i["gender"]} />
+                                <ReportsTd value={i["yearSection"]} />
+                                <ReportsTd value={i["concern"]} />
+                                <ReportsTd value={i["contactNo"]} />
+                              </td>
+                            </tr>
+                          );
+                        }
+                      })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
