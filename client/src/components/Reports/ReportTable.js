@@ -1166,188 +1166,585 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                     </button>
                   </div>
                 </div>
-                <table
-                  className="w-full rounded-lg shadow-lg bg-[--light-green] relative"
-                  style={{ backgroundColor: "rgba(169, 230, 194, 0.2)" }}
-                >
-                  <thead className="flex px-5 py-3 text-sm text-[--light-brown] font-bold bg-[--dark-green] rounded-lg m-1">
-                    {Object.entries(tableCategories).map(([key, value]) => {
-                      return (
-                        <p className="min-w-[100px] max-w-[100px] mr-[20px] flex justify-between truncate text-ellipsis">
-                          <span className="truncate w-[70%]">
-                            {toHeaderCase(key)}
-                          </span>
-                          {sortString[key] ? (
-                            <button
-                              onClick={() => {
-                                setSortString((prevSortString) => ({
-                                  ...prevSortString,
-                                  [key]: !prevSortString[key],
-                                }));
-                                setSortName(key);
-                                setIsAscending(false);
-                              }}
-                            >
-                              <FaLongArrowAltUp />
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => {
-                                setSortString((prevSortString) => ({
-                                  ...prevSortString,
-                                  [key]: !prevSortString[key],
-                                }));
-                                setSortName(key);
-                                setIsAscending(true);
-                              }}
-                            >
-                              <FaLongArrowAltDown />
-                            </button>
-                          )}
-                        </p>
-                      );
-                    })}
-                  </thead>
-                  <tbody className="flex flex-col max-h-[520px] overflow-y-auto">
-                    {filteredReports()?.length === 0 ? (
-                      <p className="font-bold flex justify-center items-center min-h-[520px]">
-                        No data...
-                      </p>
-                    ) : null}
-                    {filteredReports()
-                      ?.slice(lines * page - lines, lines * page)
-                      ?.map((i, k) => {
-                        if (title === "Appointment") {
-                          return (
-                            <tr key={k}>
-                              <td
-                                className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
-                                  k % 2 ? "bg-[--light-green] rounded-lg" : null
-                                }`}
-                              >
-                                <ReportsTd
-                                  value={
-                                    convertDate(
-                                      i["scheduledDate"]
-                                        ? i["createdDate"]
-                                        : i["start"]
-                                    )[1]
+                <div className="w-full overflow-x-auto rounded-lg shadow-lg max-h-[560px] overflow-y-auto">
+                  <table
+                    className="w-full rounded-lg shadow-lg bg-[--light-green] relative"
+                    style={{ backgroundColor: "rgba(169, 230, 194, 0.2)" }}
+                  >
+                    <thead className="sticky top-0 bg-[#e7f1e2]">
+                      <tr className="text-sm">
+                        {Object.entries(tableCategories).map(
+                          ([key, value], k) => {
+                            return (
+                              <th className="px-0">
+                                <div
+                                  className={`flex justify-between truncate text-ellipsis text-[--light-brown] font-bold bg-[--dark-green] ${
+                                    k === 0
+                                      ? "ml-1 my-1 px-5 py-3 rounded-l-lg"
+                                      : "my-1 py-3 pr-2"
                                   }
-                                />
-                                <ReportsTd
-                                  value={
-                                    convertDate(
-                                      i["scheduledDate"]
-                                        ? i["createdDate"]
-                                        : i["start"]
-                                    )[2]
-                                  }
-                                />
-                                <ReportsTd value={i["userDetails.idNo"]} />
-                                <ReportsTd value={i["userDetails.name"]} />
-                                <ReportsTd value={i["userDetails.email"]} />
-                                <ReportsTd value={i["gc.name"]} />
-                                <ReportsTd
-                                  value={
-                                    i["mode"] === "facetoface"
-                                      ? "Face-to-face"
-                                      : "Virtual"
-                                  }
-                                />
-                                <ReportsTd value={i["description"]} />
-                                <ReportsTd value={i["type"]} />
-                                <ReportsTd value={toHeaderCase(i["status"])} />
-                                <ReportsTd value={i["notes"]} />
-                                <ReportsTd value={i["userDetails.contactNo"]} />
-                              </td>
-                            </tr>
-                          );
-                        } else if (title === "Daily User") {
-                          return (
-                            <tr key={k}>
-                              <td
-                                className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
-                                  k % 2 ? "bg-[--light-green] rounded-lg" : null
-                                }`}
-                              >
-                                <ReportsTd
-                                  value={convertDate(i["createdDate"])[1]}
-                                />
-                                <ReportsTd
-                                  value={convertDate(i["createdDate"])[2]}
-                                />
-                                <ReportsTd value={i["idNo"]} />
-                                <ReportsTd value={i["name"]} />
-                                <ReportsTd value={i["credentials.email"]} />
-                                <ReportsTd value={i["age"]} />
-                                <ReportsTd value={i["department"]} />
-                                <ReportsTd value={i["gender"]} />
-                                <ReportsTd value={i["yearSection"]} />
-                                <ReportsTd value={i["type"]} />
-                                <ReportsTd value={i["contactNo"]} />
-                              </td>
-                            </tr>
-                          );
-                        } else if (title === "Feedback") {
-                          return (
-                            <tr key={k}>
-                              <td
-                                className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
-                                  k % 2 ? "bg-[--light-green] rounded-lg" : null
-                                }`}
-                              >
-                                <ReportsTd
-                                  value={convertDate(i["createdDate"])[1]}
-                                />
-                                <ReportsTd
-                                  value={convertDate(i["createdDate"])[2]}
-                                />
-                                <ReportsTd value={i["userDetails.idNo"]} />
-                                <ReportsTd value={i["userDetails.name"]} />
-                                <ReportsTd
-                                  value={i["userDetails.credentials.email"]}
-                                />
-                                <ReportsTd
-                                  value={i["userDetails.department"]}
-                                />
-                                <ReportsTd
-                                  value={i["userDetails.yearSection"]}
-                                />
-                                <ReportsTd value={i["rating"]} />
-                                <ReportsTd value={i["feedbackDetails"]} />
-                              </td>
-                            </tr>
-                          );
-                        } else if (title === "Concern") {
-                          return (
-                            <tr key={k}>
-                              <td
-                                className={`flex font-medium mx-1 px-5 my-1 py-3 text-sm ${
-                                  k % 2 ? "bg-[--light-green] rounded-lg" : null
-                                }`}
-                              >
-                                <ReportsTd
-                                  value={convertDate(i["createdDate"])[1]}
-                                />
-                                <ReportsTd
-                                  value={convertDate(i["createdDate"])[2]}
-                                />
-                                <ReportsTd value={i["idNo"]} />
-                                <ReportsTd value={i["name"]} />
-                                <ReportsTd value={i["credentials.email"]} />
-                                <ReportsTd value={i["age"]} />
-                                <ReportsTd value={i["department"]} />
-                                <ReportsTd value={i["gender"]} />
-                                <ReportsTd value={i["yearSection"]} />
-                                <ReportsTd value={i["concern"]} />
-                                <ReportsTd value={i["contactNo"]} />
-                              </td>
-                            </tr>
-                          );
+                        ${
+                          k === Object.entries(tableCategories).length - 1
+                            ? "mr-1 my-1 py-3 rounded-r-lg pr-2"
+                            : null
                         }
-                      })}
-                  </tbody>
-                </table>
+                        `}
+                                >
+                                  <span className="">{toHeaderCase(key)}</span>
+                                  {sortString[key] ? (
+                                    <button
+                                      className="px-5"
+                                      onClick={() => {
+                                        setSortString((prevSortString) => ({
+                                          ...prevSortString,
+                                          [key]: !prevSortString[key],
+                                        }));
+                                        setSortName(key);
+                                        setIsAscending(false);
+                                      }}
+                                    >
+                                      <FaLongArrowAltUp />
+                                    </button>
+                                  ) : (
+                                    <button
+                                      className="px-5"
+                                      onClick={() => {
+                                        setSortString((prevSortString) => ({
+                                          ...prevSortString,
+                                          [key]: !prevSortString[key],
+                                        }));
+                                        setSortName(key);
+                                        setIsAscending(true);
+                                      }}
+                                    >
+                                      <FaLongArrowAltDown />
+                                    </button>
+                                  )}
+                                </div>
+                              </th>
+                            );
+                          }
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody className="max-h-[520px] overflow-y-auto overflow-x-hidden">
+                      {filteredReports()?.length === 0 ? (
+                        <div
+                          className={`${
+                            title === "Feedback" ? "ml-[350%]" : "ml-[450%]"
+                          } font-bold w-full flex justify-center items-center min-h-[500px]`}
+                        >
+                          No data...
+                        </div>
+                      ) : null}
+                      {filteredReports()
+                        ?.slice(lines * page - lines, lines * page)
+                        ?.map((i, k) => {
+                          if (title === "Appointment") {
+                            return (
+                              <tr key={k} className="text-sm font-medium">
+                                <td
+                                  className={`${
+                                    k % 2 ? "pl-1 py-1 pr-0" : null
+                                  }`}
+                                >
+                                  <div
+                                    className={`pl-5 py-3 ${
+                                      k % 2
+                                        ? "bg-[--light-green] rounded-l-lg"
+                                        : null
+                                    }`}
+                                  >
+                                    <ReportsTd
+                                      value={
+                                        convertDate(
+                                          i["scheduledDate"]
+                                            ? i["createdDate"]
+                                            : i["start"]
+                                        )[1]
+                                      }
+                                    />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd
+                                      value={
+                                        convertDate(
+                                          i["scheduledDate"]
+                                            ? i["createdDate"]
+                                            : i["start"]
+                                        )[2]
+                                      }
+                                    />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["userDetails.idNo"]} />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["userDetails.name"]} />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["userDetails.email"]} />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["gc.name"]} />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd
+                                      value={
+                                        i["mode"] === "facetoface"
+                                          ? "Face-to-face"
+                                          : "Virtual"
+                                      }
+                                    />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green] h-auto" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["description"]} />{" "}
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["type"]} />{" "}
+                                  </div>
+                                </td>{" "}
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd
+                                      value={toHeaderCase(i["status"])}
+                                    />{" "}
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["notes"]} />
+                                  </div>
+                                </td>
+                                <td
+                                  className={`${
+                                    k % 2 ? "pr-1 py-1 pl-0" : null
+                                  }`}
+                                >
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2
+                                        ? "bg-[--light-green] rounded-r-lg"
+                                        : null
+                                    }`}
+                                  >
+                                    <ReportsTd
+                                      value={i["userDetails.contactNo"]}
+                                    />
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          } else if (title === "Daily User") {
+                            return (
+                              <tr key={k} className="text-sm font-medium">
+                                <td
+                                  className={`${
+                                    k % 2 ? "pl-1 py-1 pr-0" : null
+                                  }`}
+                                >
+                                  <div
+                                    className={`pl-5 py-3 ${
+                                      k % 2
+                                        ? "bg-[--light-green] rounded-l-lg"
+                                        : null
+                                    }`}
+                                  >
+                                    <ReportsTd
+                                      value={convertDate(i["createdDate"])[1]}
+                                    />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd
+                                      value={convertDate(i["createdDate"])[2]}
+                                    />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["idNo"]} />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["name"]} />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["credentials.email"]} />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["age"]} />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["department"]} />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green] h-auto" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["gender"]} />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["yearSection"]} />
+                                  </div>
+                                </td>{" "}
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["type"]} />
+                                  </div>
+                                </td>
+                                <td
+                                  className={`${
+                                    k % 2 ? "pr-1 py-1 pl-0" : null
+                                  }`}
+                                >
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2
+                                        ? "bg-[--light-green] rounded-r-lg"
+                                        : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["contactNo"]} />
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          } else if (title === "Feedback") {
+                            return (
+                              <tr key={k} className="text-sm font-medium">
+                                <td
+                                  className={`${
+                                    k % 2 ? "pl-1 py-1 pr-0" : null
+                                  }`}
+                                >
+                                  <div
+                                    className={`pl-5 py-3 ${
+                                      k % 2
+                                        ? "bg-[--light-green] rounded-l-lg"
+                                        : null
+                                    }`}
+                                  >
+                                    <ReportsTd
+                                      value={convertDate(i["createdDate"])[1]}
+                                    />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd
+                                      value={convertDate(i["createdDate"])[2]}
+                                    />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["userDetails.idNo"]} />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["userDetails.name"]} />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd
+                                      value={i["userDetails.credentials.email"]}
+                                    />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd
+                                      value={i["userDetails.department"]}
+                                    />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd
+                                      value={i["userDetails.yearSection"]}
+                                    />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green] h-auto" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["rating"]} />
+                                  </div>
+                                </td>
+
+                                <td
+                                  className={`${
+                                    k % 2 ? "pr-1 py-1 pl-0" : null
+                                  }`}
+                                >
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2
+                                        ? "bg-[--light-green] rounded-r-lg"
+                                        : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["feedbackDetails"]} />
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          } else if (title === "Concern") {
+                            return (
+                              <tr key={k} className="text-sm font-medium">
+                                <td
+                                  className={`${
+                                    k % 2 ? "pl-1 py-1 pr-0" : null
+                                  }`}
+                                >
+                                  <div
+                                    className={`pl-5 py-3 ${
+                                      k % 2
+                                        ? "bg-[--light-green] rounded-l-lg"
+                                        : null
+                                    }`}
+                                  >
+                                    <ReportsTd
+                                      value={convertDate(i["createdDate"])[1]}
+                                    />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd
+                                      value={convertDate(i["createdDate"])[2]}
+                                    />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["idNo"]} />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["name"]} />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["credentials.email"]} />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["age"]} />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["department"]} />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green] h-auto" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["gender"]} />
+                                  </div>
+                                </td>
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["yearSection"]} />
+                                  </div>
+                                </td>{" "}
+                                <td className="px-0">
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2 ? "bg-[--light-green]" : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["concern"]} />
+                                  </div>
+                                </td>
+                                <td
+                                  className={`${
+                                    k % 2 ? "pr-1 py-1 pl-0" : null
+                                  }`}
+                                >
+                                  <div
+                                    className={`py-3 ${
+                                      k % 2
+                                        ? "bg-[--light-green] rounded-r-lg"
+                                        : null
+                                    }`}
+                                  >
+                                    <ReportsTd value={i["contactNo"]} />
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          }
+                        })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>

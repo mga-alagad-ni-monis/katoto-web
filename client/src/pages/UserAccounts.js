@@ -1387,7 +1387,7 @@ function UserAccounts({ toast, auth }) {
                   </td>
                 </tr>
               </thead>
-              <tbody className="flex flex-col max-h-[624px] overflow-y-auto overflow-x-none ">
+              <tbody className="flex flex-col max-h-[624px] overflow-y-auto overflow-x-none">
                 {filteredUsers()?.length === 0 ? (
                   <p className="font-bold flex justify-center items-center min-h-[624px]">
                     No users...
