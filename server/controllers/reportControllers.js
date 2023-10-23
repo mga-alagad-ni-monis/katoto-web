@@ -1,4 +1,4 @@
-const XLSX = require("xlsx");
+const XLSX = require("xlsx-js-style");
 const moment = require("moment");
 const path = require("node:path");
 const fs = require("fs");
@@ -154,6 +154,8 @@ const exportReports = async (req, res) => {
             obj["Phone"] = i["userDetails.contactNo"];
           } else if (key === "mode") {
             obj["Mode"] = i["mode"] === "virtual" ? "Virtual" : "Face-to-face";
+          } else if (key === "type") {
+            obj["Type"] = i["type"];
           } else {
             obj[jsConvert.toHeaderCase(key)] = jsConvert.toHeaderCase(i[key]);
           }
@@ -239,6 +241,64 @@ const exportReports = async (req, res) => {
     if (type === "Excel") {
       const worksheet = XLSX.utils.json_to_sheet(newReports);
       const workbook = XLSX.utils.book_new();
+
+      const cellStyle = {
+        font: { name: "Arial", sz: 11 },
+      };
+
+      const range2 = XLSX.utils.decode_range(worksheet["!ref"]);
+
+      for (let row = range2.s.r; row <= range2.e.r; row++) {
+        for (let col = range2.s.c; col <= range2.e.c; col++) {
+          const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+          const cell = worksheet[cellAddress];
+          cell.s = cellStyle;
+        }
+      }
+
+      const headerStyle = {
+        font: { bold: true, color: { rgb: "f5f3eb" }, name: "Arial", sz: 11 },
+        alignment: { horizontal: "center" },
+        fill: { patternType: "solid", fgColor: { rgb: "2d757c" } },
+        border: {
+          top: { style: "thick", color: { auto: 1 } },
+          bottom: { style: "thick", color: { auto: 1 } },
+          left: { style: "thick", color: { auto: 1 } },
+          right: { style: "thick", color: { auto: 1 } },
+        },
+        padding: {
+          top: 5,
+          bottom: 5,
+          left: 5,
+          right: 5,
+        },
+      };
+
+      const range = XLSX.utils.decode_range(worksheet["!ref"]);
+      const firstRowRange = {
+        s: { r: range.s.r, c: range.s.c },
+        e: { r: range.s.r, c: range.e.c },
+      };
+
+      worksheet["!cols"] = [];
+
+      for (let i = firstRowRange.s.c; i <= firstRowRange.e.c; i++) {
+        const cellAddress = XLSX.utils.encode_cell({
+          r: firstRowRange.s.r,
+          c: i,
+        });
+        const cell = worksheet[cellAddress];
+        const desiredWidth = estimateCellWidth(cell.v);
+        worksheet["!cols"][i] = { wpx: desiredWidth };
+        worksheet[cellAddress].s = headerStyle;
+      }
+
+      function estimateCellWidth(content) {
+        const defaultCharWidth = 18;
+        const contentLength = content.toString().length;
+        return contentLength * defaultCharWidth;
+      }
+
       XLSX.utils.book_append_sheet(workbook, worksheet, title);
       XLSX.write(workbook, { bookType: "xlsx", type: "buffer" });
       XLSX.write(workbook, { bookType: "xlsx", type: "binary" });
@@ -287,6 +347,7 @@ const exportReports = async (req, res) => {
       });
     }
   } catch (err) {
+    console.log(err);
     res.status(404).send("Error");
   }
 };
