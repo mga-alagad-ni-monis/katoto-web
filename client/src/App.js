@@ -34,6 +34,8 @@ function App() {
   const [socket, setSocket] = useState(null);
   const [email, setEmail] = useState(null);
 
+  const history = useHistory();
+
   useEffect(() => {
     setSocket(io(process.env.REACT_APP_API_URI));
   }, []);
@@ -52,6 +54,7 @@ function App() {
         .get("/api/logout", { withCredentials: true })
         .then((res) => {
           toast.success(res?.data?.message);
+          window.location.href = "/login";
         })
         .catch((err) => {
           toast.error(err?.response?.data);
