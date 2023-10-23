@@ -527,6 +527,55 @@ function Appointments({ socket, toast, auth }) {
     },
   };
 
+  const componentsLeft = {
+    event: (i) => {
+      switch (i.event.data.status) {
+        case "pending":
+          return (
+            <div className="sos-pending text-black font-bold p-1 text-xs rounded-md bg-[--yellow]">
+              {i?.event?.data?.type !== "sos"
+                ? `${i.event.title} (${i.event.data.status})`.slice(10)
+                : `${i.event.title} (${i.event.data.status})`.slice(6)}
+            </div>
+          );
+        case "upcoming":
+          if (new Date(i.event.end) < new Date()) {
+            return (
+              <div className="sos-upcoming-1 text-black font-bold p-1 text-xs rounded-md bg-black/20">
+                {`${i.event.title} (ended)`.slice(10)}
+              </div>
+            );
+          }
+          return (
+            <div className="sos-upcoming-2 text-black font-bold p-1 text-xs rounded-md bg-[--light-green]">
+              {i?.event?.data?.type !== "sos"
+                ? `${i.event.title} (${i.event.data.status})`.slice(10)
+                : `${i.event.title} (${i.event.data.status})`.slice(6)}
+            </div>
+          );
+
+        case "completed":
+          return (
+            <div className="sos-complete text-[--light-brown] font-bold p-1 text-xs rounded-md bg-[--dark-green]">
+              {i?.event?.data?.type !== "sos"
+                ? `${i.event.title} (${i.event.data.status})`.slice(10)
+                : `${i.event.title} (${i.event.data.status})`.slice(6)}
+            </div>
+          );
+        case "cancelled":
+          return (
+            <div className="sos-cancel text-[--light-brown] font-bold p-1 text-xs rounded-md bg-[--red]">
+              {i?.event?.data?.type !== "sos"
+                ? `${i.event.title} (${i.event.data.status})`.slice(10)
+                : `${i.event.title} (${i.event.data.status})`.slice(6)}
+            </div>
+          );
+        default:
+          return null;
+      }
+    },
+  };
+
   const convertDate = (date) => {
     const formattedDate = new Date(date);
 
@@ -1510,6 +1559,10 @@ border border-2 transition-all duration-300"
                     </div>
                     <Calendar
                       localizer={localizer}
+                      messages={{
+                        noEventsInRange: "No appointments...",
+                        event: "Name of student (status)",
+                      }}
                       startAccessor="start"
                       endAccessor="end"
                       className="w-full second-calendar"
@@ -1520,7 +1573,7 @@ border border-2 transition-all duration-300"
                           (i.data.status === "upcoming" ||
                             i.data.status === "pending")
                       )}
-                      components={components}
+                      components={componentsLeft}
                       selectable={true}
                       views={{
                         month: true,
@@ -1541,12 +1594,16 @@ border border-2 transition-all duration-300"
                     </p>
                     <Calendar
                       localizer={localizer}
+                      messages={{
+                        noEventsInRange: "No appointments...",
+                        event: "Name of student (status)",
+                      }}
                       startAccessor="start"
                       endAccessor="end"
                       className="w-full second-calendar"
                       style={{ height: 270 }}
                       events={events.filter((i) => i.data.type === "sos")}
-                      components={components}
+                      components={componentsLeft}
                       selectable={true}
                       views={{
                         month: true,

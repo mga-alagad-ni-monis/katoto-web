@@ -496,8 +496,16 @@ function Campaigns({ toast, auth }) {
                         type="text"
                         placeholder="Search..."
                         className="py-2 px-5 bg-black/10 rounded-lg text-sm focus:outline-black/50 placeholder-black/30 font-semibold"
-                        value={search}
-                        onChange={(e) => {
+                        // value={search}
+                        onKeyUp={(e) => {
+                          if (e.key === "Enter") {
+                            setSearch(e.target.value);
+                          }
+                          setTimeout(() => {
+                            setSearch(e.target.value);
+                          }, 2000);
+                        }}
+                        onBlur={(e) => {
                           setSearch(e.target.value);
                         }}
                       />
