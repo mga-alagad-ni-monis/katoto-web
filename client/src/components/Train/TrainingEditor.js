@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from "react";
+import OutsideClickHandler from "react-outside-click-handler";
 
 import yaml from "js-yaml";
 import Editor from "@monaco-editor/react";
@@ -102,7 +103,6 @@ function TrainingEditor({
 
   return (
     <div>
-      {console.log(file)}
       <div className="flex justify-between mb-5 mt-5">
         <div className="hs-dropdown relative inline-flex gap-5">
           <button
@@ -116,26 +116,32 @@ function TrainingEditor({
             {filterFile}
             <FiChevronDown size={16} />
           </button>
-          <div
-            className={`${
-              isOpenFileButton ? "visible" : "hidden"
-            } absolute top-9 transition-all duration-100 w-72
-              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+          <OutsideClickHandler
+            onOutsideClick={() => {
+              setIsOpenFileButton(false);
+            }}
           >
-            {files.map((i, k) => {
-              return (
-                <button
-                  key={k}
-                  className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                  onClick={() => {
-                    changeFile(i);
-                  }}
-                >
-                  {i}
-                </button>
-              );
-            })}
-          </div>
+            <div
+              className={`${
+                isOpenFileButton ? "visible" : "hidden"
+              } absolute top-9 transition-all left-0 duration-100 w-72
+              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+            >
+              {files.map((i, k) => {
+                return (
+                  <button
+                    key={k}
+                    className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                    onClick={() => {
+                      changeFile(i);
+                    }}
+                  >
+                    {i}
+                  </button>
+                );
+              })}
+            </div>
+          </OutsideClickHandler>
         </div>
         <div className="flex gap-5">
           {train ? (

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import axios from "../api/axios";
 import TrainingEditor from "../components/Train/TrainingEditor";
+import OutsideClickHandler from "react-outside-click-handler";
 
 import { FiChevronDown } from "react-icons/fi";
 import { FaTimes } from "react-icons/fa";
@@ -455,34 +456,40 @@ function Train({ auth, toast, socket }) {
                     {selectedMode}
                     <FiChevronDown size={16} />
                   </button>
-                  <div
-                    className={`${
-                      isOpenModeDropDown ? "visible" : "hidden"
-                    } absolute top-9 right-0 transition-all duration-100 w-[12.6rem]
-              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                  <OutsideClickHandler
+                    onOutsideClick={() => {
+                      setIsOpenModeDropDown(false);
+                    }}
                   >
-                    {modes.map((i, k) => {
-                      return (
-                        <button
-                          key={k}
-                          className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                          onClick={() => {
-                            if (i === "Counselor-Guided") {
-                              setIsGuided(true);
-                              setMode("cg");
-                            } else {
-                              setIsGuided(false);
-                              setMode("fc");
-                            }
-                            setIsOpenModeDropDown(!isOpenModeDropDown);
-                            setSelectedMode(i);
-                          }}
-                        >
-                          {i}
-                        </button>
-                      );
-                    })}
-                  </div>
+                    <div
+                      className={`${
+                        isOpenModeDropDown ? "visible" : "hidden"
+                      } absolute top-9 left-0 transition-all duration-100 w-[12.6rem]
+              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                    >
+                      {modes.map((i, k) => {
+                        return (
+                          <button
+                            key={k}
+                            className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                            onClick={() => {
+                              if (i === "Counselor-Guided") {
+                                setIsGuided(true);
+                                setMode("cg");
+                              } else {
+                                setIsGuided(false);
+                                setMode("fc");
+                              }
+                              setIsOpenModeDropDown(!isOpenModeDropDown);
+                              setSelectedMode(i);
+                            }}
+                          >
+                            {i}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </OutsideClickHandler>
                 </div>
               ) : null}
               <div className="hs-dropdown relative inline-flex gap-5">
@@ -497,28 +504,35 @@ function Train({ auth, toast, socket }) {
                   {trainingMode}
                   <FiChevronDown size={16} />
                 </button>
+
                 <div
                   className={`${
                     isOpenTrainingModeDropDown ? "visible" : "hidden"
                   } absolute top-9 right-0 transition-all duration-100 w-[12.6rem]
               z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
                 >
-                  {trainingModes.map((i, k) => {
-                    return (
-                      <button
-                        key={k}
-                        className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                        onClick={() => {
-                          setIsOpenTrainingModeDropDown(
-                            !isOpenTrainingModeDropDown
-                          );
-                          setTrainingMode(i);
-                        }}
-                      >
-                        {i}
-                      </button>
-                    );
-                  })}
+                  <OutsideClickHandler
+                    onOutsideClick={() => {
+                      setIsOpenTrainingModeDropDown(false);
+                    }}
+                  >
+                    {trainingModes.map((i, k) => {
+                      return (
+                        <button
+                          key={k}
+                          className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                          onClick={() => {
+                            setIsOpenTrainingModeDropDown(
+                              !isOpenTrainingModeDropDown
+                            );
+                            setTrainingMode(i);
+                          }}
+                        >
+                          {i}
+                        </button>
+                      );
+                    })}
+                  </OutsideClickHandler>
                 </div>
               </div>
             </div>

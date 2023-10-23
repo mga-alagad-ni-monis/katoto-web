@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import OutsideClickHandler from "react-outside-click-handler";
 
 import { FiChevronDown } from "react-icons/fi";
 import { RiDownloadCloud2Line } from "react-icons/ri";
@@ -842,30 +843,36 @@ border border-2 border-[--red] transition-all duration-300"
                           {filterDateTime}
                           <FiChevronDown size={16} />
                         </button>
-                        <div
-                          className={`${
-                            isOpenDateTimeButton ? "visible" : "hidden"
-                          } absolute top-9 transition-all duration-100 w-[120px]
-              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                        <OutsideClickHandler
+                          onOutsideClick={() => {
+                            setIsOpenDateTimeButton(false);
+                          }}
                         >
-                          {dateTime.map((i, k) => {
-                            return (
-                              <button
-                                key={k}
-                                className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                                onClick={() => {
-                                  setFilterDateTime(i);
-                                  setIsOpenDateTimeButton(false);
-                                  if (i === "Custom") {
-                                    setIsOpenCustom(true);
-                                  }
-                                }}
-                              >
-                                {i}
-                              </button>
-                            );
-                          })}
-                        </div>
+                          <div
+                            className={`${
+                              isOpenDateTimeButton ? "visible" : "hidden"
+                            } absolute top-9 transition-all duration-100 w-[120px]
+              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                          >
+                            {dateTime.map((i, k) => {
+                              return (
+                                <button
+                                  key={k}
+                                  className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                                  onClick={() => {
+                                    setFilterDateTime(i);
+                                    setIsOpenDateTimeButton(false);
+                                    if (i === "Custom") {
+                                      setIsOpenCustom(true);
+                                    }
+                                  }}
+                                >
+                                  {i}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </OutsideClickHandler>
                         {isOpenCustom ? (
                           <div className="p-3 sh rounded-2xl absolute z-30 bg-[--light-brown] mt-3">
                             <div className="relative">
@@ -917,7 +924,7 @@ border border-2 border-[--red] transition-all duration-300"
                           className="w-[200px] flex justify-between bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] py-2 pr-3 pl-3 flex gap-2 items-center justify-center 
               border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
                           onClick={() => {
-                            setIsOpenCollegeButton(!isOpenCollegeButton);
+                            setIsOpenCollegeButton((prev) => !prev);
                           }}
                         >
                           <span class="truncate w-[130px] text-left">
@@ -925,27 +932,33 @@ border border-2 border-[--red] transition-all duration-300"
                           </span>
                           <FiChevronDown size={16} />
                         </button>
-                        <div
-                          className={`${
-                            isOpenCollegeButton ? "visible" : "hidden"
-                          } absolute top-9 transition-all duration-100 w-[570px]
-              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                        <OutsideClickHandler
+                          onOutsideClick={() => {
+                            setIsOpenCollegeButton(false);
+                          }}
                         >
-                          {colleges.map((i, k) => {
-                            return (
-                              <button
-                                key={k}
-                                className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                                onClick={() => {
-                                  setFilterCollege(i);
-                                  setIsOpenCollegeButton(false);
-                                }}
-                              >
-                                {i}
-                              </button>
-                            );
-                          })}
-                        </div>
+                          <div
+                            className={`${
+                              isOpenCollegeButton ? "visible" : "hidden"
+                            } absolute top-9 transition-all duration-100 w-[570px]
+              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                          >
+                            {colleges.map((i, k) => {
+                              return (
+                                <button
+                                  key={k}
+                                  className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                                  onClick={() => {
+                                    setFilterCollege(i);
+                                    setIsOpenCollegeButton(false);
+                                  }}
+                                >
+                                  {i}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </OutsideClickHandler>
                       </div>
                     ) : null}
                   </div>
@@ -970,31 +983,37 @@ border border-2 border-[--red] transition-all duration-300"
                           </span>
                           <FiChevronDown size={16} />
                         </button>
-                        <div
-                          className={`${
-                            isOpenDepartmentButton ? "visible" : "hidden"
-                          } absolute top-9 transition-all duration-100 w-[190px]
-              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                        <OutsideClickHandler
+                          onOutsideClick={() => {
+                            setIsOpenDepartmentButton(false);
+                          }}
                         >
-                          {departments.map((i, k) => {
-                            return (
-                              <button
-                                key={k}
-                                className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                                onClick={() => {
-                                  setFilterDepartment(i);
-                                  setIsOpenDepartmentButton(false);
-                                }}
-                              >
-                                {i === "All"
-                                  ? "All"
-                                  : JSON.stringify(
-                                      i.match(/\(([^)]+)\)/g)
-                                    ).slice(3, -3)}
-                              </button>
-                            );
-                          })}
-                        </div>
+                          <div
+                            className={`${
+                              isOpenDepartmentButton ? "visible" : "hidden"
+                            } absolute top-9 transition-all duration-100 w-[190px]
+              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                          >
+                            {departments.map((i, k) => {
+                              return (
+                                <button
+                                  key={k}
+                                  className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                                  onClick={() => {
+                                    setFilterDepartment(i);
+                                    setIsOpenDepartmentButton(false);
+                                  }}
+                                >
+                                  {i === "All"
+                                    ? "All"
+                                    : JSON.stringify(
+                                        i.match(/\(([^)]+)\)/g)
+                                      ).slice(3, -3)}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </OutsideClickHandler>
                       </div>
                     ) : null}
                   </div>
@@ -1013,27 +1032,33 @@ border border-2 border-[--red] transition-all duration-300"
                           {filterYear}
                           <FiChevronDown size={16} />
                         </button>
-                        <div
-                          className={`${
-                            isOpenYearButton ? "visible" : "hidden"
-                          } absolute top-9 transition-all duration-100 w-[71px]
-              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                        <OutsideClickHandler
+                          onOutsideClick={() => {
+                            setIsOpenYearButton(false);
+                          }}
                         >
-                          {["All", "1", "2", "3", "4"].map((i, k) => {
-                            return (
-                              <button
-                                key={k}
-                                className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                                onClick={() => {
-                                  setFilterYear(i);
-                                  setIsOpenYearButton(false);
-                                }}
-                              >
-                                {i}
-                              </button>
-                            );
-                          })}
-                        </div>
+                          <div
+                            className={`${
+                              isOpenYearButton ? "visible" : "hidden"
+                            } absolute top-9 transition-all duration-100 w-[71px]
+              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                          >
+                            {["All", "1", "2", "3", "4"].map((i, k) => {
+                              return (
+                                <button
+                                  key={k}
+                                  className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                                  onClick={() => {
+                                    setFilterYear(i);
+                                    setIsOpenYearButton(false);
+                                  }}
+                                >
+                                  {i}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </OutsideClickHandler>
                       </div>
                     ) : null}
                   </div>
@@ -1052,41 +1077,47 @@ border border-2 border-[--red] transition-all duration-300"
                           {filterSection}
                           <FiChevronDown size={16} />
                         </button>
-                        <div
-                          className={`${
-                            isOpenSectionButton ? "visible" : "hidden"
-                          } absolute top-9 transition-all duration-100 w-[71px]
-              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                        <OutsideClickHandler
+                          onOutsideClick={() => {
+                            setIsOpenSectionButton(false);
+                          }}
                         >
-                          {[
-                            "All",
-                            "1",
-                            "2",
-                            "3",
-                            "4",
-                            "5",
-                            "6",
-                            "7",
-                            "8",
-                            "9",
-                            "10",
-                            "11",
-                            "12",
-                          ].map((i, k) => {
-                            return (
-                              <button
-                                key={k}
-                                className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                                onClick={() => {
-                                  setFilterSection(i);
-                                  setIsOpenSectionButton(false);
-                                }}
-                              >
-                                {i}
-                              </button>
-                            );
-                          })}
-                        </div>
+                          <div
+                            className={`${
+                              isOpenSectionButton ? "visible" : "hidden"
+                            } absolute top-9 transition-all duration-100 w-[71px]
+              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                          >
+                            {[
+                              "All",
+                              "1",
+                              "2",
+                              "3",
+                              "4",
+                              "5",
+                              "6",
+                              "7",
+                              "8",
+                              "9",
+                              "10",
+                              "11",
+                              "12",
+                            ].map((i, k) => {
+                              return (
+                                <button
+                                  key={k}
+                                  className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                                  onClick={() => {
+                                    setFilterSection(i);
+                                    setIsOpenSectionButton(false);
+                                  }}
+                                >
+                                  {i}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </OutsideClickHandler>
                       </div>
                     ) : null}
                   </div>
@@ -1105,27 +1136,33 @@ border border-2 border-[--red] transition-all duration-300"
                           {filterGender}
                           <FiChevronDown size={16} />
                         </button>
-                        <div
-                          className={`${
-                            isOpenGenderButton ? "visible" : "hidden"
-                          } absolute top-9 transition-all duration-100 w-[102px]
-              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                        <OutsideClickHandler
+                          onOutsideClick={() => {
+                            setIsOpenGenderButton(false);
+                          }}
                         >
-                          {genders.map((i, k) => {
-                            return (
-                              <button
-                                key={k}
-                                className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                                onClick={() => {
-                                  setFilterGender(i);
-                                  setIsOpenGenderButton(false);
-                                }}
-                              >
-                                {i}
-                              </button>
-                            );
-                          })}
-                        </div>
+                          <div
+                            className={`${
+                              isOpenGenderButton ? "visible" : "hidden"
+                            } absolute top-9 transition-all duration-100 w-[102px]
+              z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                          >
+                            {genders.map((i, k) => {
+                              return (
+                                <button
+                                  key={k}
+                                  className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                                  onClick={() => {
+                                    setFilterGender(i);
+                                    setIsOpenGenderButton(false);
+                                  }}
+                                >
+                                  {i}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </OutsideClickHandler>
                       </div>
                     ) : null}
                   </div>
@@ -1140,26 +1177,32 @@ border border-2 border-[--red] transition-all duration-300"
                       <RiDownloadCloud2Line size={16} />
                       Export
                     </button>
-                    <div
-                      className={`${
-                        isOpenExport ? "visible" : "hidden"
-                      } w-[105px] absolute top-16 right-0 transition-all duration-100
-              z-10 mt-2 shadow-md rounded-lg p-2 bg-black`}
+                    <OutsideClickHandler
+                      onOutsideClick={() => {
+                        setIsOpenExport(false);
+                      }}
                     >
-                      {["Excel", "CSV"].map((i, k) => {
-                        return (
-                          <button
-                            key={k}
-                            className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-black"
-                            onClick={() => {
-                              exportReports(i);
-                            }}
-                          >
-                            {i}
-                          </button>
-                        );
-                      })}
-                    </div>
+                      <div
+                        className={`${
+                          isOpenExport ? "visible" : "hidden"
+                        } w-[105px] absolute top-16 right-0 transition-all duration-100
+              z-10 mt-2 shadow-md rounded-lg p-2 bg-black`}
+                      >
+                        {["Excel", "CSV"].map((i, k) => {
+                          return (
+                            <button
+                              key={k}
+                              className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-black"
+                              onClick={() => {
+                                exportReports(i);
+                              }}
+                            >
+                              {i}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </OutsideClickHandler>
                   </div>
                 </div>
               </div>

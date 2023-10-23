@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "../api/axios";
+import OutsideClickHandler from "react-outside-click-handler";
 
 import moment from "moment";
 
@@ -184,32 +185,38 @@ function Reports({ auth, toast }) {
                       {selectedMode}
                       <FiChevronDown size={16} />
                     </button>
-                    <div
-                      className={`${
-                        isOpenModeDropDown ? "visible" : "hidden"
-                      } absolute top-9 right-0 transition-all duration-100 w-[12.6rem]
-          z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                    <OutsideClickHandler
+                      onOutsideClick={() => {
+                        setIsOpenModeDropDown(false);
+                      }}
                     >
-                      {mode.map((i, k) => {
-                        return (
-                          <button
-                            key={k}
-                            className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                            onClick={() => {
-                              if (i === "Counselor-Guided") {
-                                setIsGuided(true);
-                              } else {
-                                setIsGuided(false);
-                              }
-                              setIsOpenModeDropDown(!isOpenModeDropDown);
-                              setSelectedMode(i);
-                            }}
-                          >
-                            {i}
-                          </button>
-                        );
-                      })}
-                    </div>
+                      <div
+                        className={`${
+                          isOpenModeDropDown ? "visible" : "hidden"
+                        } absolute top-9 right-5 transition-all duration-100 w-[12.6rem]
+          z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                      >
+                        {mode.map((i, k) => {
+                          return (
+                            <button
+                              key={k}
+                              className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                              onClick={() => {
+                                if (i === "Counselor-Guided") {
+                                  setIsGuided(true);
+                                } else {
+                                  setIsGuided(false);
+                                }
+                                setIsOpenModeDropDown(!isOpenModeDropDown);
+                                setSelectedMode(i);
+                              }}
+                            >
+                              {i}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </OutsideClickHandler>
                   </div>
                 </div>
                 <div className="flex gap-5">
@@ -225,29 +232,35 @@ function Reports({ auth, toast }) {
                       {selectedDateTime}
                       <FiChevronDown size={16} />
                     </button>
-                    <div
-                      className={`${
-                        isOpenDateTimeDropDown ? "visible" : "hidden"
-                      } absolute top-9 right-0 transition-all duration-100 w-[12.6rem]
-          z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                    <OutsideClickHandler
+                      onOutsideClick={() => {
+                        setIsOpenDateTimeDropDown(false);
+                      }}
                     >
-                      {dateTime.map((i, k) => {
-                        return (
-                          <button
-                            key={k}
-                            className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
-                            onClick={() => {
-                              setIsOpenDateTimeDropDown(
-                                !isOpenDateTimeDropDown
-                              );
-                              setSelectedDateTime(i);
-                            }}
-                          >
-                            {i}
-                          </button>
-                        );
-                      })}
-                    </div>
+                      <div
+                        className={`${
+                          isOpenDateTimeDropDown ? "visible" : "hidden"
+                        } absolute top-9 right-5 transition-all duration-100 w-[12.6rem]
+          z-10 mt-2 shadow-md rounded-lg p-2 bg-[--dark-green]`}
+                      >
+                        {dateTime.map((i, k) => {
+                          return (
+                            <button
+                              key={k}
+                              className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm font-semibold text-[--light-brown] hover:bg-[--light-brown] hover:text-[--dark-green]"
+                              onClick={() => {
+                                setIsOpenDateTimeDropDown(
+                                  !isOpenDateTimeDropDown
+                                );
+                                setSelectedDateTime(i);
+                              }}
+                            >
+                              {i}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </OutsideClickHandler>
                   </div>
                 </div>
               </div>
