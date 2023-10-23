@@ -38,11 +38,21 @@ function UserFeedbacks({ data, isGuided, auth, toast, date }) {
     { str: "Satisfied", img: satisfied },
   ];
 
+  const feedbackDescriptionsLegends = [
+    { str: "Satisfied", img: satisfied },
+    { str: "Happy", img: happy },
+    { str: "Neutral", img: neutral },
+    { str: "Disappointed", img: disappointed },
+    { str: "Frustated", img: frustrated },
+  ];
+
   const getFeedbackData = () => {
     if (data !== undefined && feedbacks) {
       let feedback = [];
 
-      feedbackDescriptions.map((i) => feedback.push({ rating: i, Number: 0 }));
+      feedbackDescriptions.map((i) =>
+        feedback.push({ rating: i, "Number of Students": 0 })
+      );
 
       data.forEach((i) => {
         i?.feedbacks?.forEach((j) => {
@@ -53,7 +63,7 @@ function UserFeedbacks({ data, isGuided, auth, toast, date }) {
               )
             ) {
               if (j.rating === z + 1) {
-                k["Number"]++;
+                k["Number of Students"]++;
               }
             }
           });
@@ -65,9 +75,15 @@ function UserFeedbacks({ data, isGuided, auth, toast, date }) {
   };
 
   const CustomTick = ({ x, y, payload }) => {
+    console.log(x, y);
     return (
-      <g transform={`translate(${x},${y})`}>
-        <image xlinkHref={`${payload.value}`} width={20} height={20} />
+      <g transform={`translate(${x - 50},${y})`}>
+        <image
+          xlinkHref={`${payload.value}`}
+          width={100}
+          height={100}
+          style={{ filter: "drop-shadow(0px 0px 15px #f0ad4e)" }}
+        />
       </g>
     );
   };
@@ -81,42 +97,55 @@ function UserFeedbacks({ data, isGuided, auth, toast, date }) {
         The number of students that have provided feedback on the system from{" "}
         {date}.
       </p>
-      <div className="h-[500px] flex flex-col w-full gap-12">
-        {/* {feedbackDescriptions?.map((i, k) => {
-          return (
-            <div className="flex flex-col items-center gap-3" key={k}>
-              <img src={i.img} alt="" className="w-40 h-40" />
-              <p>{feedbackData[k]?.Number}</p>
-              <p className="font-bold text-lg">{i.str}</p>
-            </div>
-          );
-        })} */}
+      <div className="h-[650px] flex w-full gap-12">
+        <div className="w-4/5">
+          <ResponsiveContainer width={"100%"} height={"100%"}>
+            <BarChart
+              data={feedbackData}
+              margin={{
+                top: 5,
+                right: 30,
+                left: 20,
+                bottom: 5,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="rating.img"
+                tick={CustomTick}
+                height={100}
+                offset={2}
+                interval={0}
+              />
+              <YAxis allowDecimals={false} />
+              <Tooltip />
+              <Legend
+                wrapperStyle={{
+                  marginLeft: "35px",
+                  marginTop: "200px",
+                }}
+              />
 
-        <ResponsiveContainer width={"100%"} height={"100%"}>
-          <BarChart
-            width={500}
-            height={300}
-            data={feedbackData}
-            margin={{
-              top: 5,
-              right: 30,
-              left: 20,
-              bottom: 5,
-            }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="rating" />
-            <YAxis allowDecimals={false} />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="Number" fill="#2d757c" />
-          </BarChart>
-        </ResponsiveContainer>
-        {/* <div className="flex justify-between pr-32 pl-[10.5rem]">
-          {feedbackDescriptions?.map((i, k) => {
-            return <img src={i.img} alt="" className="w-20 h-20" />;
+              <Bar dataKey="Number of Students" fill="#2d757c" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="flex w-1/5 flex-col gap-3 items-start mt-24">
+          {feedbackDescriptionsLegends?.map((i, k) => {
+            return (
+              <div className="flex gap-3 justify-center items-center">
+                <img
+                  src={i?.img}
+                  alt="k"
+                  className="w-16"
+                  style={{ filter: "drop-shadow(0px 0px 10px #f0ad4e)" }}
+                />
+                <div key={k}>{i?.str}</div>
+              </div>
+            );
           })}
-        </div> */}
+        </div>
       </div>
     </div>
   );
