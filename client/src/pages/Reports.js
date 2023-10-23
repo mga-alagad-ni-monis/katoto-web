@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-import axios from "../api/axios";
 import ReportTable from "../components/Reports/ReportTable";
 
 function Reports({ auth, toast, title, filters, tableCategories }) {

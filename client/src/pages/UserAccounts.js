@@ -12,7 +12,6 @@ import {
 } from "react-icons/bs";
 import { HiPlus } from "react-icons/hi";
 import { FaTimes } from "react-icons/fa";
-import { FiChevronDown } from "react-icons/fi";
 import { VscEdit } from "react-icons/vsc";
 import { RiFileExcel2Line } from "react-icons/ri";
 

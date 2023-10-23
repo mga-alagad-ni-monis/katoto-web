@@ -1,7 +1,14 @@
 import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+
 import { FiChevronDown } from "react-icons/fi";
-import { RiFileExcel2Line, RiDownloadCloud2Line } from "react-icons/ri";
-import { FaLongArrowAltUp, FaLongArrowAltDown } from "react-icons/fa";
+import { RiDownloadCloud2Line } from "react-icons/ri";
+import {
+  FaLongArrowAltUp,
+  FaLongArrowAltDown,
+  FaEllipsisH,
+  FaTimes,
+} from "react-icons/fa";
 import { toHeaderCase, toLowerCase } from "js-convert-case";
 import Loading from "../Loading";
 import axios from "../../api/axios";
@@ -11,6 +18,7 @@ import moment from "moment";
 import download from "js-file-download";
 import { DateRangePicker } from "react-date-range";
 import { HiOutlineChevronLeft, HiOutlineChevronRight } from "react-icons/hi2";
+import Modal from "../Modal";
 
 function ReportTable({ toast, filters, tableCategories, title, auth }) {
   const [isOpenDateTimeButton, setIsOpenDateTimeButton] = useState(false);
@@ -23,6 +31,7 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
   const [isAscending, setIsAscending] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isOpenCustom, setIsOpenCustom] = useState(false);
+  const [isOpenLongData, setIsOpenLongData] = useState(false);
 
   const [sortString, setSortString] = useState({});
   const [sortName, setSortName] = useState("");
@@ -33,6 +42,9 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
   const [filterSection, setFilterSection] = useState("All");
   const [filterGender, setFilterGender] = useState("All");
   const [search, setSearch] = useState("");
+  const [longDataTitle, setLongDataTitle] = useState("");
+  const [longDataDesc, setLongDataDesc] = useState("");
+
   const [lines, setLines] = useState(10);
   const [page, setPage] = useState(1);
 
@@ -702,13 +714,74 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
     setIsOpenCustom(false);
   };
 
+  const handleShowLongData = (title, desc) => {
+    setLongDataTitle(title);
+    setLongDataDesc(desc);
+    setIsOpenLongData(true);
+  };
+
   return (
     <>
       {isLoading ? (
         <Loading />
       ) : (
         <div className="bg-[--light-brown] h-screen overflow-hidden">
-          {console.log(searchRef?.current?.value)}
+          {isOpenLongData ? (
+            <motion.div
+              className="bg-black/50 absolute w-screen h-screen z-40"
+              variants={{
+                show: {
+                  opacity: 1,
+                  transition: {
+                    type: "spring",
+                    stiffness: 500,
+                    damping: 40,
+                  },
+                },
+                hide: {
+                  opacity: 0,
+                  transition: {
+                    type: "spring",
+                    stiffness: 500,
+                    damping: 40,
+                  },
+                },
+              }}
+              animate={isOpenLongData ? "show" : "hide"}
+              initial={{
+                opacity: 0,
+              }}
+            ></motion.div>
+          ) : null}
+          <Modal isOpen={isOpenLongData}>
+            <div className="w-full justify-between flex">
+              <p className="text-2xl font-extrabold">{longDataTitle}</p>
+              <button
+                onClick={() => {
+                  setIsOpenLongData(false);
+                }}
+                type="button"
+              >
+                <FaTimes size={20} />
+              </button>
+            </div>
+            <div className="flex flex-col gap-4 mt-5 items-center text-center text-md w-[600px] max-h-[600px]">
+              <div className="flex text-left w-full">
+                <p className="w-full">{longDataDesc}</p>
+              </div>
+              <div className="w-full flex justify-end mt-4">
+                <button
+                  className="bg-[--red] rounded-lg text-sm font-bold text-[--light-brown] py-2 px-3 flex gap-2 items-center justify-center 
+border border-2 border-[--red] transition-all duration-300"
+                  onClick={() => {
+                    setIsOpenLongData(false);
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </Modal>
           <div className="flex flex-col px-52">
             <p className="mt-16 flex w-full text-3xl font-extrabold mb-8">
               {`${title} Reports`}
@@ -1336,11 +1409,28 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                                 </td>
                                 <td className="px-0">
                                   <div
-                                    className={`py-3 ${
+                                    className={`py-3 pl-12 ${
                                       k % 2 ? "bg-[--light-green] h-auto" : null
                                     }`}
                                   >
-                                    <ReportsTd value={i["description"]} />{" "}
+                                    {/* <ReportsTd value={i["description"]} />{" "} */}
+                                    {i["description"] ? (
+                                      <button
+                                        type="button"
+                                        className="flex justify-between w-auto bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] p-y-auto px-1 flex gap-2 items-center justify-center 
+              border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                                        onClick={() => {
+                                          handleShowLongData(
+                                            "Concern Overview",
+                                            i["description"]
+                                          );
+                                        }}
+                                      >
+                                        <FaEllipsisH size={16} />
+                                      </button>
+                                    ) : (
+                                      <span>N/A</span>
+                                    )}
                                   </div>
                                 </td>
                                 <td className="px-0">
@@ -1369,7 +1459,24 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                                       k % 2 ? "bg-[--light-green]" : null
                                     }`}
                                   >
-                                    <ReportsTd value={i["notes"]} />
+                                    {/* <ReportsTd value={i["notes"]} /> */}
+                                    {i["notes"] ? (
+                                      <button
+                                        type="button"
+                                        className="flex justify-between w-auto bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] p-y-auto px-1 flex gap-2 items-center justify-center 
+              border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                                        onClick={() => {
+                                          handleShowLongData(
+                                            "Notes",
+                                            i["notes"]
+                                          );
+                                        }}
+                                      >
+                                        <FaEllipsisH size={16} />
+                                      </button>
+                                    ) : (
+                                      <span>N/A</span>
+                                    )}
                                   </div>
                                 </td>
                                 <td
@@ -1615,7 +1722,24 @@ function ReportTable({ toast, filters, tableCategories, title, auth }) {
                                         : null
                                     }`}
                                   >
-                                    <ReportsTd value={i["feedbackDetails"]} />
+                                    {/* <ReportsTd value={i["feedbackDetails"]} /> */}
+                                    {i["feedbackDetails"] ? (
+                                      <button
+                                        type="button"
+                                        className="flex justify-between w-auto bg-[--dark-green] rounded-lg text-sm font-bold text-[--light-brown] p-y-auto px-1 flex gap-2 items-center justify-center 
+              border border-2 border-[--dark-green] hover:border-[--dark-green] hover:border-2 hover:bg-transparent hover:text-[--dark-green] transition-all duration-300"
+                                        onClick={() => {
+                                          handleShowLongData(
+                                            "Feedback Details",
+                                            i["feedbackDetails"]
+                                          );
+                                        }}
+                                      >
+                                        <FaEllipsisH size={16} />
+                                      </button>
+                                    ) : (
+                                      <span>N/A</span>
+                                    )}
                                   </div>
                                 </td>
                               </tr>
