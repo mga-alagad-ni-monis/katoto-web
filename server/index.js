@@ -41,18 +41,7 @@ const server = http.createServer(app);
 
 const allowedOrigins = [process.env.CLIENT_URI, "*"];
 
-const io = require("socket.io")(server, {
-  cors: {
-    origin: (origin, callback) => {
-      if (origin === process.env.CLIENT_URI) {
-        callback(null, true);
-      } else {
-        callback(null, true);
-      }
-    },
-    credentials: true,
-  },
-});
+const io = require("socket.io")(server);
 //
 
 // app.listen
@@ -64,18 +53,7 @@ server.listen(process.env.PORT, () => {
 
 app.use("/tmp", express.static(process.env.FILE_STORAGE_PATH));
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (origin === process.env.CLIENT_URI) {
-        callback(null, true);
-      } else {
-        callback(null, true);
-      }
-    },
-    credentials: true,
-  })
-);
+app.use(cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

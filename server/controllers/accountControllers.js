@@ -14,6 +14,8 @@ const db = require("../utils/firebase");
 
 const handleLogin = async (req, res) => {
   const { email, password } = req.body;
+
+  console.log(email, password);
   try {
     if (!email || !password) {
       return res.status(404).send("Please provide account credentials!");
