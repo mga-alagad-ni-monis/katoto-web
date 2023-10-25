@@ -41,7 +41,7 @@ const server = http.createServer(app);
 
 const io = require("socket.io")(server, {
   cors: {
-    origin: "*",
+    origin: process.env.CLIENT_URI,
     credentials: true,
   },
 });
@@ -56,7 +56,7 @@ server.listen(process.env.PORT, () => {
 
 app.use("/tmp", express.static(process.env.FILE_STORAGE_PATH));
 
-app.use(cors({ origin: "*", credentials: true }));
+app.use(cors({ origin: process.env.CLIENT_URI, credentials: true }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
