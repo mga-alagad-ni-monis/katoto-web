@@ -205,6 +205,48 @@ const getStudentConversation = async (req, res) => {
   }
 };
 
+const getStudentConversationLimit = async (req, res) => {
+  const limit = req?.query?.limit;
+  try {
+    if (limit > 1000) {
+      res.status(404).send("Limit reached!");
+    }
+
+    const token = jwt.decode(
+      req.headers.authorization.slice(7, req.headers.authorization.length)
+    );
+
+    await db
+      .collection("reports")
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          return res.status(404).send("Error");
+        }
+        let conversationArray = [];
+        querySnapshot.forEach((i) => {
+          i.data().reports.conversationLogs.forEach((j) => {
+            if (token.email === j.email) {
+              j.conversation.forEach((k) => {
+                conversationArray.push(k.studentMessage);
+                conversationArray.push(k.katotoMessage);
+              });
+            }
+          });
+        });
+
+        res.status(200).json({
+          conversation: conversationArray.slice(
+            conversationArray.length - 1 - limit,
+            conversationArray.length - 1 - (limit - 20)
+          ),
+        });
+      });
+  } catch (err) {
+    res.status(404).send("Error");
+  }
+};
+
 const getAllConversations = async (req, res) => {
   try {
     await db
@@ -231,4 +273,5 @@ module.exports = {
   sendConversation,
   getStudentConversation,
   getAllConversations,
+  getStudentConversationLimit,
 };
