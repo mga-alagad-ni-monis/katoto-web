@@ -128,7 +128,7 @@ function Login({ toast, loading, setLoading, auth }) {
             <form className="flex flex-col" onSubmit={forgotPassword}>
               <p
                 className={`w-[420px] mb-5 mt-4 text-sm font-semibold ${
-                  forgotMessage.includes("not find")
+                  forgotMessage?.includes("not find")
                     ? "text-[--red]"
                     : "text-[--dark-green]"
                 }`}
