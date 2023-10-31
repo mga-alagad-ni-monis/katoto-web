@@ -361,23 +361,23 @@ function NavBar({ auth, logout, socket, toast }) {
     { no: "14", time: "2:00:00 PM" },
   ];
 
-  const ref = useRef();
+  // const ref = useRef();
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (ref.current && !ref.current.contains(event.target)) {
-        setIsOpenNotifications(false);
-        setIsOpenAppointments(false);
-        setIsOpenProfile(false);
-      }
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = (event) => {
+  //     if (ref.current && !ref.current.contains(event.target)) {
+  //       setIsOpenNotifications(false);
+  //       setIsOpenAppointments(false);
+  //       setIsOpenProfile(false);
+  //     }
+  //   };
 
-    document.addEventListener("mousedown", handleClickOutside);
+  //   document.addEventListener("mousedown", handleClickOutside);
 
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [ref]);
+  //   return () => {
+  //     document.removeEventListener("mousedown", handleClickOutside);
+  //   };
+  // }, [ref]);
 
   return (
     <>
@@ -529,7 +529,6 @@ function NavBar({ auth, logout, socket, toast }) {
                       ) : null}
                     </button>
                     <button
-                      ref={ref}
                       className={`${
                         isOpenNotifications
                           ? "bg-[--light-green] text-[--dark-green]"

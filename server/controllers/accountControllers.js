@@ -233,13 +233,13 @@ Katoto Team`,
             resetToken: token,
             resetExpiresOn: Date.now() + 900000,
           });
-
-          res.status(200).json({
-            message: "Password reset instructions were sent to your email!",
-          });
+        });
+        res.status(200).json({
+          message: "Password reset instructions were sent to your email!",
         });
       });
   } catch (err) {
+    console.log(err);
     res.status(404).send("Error");
   }
 };
