@@ -92,7 +92,6 @@ function Login({ toast, loading, setLoading, auth }) {
           },
           {
             headers: { "Content-Type": "application/json" },
-            withCredentials: true,
           }
         )
         .then((res) => {
