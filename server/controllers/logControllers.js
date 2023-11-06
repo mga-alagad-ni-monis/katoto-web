@@ -207,6 +207,7 @@ const getStudentConversation = async (req, res) => {
 
 const getStudentConversationLimit = async (req, res) => {
   const limit = req?.query?.limit;
+  console.log(limit);
   try {
     if (limit > 1000) {
       res.status(404).send("Limit reached!");
@@ -238,7 +239,7 @@ const getStudentConversationLimit = async (req, res) => {
         res.status(200).json({
           conversation: conversationArray.slice(
             conversationArray.length - 1 - limit,
-            conversationArray.length - 1 - (limit - 20)
+            conversationArray.length - 1 - (limit - 20) + 1
           ),
         });
       });
