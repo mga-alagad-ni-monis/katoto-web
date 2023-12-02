@@ -425,6 +425,6 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/feedbacks", feedbackRoutes);
 
-cron.schedule("29 13 * * *", () => {
+cron.schedule("0 0 * * *", () => {
   createDocument();
 });
