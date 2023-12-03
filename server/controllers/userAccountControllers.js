@@ -222,6 +222,9 @@ const handleImport = async (req, res) => {
       .on("end", async () => {
         let errorAccounts = [];
         let isError = false;
+
+        console.log(users);
+
         let documents = await Promise.all(
           //if email is registered
           users.map(async (user, k) => {
@@ -321,7 +324,6 @@ const handleImport = async (req, res) => {
                 user[Object.keys(users[k])[0]].slice(1).replace(/\s/g, "") ===
               "student"
             ) {
-              isError = true;
               if (user["Year Section"]) {
                 if (
                   !(
@@ -331,12 +333,14 @@ const handleImport = async (req, res) => {
                     user["Year Section"].slice(2) > 0 &&
                     user["Year Section"].slice(2) < 21
                   )
-                )
+                ) {
+                  isError = true;
                   errorAccounts.push(
                     `Error on Row ${k + 2}: ${
                       user["Name"]
                     }'s year and section must follow the format e.g. (4-12)`
                   );
+                }
               }
             }
 
